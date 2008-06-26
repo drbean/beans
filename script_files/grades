@@ -1,0 +1,148 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use List::Util qw/sum min max/;
+use YAML qw/LoadFile/;
+use IO::All;
+
+use Getopt::Long;
+use Pod::Usage;
+
+my $man = 0;
+my $help = 0;
+my ($league);
+
+GetOptions (
+	"league=s" => \$league, 
+	'help|?' => \$help, man => \$man) or pod2usage(2);
+pod2usage(1) if $help;
+pod2usage(-exitstatus => 0, -verbose => 2) if $man;
+
+die "Which league: ?" unless $league;
+my $class = LoadFile "/home/greg/$league/league.yaml"
+					or die "No league with this name: $!";
+my @members = sort { $a->{id} <=> $b->{id} } @{$class->{member}};
+my %ids = map { $_->{name} => $_->{id} } @members;
+my %names = map { $_->{id} => $_->{name} } @members;
+my $beans = LoadFile "/home/greg/$league/beans.yaml";
+my $hwfiles = $class->{hw};
+my $hw = LoadFile "$hwfiles/cumulative.yaml";
+my $examfiles = $class->{exams};
+my @exams = map { LoadFile "/home/greg/$league/$_/g.yaml" } @$examfiles;
+
+open REP, '>grades.tmp' or die 'grades.tmp? $!'; 
+format REP_TOP = 
+                          Grades
+                                               Exams
+Name        ID      Beans    Homework      I  II  III  Final  Total???
+#                                           Exams
+# Name        ID      Beans/5    Homework   I    II   III   Total
+-------------------------------------------------------------------------
+.
+
+foreach my $member ( @members ) 
+{
+	my $id = $member->{id};
+	my $name = $member->{name};
+	my $homework = min 40, $hw->{$id} || 0;
+	my $beans = min 100, $beans->{$name} || 0;
+	# my $beans = $beans->{$name} || 0;
+	# my @examGrades = map { max 0, $exams[$_]->{$id}*5/6 } 0..$#exams;
+	# my $grade = $beans/5 + $homework + sum @examGrades;
+	my @examGrades = map { max 0, $exams[$_]->{$id} } 0..$#exams;
+	my $grade = (min(100, $beans*15) + min(100,$homework*5/2) + $examGrades[0])/3;
+
+# @<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<<<<   @<< @<< @<<  @<   @<
+# @<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<<<<   @<<   @<
+
+	format REP =
+@<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<<<<   @<<  @<<  @<<  @<<   @<<
+$name,      $id,        $beans,  $homework, @examGrades, $grade
+.
+	write REP;
+}
+
+close REP;
+
+__DATA__
+
+my $finalexam = LoadFile "/home/greg/$league/f/gf.yaml";
+open FINAL, '>>grades.tmp' or die 'grades.tmp? $!'; 
+format FINAL_TOP = 
+---
+Grades
+Final/100
+---
+.
+foreach my $member ( @members ) 
+{
+	my $id = $member->{id};
+	my $final = round( $finalexam->{$id} * 5 );
+	format FINAL =
+@<<<<<<	@<<<
+$id,	$final
+.
+	write FINAL;
+}
+close FINAL;
+
+my $midterm2 = LoadFile "/home/greg/$league/m2/gm2.yaml";
+open COURSE, '>>grades.tmp' or die 'grades.tmp? $!'; 
+format COURSE_TOP = 
+---
+Grades
+Coursework/100
+---
+.
+foreach my $member ( @members ) 
+{
+	my $id = $member->{id};
+	my $name = $member->{name};
+	my $homework = min 20, $hw->{$id};
+	my $beans = min 20, $beans->{$name}/5;
+	my $exam = max 0, $midterm2->{$id};
+	my $coursework = round( ($homework + $beans + $exam) * 5 / 3 );
+	format COURSE =
+@<<<<<<	@<<<
+$id,	$coursework
+.
+	write COURSE;
+}
+
+sub round 
+{
+	my $score = shift;
+	$score - int( $score ) >= 0.5? int( $score ) + 1: int( $score );
+}
+
+__END__
+
+=head1 NAME
+
+grades - Calculate sum of beans/5, hw, exams and print a report.
+
+=head1 SYNOPSIS
+
+grades -l m/j
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--man> A man page
+
+=item B<--help> This help message
+
+=item B<--league> The league to which the report belongs, a path from my home directory to the directory in which league.yaml exists.
+
+=back
+
+=head1 DESCRIPTION
+
+B<grades> totals scores that students have earned for classwork, homework and exams. It adds the total beans (divided by 5) to homework, midterm and final scores and outputs the grade so far.
+
+Beans (ie, classwork) are in beans.yaml. Homework is in $hw/cumulative.yaml. (Use B<hwtotal> to write this.) Exam scores are in $exams/g.yaml. $hw, $exams are in ./league.yaml.
+
+=cut

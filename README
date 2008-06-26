@@ -1,0 +1,63 @@
+Bean-Counter
+
+This is a collection of scripts useful for the anal-retentive teacher grading students in a very particular way.
+
+hwtotal totals the scores in the homework directory and stores them in cumulative.yaml. However you may want to convert the scores to percentages of an ideal score. hwtotal doesn't do this.
+
+grades totals subscores for classwork, homework and exams and prints a report.
+
+checkbeans identifies the sources of the classwork score that a student gets by virtue of being a member of a group and getting a group score.
+
+beans adds points that a group has accumulated and are being processed, for addition to the group record.
+
+classwork totals scores that students have gained either individually or as members of groups over the weeks of the course. The average score per week is 80/number of weeks, so the total average is 80.
+
+cumulative. How is this different than hwtotal?
+
+The README is used to introduce the module and provide instructions on
+how to install the module, any machine dependencies it may have (for
+example C compilers and installed libraries) and any other information
+that should be provided before the module is installed.
+
+A README file is required for CPAN modules since CPAN extracts the README
+file from a module distribution so that people browsing the archive
+can use it get an idea of the modules uses. It is usually a good idea
+to provide version information here so that people can decide whether
+fixes for the module are worth downloading.
+
+INSTALLATION
+
+To install this module, run the following commands:
+
+    perl Build.PL
+    ./Build
+    ./Build test
+    ./Build install
+
+
+SUPPORT AND DOCUMENTATION
+
+After installing, you can find documentation for this module with the perldoc command.
+
+    perldoc Bean::Counter
+
+You can also look for information at:
+
+    Search CPAN
+        http://search.cpan.org/dist/Bean-Counter
+
+    CPAN Request Tracker:
+        http://rt.cpan.org/NoAuth/Bugs.html?Dist=Bean-Counter
+
+    AnnoCPAN, annotated CPAN documentation:
+        http://annocpan.org/dist/Bean-Counter
+
+    CPAN Ratings:
+        http://cpanratings.perl.org/d/Bean-Counter
+
+COPYRIGHT AND LICENCE
+
+Copyright (C) 2006 Dr Bean
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.

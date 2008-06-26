@@ -1,0 +1,226 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use List::Util qw/sum min max/;
+use POSIX;
+use YAML qw/LoadFile DumpFile/;
+use IO::All;
+
+use Getopt::Long;
+use Pod::Usage;
+
+my $man = 0;
+my $help = 0;
+my ($league, $totalweeks);
+
+GetOptions (
+	"league=s" => \$league, 
+	"weeks=s" => \$totalweeks, 
+	'help|?' => \$help, man => \$man) or pod2usage(2);
+pod2usage(1) if $help;
+pod2usage(-exitstatus => 0, -verbose => 2) if $man;
+
+die "Which league: ?" unless $league;
+my $class = LoadFile "/home/greg/$league/league.yaml"
+					or die "No league with this name: $!";
+my @members = sort { $a->{id} <=> $b->{id} } @{$class->{member}};
+my %ids = map { $_->{name} => $_->{id} } @members;
+my %names = map { $_->{id} => $_->{name} } @members;
+my @absentees = @{ $class->{absent} } if $class->{absent};
+my (@classScores, @groupscores, @indscores, @indwork, @totalwork, @averagework, @averagescore);
+my $series = $class->{series};
+my @weeks;
+for my $session ( @$series )
+{
+	my $groups = LoadFile "/home/greg/$league/$session/individuals.yaml";
+	my @groups = keys %$groups;
+	my $prizes = 80 * (keys %$groups) / $totalweeks;
+	my @files = glob("/home/greg/$league/$session/*.yaml");
+	for my $file ( @files )
+	{
+		next unless (my $week = $file) =~ s/^.*\/(\d+).yaml$/$1/;
+		push @weeks, $week;
+		die "2 records of Week $1 classwork."
+			if $classScores[$week];
+		my $weekwork = LoadFile $file;
+		my %logweekwork;
+		for my $key (keys %$weekwork)
+		{
+			my $work = $weekwork->{$key};
+			my $log;
+			$logweekwork{$key} = $work == 0 ? 0 : 1 + log $work;
+		}
+		my $totalwork = sum values %$weekwork;
+		push @totalwork, $totalwork;
+		push @averagework, $totalwork/@groups;
+		my $totallogwork = sum values %logweekwork;
+		my %weekscores;
+		my $total;
+		for my $group ( @groups )
+		{
+			my $lot = $totallogwork == 0? 0 : floor(
+				$logweekwork{$group}*$prizes/$totallogwork);
+			$groupscores[$week]{$group} = $lot;
+			my @members = @{$groups->{$group}};
+			my @ids = @ids{@members};
+			die "$session session, week $week: @members"
+				if grep { not defined $_ } @ids;
+			die "$session session, week $week: @members partition?"
+			 	if @weekscores{@ids};
+			@weekscores{@ids} = ($lot)x@ids;
+			$averagescore[$week] = 
+				sum( values %{$groupscores[$week]} )/@groups;
+			$indscores[$week]{$_} =  $weekscores{$_} for @ids;
+			$indwork[$week]{$_} = $weekwork->{$group} for @ids;
+		}
+	}
+}
+
+open REP, '>class.tmp' or die 'class.tmp? $!'; 
+my @romans = qw/'' I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII/;
+
+# Name        ID          $romans[1] $romans[2] $romans[3] $romans[5] $romans[6] $romans[7] $romans[8] $romans[10] $romans[11]      Total Classwork
+print REP
+"             $class->{league} Classwork
+                    Weeks: Grade(Work Points)
+Name        ID          @romans[@weeks]       Total Classwork
+-------------------------------------------------------------------------
+";
+
+my $beancount;
+
+foreach my $member ( @members ) 
+{
+	my $name = $member->{name};
+	next if grep { $name eq $_ } @absentees;
+	my $id = $member->{id};
+	my $lastpoints = $indwork[$weeks[-1]]{$id};
+	my @grades = map { $indscores[$_]{$id} } @weeks;
+	my $total = sum @grades;
+	$beancount->{$name} = $total;
+	$grades[-1] = $grades[-1] . "(" . $lastpoints . ")";
+	# my @figures = map { "$grades[$_]($beans[$_])" } 0..$#weeks;
+	no warnings;
+	format REP =
+@<<<<<<<<<< @<<<<<<<<<  @<  @<  @<  @<  @<  @<  @<<<<<   @<<
+$name,  $id,	@grades, $total
+.
+	write REP;
+	use warnings;
+}
+close REP;
+
+open TOTAL, '>>class.tmp' or die 'class.tmp? $!'; 
+
+# my @averagework = map { int($averagescore[$_]) . "(" . int($averagework[$_]) . ")" } @weeks;
+@averagework = map { floor $_ } @averagework;
+my $target = floor 80 * @weeks / $totalweeks;
+
+print TOTAL "\n";
+format TOTAL =
+@<<<<<<<<<<<<<<<<<<<<<  @<  @<  @<  @<  @<  @<<       @<<<<
+'Average Work Points',  @averagework,            $target
+.
+	write TOTAL;
+close TOTAL;
+
+my $oldbeancount = LoadFile "/home/greg/$league/beans.yaml";
+DumpFile "/home/greg/$league/beans.yaml.bak", $oldbeancount;
+DumpFile "/home/greg/$league/beans.yaml", $beancount;
+
+__DATA__
+
+my $finalexam = LoadFile "/home/greg/$league/f/gf.yaml";
+open FINAL, '>>grades.tmp' or die 'grades.tmp? $!'; 
+format FINAL_TOP = 
+---
+Grades
+Final/100
+---
+.
+foreach my $member ( @members ) 
+{
+	my $id = $member->{id};
+	my $final = round( $finalexam->{$id} * 5 );
+	format FINAL =
+@<<<<<<	@<<<
+$id,	$final
+.
+	write FINAL;
+}
+close FINAL;
+
+my $midterm2 = LoadFile "/home/greg/$league/m2/gm2.yaml";
+open COURSE, '>>grades.tmp' or die 'grades.tmp? $!'; 
+format COURSE_TOP = 
+---
+Grades
+Coursework/100
+---
+.
+foreach my $member ( @members ) 
+{
+	my $id = $member->{id};
+	my $name = $member->{name};
+	my $homework = min 20, $hw->{$id};
+	my $beans = min 20, $beans->{$name}/5;
+	my $exam = max 0, $midterm2->{$id};
+	my $coursework = round( ($homework + $beans + $exam) * 5 / 3 );
+	format COURSE =
+@<<<<<<	@<<<
+$id,	$coursework
+.
+	write COURSE;
+}
+
+sub round 
+{
+	my $score = shift;
+	$score - int( $score ) >= 0.5? int( $score ) + 1: int( $score );
+}
+
+__END__
+
+=head1 NAME
+
+grades - Calculate sum of beans/5, hw, exams and print a report.
+
+=head1 SYNOPSIS
+
+classwork -l m/j -w 14
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--man> A man page
+
+=item B<--help> This help message
+
+=item B<--league> The league to which the report belongs, a path from my home directory to the directory in which league.yaml exists.
+
+=item B<--weeks> The number of weeks that class work was graded. To allow total expected/average score of 80, per student. (Is this necessary? Shouldn't the number of \d+.yaml files be equal to that number?)
+
+=back
+
+=head1 DESCRIPTION
+
+B<classwork> totals scores that students have earned for classwork in their groups. It records the total classwork score to date and stores it in $league/beans.yaml. It converts the points given in class to a a score, so the average per week is 80/number of weeks, and outputs a report of the weekly results to class.tmp.
+
+The points given by the teacher are log-scaled to prevent active students from taking all hte points.
+
+Individuals rather than group scores are used based on names in $session/individuals.yaml of form: 
+
+Chanel:
+  - Chanel
+Cliff:
+  - Cliff
+
+Weekly scores are in \d+.yaml, where \d+ is the week, and are of form:
+
+Chanel: 3
+Cliff: 0
+
+=cut
