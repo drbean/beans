@@ -1,0 +1,11 @@
+Build.PL
+Changes
+MANIFEST
+META.yml # Will be created by "make dist"
+README
+# lib/Bean/Counter.pm
+script_files/beans
+t/00-load.t
+t/boilerplate.t
+t/pod-coverage.t
+t/pod.t
