@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use List::Util qw/sum min max/;
+use List::MoreUtils qw/all/;
 use YAML qw/LoadFile/;
 use IO::All;
 
@@ -46,13 +47,20 @@ foreach my $member ( @members )
 {
 	my $id = $member->{id};
 	my $name = $member->{name};
-	my $homework = min 40, $hw->{$id} || 0;
+	my $homework = min 100, $hw->{$id} || 0;
 	my $beans = min 100, $beans->{$name} || 0;
 	# my $beans = $beans->{$name} || 0;
 	# my @examGrades = map { max 0, $exams[$_]->{$id}*5/6 } 0..$#exams;
 	# my $grade = $beans/5 + $homework + sum @examGrades;
 	my @examGrades = map { max 0, $exams[$_]->{$id} } 0..$#exams;
-	my $grade = (min(100, $beans*15) + min(100,$homework*5/2) + $examGrades[0])/3;
+	warn "$id: " . @examGrades . " exams" unless 
+				all { defined $_ } @examGrades;
+	my $examGrade = sum(@examGrades) / @examGrades ;
+	# my $grade = (min(100, $beans*15) + min(100,$homework*5/2) + $examGrades[0])/3;
+	my $grade = $beans*2/10 + $homework*2/10 + $examGrade*6/10;
+	warn "$id: classwork $beans, homework $homework, exams $examGrade"
+		unless ( defined $beans and defined $homework and 
+				defined $examGrade );
 
 # @<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<<<<   @<< @<< @<<  @<   @<
 # @<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<<<<   @<<   @<

@@ -100,11 +100,13 @@ foreach my $member ( @members )
 	my @grades = map { $indscores[$_]{$id} } @weeks;
 	my $total = sum @grades;
 	$beancount->{$name} = $total;
+	warn "${name}'s last class grade, $grades[-1] ($lastpoints)" unless
+		(@grades and defined $grades[-1] and defined $lastpoints);
 	$grades[-1] = $grades[-1] . "(" . $lastpoints . ")";
 	# my @figures = map { "$grades[$_]($beans[$_])" } 0..$#weeks;
 	no warnings;
 	format REP =
-@<<<<<<<<<< @<<<<<<<<<  @<  @<  @<  @<  @<  @<  @<<<<<   @<<
+@<<<<<<<<<< @<<<<<<<<<  @<  @<  @<  @<  @<  @<  @<  @<<<<<   @<<
 $name,  $id,	@grades, $total
 .
 	write REP;
@@ -120,7 +122,7 @@ my $target = floor 80 * @weeks / $totalweeks;
 
 print TOTAL "\n";
 format TOTAL =
-@<<<<<<<<<<<<<<<<<<<<<  @<  @<  @<  @<  @<  @<<       @<<<<
+@<<<<<<<<<<<<<<<<<<<<<  @<  @<  @<  @<  @<  @<  @<  @<<       @<<<<
 'Average Work Points',  @averagework,            $target
 .
 	write TOTAL;
