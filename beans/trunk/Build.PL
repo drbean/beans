@@ -15,8 +15,8 @@ my $builder = Module::Build->new(
     				script_files/cumulative
     				script_files/classwork
     				script_files/checkbeans
-    				script_files/deposit
 				script_files/grades script_files/id2name]],
 );
+# script_files/deposit
 
 $builder->create_build_script();
