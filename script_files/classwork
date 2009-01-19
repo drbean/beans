@@ -65,7 +65,7 @@ for my $session ( @$series )
 			$groupscores[$week]{$group} = $lot;
 			my @members = @{$groups->{$group}};
 			my @ids = @ids{@members};
-			die "$session session, week $week: @members"
+			die "$session session, week $week: @members in league?"
 				if grep { not defined $_ } @ids;
 			die "$session session, week $week: @members partition?"
 			 	if @weekscores{@ids};
