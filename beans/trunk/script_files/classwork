@@ -36,7 +36,7 @@ for my $session ( @$series )
 {
 	my $groups = LoadFile "/home/$ENV{USER}/$league/$session/individuals.yaml";
 	my @groups = keys %$groups;
-	my $prizes = 80 * (keys %$groups) / $totalweeks;
+	my $payout = 80 * (keys %$groups) / $totalweeks;
 	my @files = glob("/home/$ENV{USER}/$league/$session/*.yaml");
 	for my $file ( @files )
 	{
@@ -61,7 +61,7 @@ for my $session ( @$series )
 		for my $group ( @groups )
 		{
 			my $lot = $totallogwork == 0? 0 : floor(
-				$logweekwork{$group}*$prizes/$totallogwork);
+				$logweekwork{$group}*$payout/$totallogwork);
 			$groupscores[$week]{$group} = $lot;
 			my @members = @{$groups->{$group}};
 			my @ids = @ids{@members};
@@ -219,6 +219,8 @@ Chanel:
   - Chanel
 Cliff:
   - Cliff
+
+Students who were absent for the whole of the session should not be included. This inflates the scores of the other students, by raising the payout.
 
 Weekly scores are in \d+.yaml, where \d+ is the week, and are of form:
 
