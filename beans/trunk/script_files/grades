@@ -22,22 +22,24 @@ pod2usage(1) if $help;
 pod2usage(-exitstatus => 0, -verbose => 2) if $man;
 
 die "Which league: ?" unless $league;
-my $class = LoadFile "/home/greg/$league/league.yaml"
+my $class = LoadFile "/home/$ENV{USER}/$league/league.yaml"
 					or die "No league with this name: $!";
-my @members = sort { $a->{id} <=> $b->{id} } @{$class->{member}};
+my @members = sort { $a->{id} cmp $b->{id} } @{$class->{member}};
 my %ids = map { $_->{name} => $_->{id} } @members;
 my %names = map { $_->{id} => $_->{name} } @members;
-my $beans = LoadFile "/home/greg/$league/beans.yaml";
+my $beans = LoadFile "/home/$ENV{USER}/$league/beans.yaml";
 my $hwfiles = $class->{hw};
 my $hw = LoadFile "$hwfiles/cumulative.yaml";
 my $examfiles = $class->{exams};
-my @exams = map { LoadFile "/home/greg/$league/$_/g.yaml" } @$examfiles;
+my @exams = map { LoadFile "/home/$ENV{USER}/$league/$_/g.yaml" } @$examfiles;
 
 open REP, '>grades.tmp' or die 'grades.tmp? $!'; 
 format REP_TOP = 
                           Grades
                                                Exams
-Name        ID      Beans    Homework      I  II  III  Final  Total???
+Name        ID      Classwork    Homework  I  Final  Total???
+#                                               Exams
+#Name        ID      Beans    Homework      I  II  III  Final  Total???
 #                                           Exams
 # Name        ID      Beans/5    Homework   I    II   III   Total
 -------------------------------------------------------------------------
@@ -57,7 +59,7 @@ foreach my $member ( @members )
 				all { defined $_ } @examGrades;
 	my $examGrade = sum(@examGrades) / @examGrades ;
 	# my $grade = (min(100, $beans*15) + min(100,$homework*5/2) + $examGrades[0])/3;
-	my $grade = $beans*2/10 + $homework*2/10 + $examGrade*6/10;
+	my $grade = $beans*2/10 + $homework*2/10 + $examGrade*24/10;
 	warn "$id: classwork $beans, homework $homework, exams $examGrade"
 		unless ( defined $beans and defined $homework and 
 				defined $examGrade );
@@ -66,7 +68,7 @@ foreach my $member ( @members )
 # @<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<<<<   @<<   @<
 
 	format REP =
-@<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<<<<   @<<  @<<  @<<  @<<   @<<
+@<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<<<<   @<<  @<<
 $name,      $id,        $beans,  $homework, @examGrades, $grade
 .
 	write REP;
@@ -76,7 +78,7 @@ close REP;
 
 __DATA__
 
-my $finalexam = LoadFile "/home/greg/$league/f/gf.yaml";
+my $finalexam = LoadFile "/home/$ENV{USER}/$league/f/gf.yaml";
 open FINAL, '>>grades.tmp' or die 'grades.tmp? $!'; 
 format FINAL_TOP = 
 ---
@@ -96,7 +98,7 @@ $id,	$final
 }
 close FINAL;
 
-my $midterm2 = LoadFile "/home/greg/$league/m2/gm2.yaml";
+my $midterm2 = LoadFile "/home/$ENV{USER}/$league/m2/gm2.yaml";
 open COURSE, '>>grades.tmp' or die 'grades.tmp? $!'; 
 format COURSE_TOP = 
 ---

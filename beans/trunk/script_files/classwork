@@ -23,9 +23,9 @@ pod2usage(1) if $help;
 pod2usage(-exitstatus => 0, -verbose => 2) if $man;
 
 die "Which league: ?" unless $league;
-my $class = LoadFile "/home/greg/$league/league.yaml"
+my $class = LoadFile "/home/$ENV{USER}/$league/league.yaml"
 					or die "No league with this name: $!";
-my @members = sort { $a->{id} <=> $b->{id} } @{$class->{member}};
+my @members = sort { $a->{id} cmp $b->{id} } @{$class->{member}};
 my %ids = map { $_->{name} => $_->{id} } @members;
 my %names = map { $_->{id} => $_->{name} } @members;
 my @absentees = @{ $class->{absent} } if $class->{absent};
@@ -34,10 +34,10 @@ my $series = $class->{series};
 my @weeks;
 for my $session ( @$series )
 {
-	my $groups = LoadFile "/home/greg/$league/$session/individuals.yaml";
+	my $groups = LoadFile "/home/$ENV{USER}/$league/$session/individuals.yaml";
 	my @groups = keys %$groups;
 	my $prizes = 80 * (keys %$groups) / $totalweeks;
-	my @files = glob("/home/greg/$league/$session/*.yaml");
+	my @files = glob("/home/$ENV{USER}/$league/$session/*.yaml");
 	for my $file ( @files )
 	{
 		next unless (my $week = $file) =~ s/^.*\/(\d+).yaml$/$1/;
@@ -106,7 +106,7 @@ foreach my $member ( @members )
 	# my @figures = map { "$grades[$_]($beans[$_])" } 0..$#weeks;
 	no warnings;
 	format REP =
-@<<<<<<<<<< @<<<<<<<<<  @<  @<  @<  @<  @<  @<  @<  @<<<<<   @<<
+@<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<
 $name,  $id,	@grades, $total
 .
 	write REP;
@@ -122,19 +122,19 @@ my $target = floor 80 * @weeks / $totalweeks;
 
 print TOTAL "\n";
 format TOTAL =
-@<<<<<<<<<<<<<<<<<<<<<  @<  @<  @<  @<  @<  @<  @<  @<<       @<<<<
+@<<<<<<<<<<<<<<<<<<<<<  @<<      @<<<<
 'Average Work Points',  @averagework,            $target
 .
 	write TOTAL;
 close TOTAL;
 
-my $oldbeancount = LoadFile "/home/greg/$league/beans.yaml";
-DumpFile "/home/greg/$league/beans.yaml.bak", $oldbeancount;
-DumpFile "/home/greg/$league/beans.yaml", $beancount;
+my $oldbeancount = LoadFile "/home/$ENV{USER}/$league/beans.yaml";
+DumpFile "/home/$ENV{USER}/$league/beans.yaml.bak", $oldbeancount;
+DumpFile "/home/$ENV{USER}/$league/beans.yaml", $beancount;
 
 __DATA__
 
-my $finalexam = LoadFile "/home/greg/$league/f/gf.yaml";
+my $finalexam = LoadFile "/home/$ENV{USER}/$league/f/gf.yaml";
 open FINAL, '>>grades.tmp' or die 'grades.tmp? $!'; 
 format FINAL_TOP = 
 ---
@@ -154,7 +154,7 @@ $id,	$final
 }
 close FINAL;
 
-my $midterm2 = LoadFile "/home/greg/$league/m2/gm2.yaml";
+my $midterm2 = LoadFile "/home/$ENV{USER}/$league/m2/gm2.yaml";
 open COURSE, '>>grades.tmp' or die 'grades.tmp? $!'; 
 format COURSE_TOP = 
 ---
