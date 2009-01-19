@@ -7,6 +7,7 @@ use List::Util qw/sum min max/;
 use POSIX;
 use YAML qw/LoadFile DumpFile/;
 use IO::All;
+use IO::Handle;
 
 use Getopt::Long;
 use Pod::Usage;
@@ -80,58 +81,114 @@ for my $session ( @$series )
 
 open REP, '>class.tmp' or die 'class.tmp? $!'; 
 my @romans = qw/'' I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII/;
+my @format_top = qw/'' TOP1 TOP2 TOP3 TOP4 TOP5 TOP6 TOP7 TOP8 TOP9 TOP10 TOP11/;
+my @formats = qw/'' WEEKS1 WEEKS2 WEEKS3 WEEKS4 WEEKS5 WEEKS6 WEEKS7 WEEKS8 WEEKS9 WEEKS10 WEEKS11/;
+my @format_total = qw/'' TOTAL1 TOTAL2 TOTAL3 TOTAL4 TOTAL5 TOTAL6 TOTAL7 TOTAL8 TOTAL9 TOTAL10 TOTAL11/;
 
 # Name        ID          $romans[1] $romans[2] $romans[3] $romans[5] $romans[6] $romans[7] $romans[8] $romans[10] $romans[11]      Total Classwork
-print REP
-"             $class->{league} Classwork
-                    Weeks: Grade(Work Points)
-Name        ID          @romans[@weeks]       Total Classwork
--------------------------------------------------------------------------
-";
+
+REP->format_top_name($format_top[$totalweeks]);
+REP->format_name($formats[$totalweeks]);
 
 my $beancount;
 
 foreach my $member ( @members ) 
 {
-	my $name = $member->{name};
+	our $name = $member->{name};
 	next if grep { $name eq $_ } @absentees;
-	my $id = $member->{id};
+	our $id = $member->{id};
 	my $lastpoints = $indwork[$weeks[-1]]{$id};
-	my @grades = map { $indscores[$_]{$id} } @weeks;
-	my $total = sum @grades;
+	my @missing;
+	our @grades = ();
+	for my $week ( @weeks) {
+		my $score = $indscores[$week]{$id};
+		push @missing, $week if not defined $score;
+		push @grades, $score;
+	}
+	warn "${name}'s grade missing for weeks @romans[@missing]" if @missing;
+	our $total = sum @grades;
 	$beancount->{$name} = $total;
-	warn "${name}'s last class grade, $grades[-1] ($lastpoints)" unless
-		(@grades and defined $grades[-1] and defined $lastpoints);
 	$grades[-1] = $grades[-1] . "(" . $lastpoints . ")";
 	# my @figures = map { "$grades[$_]($beans[$_])" } 0..$#weeks;
-	no warnings;
-	format REP =
-@<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<
-$name,  $id,	@grades, $total
-.
+	# no warnings;
 	write REP;
-	use warnings;
+	# use warnings;
 }
-close REP;
-
-open TOTAL, '>>class.tmp' or die 'class.tmp? $!'; 
 
 # my @averagework = map { int($averagescore[$_]) . "(" . int($averagework[$_]) . ")" } @weeks;
 @averagework = map { floor $_ } @averagework;
 my $target = floor 80 * @weeks / $totalweeks;
 
-print TOTAL "\n";
-format TOTAL =
-@<<<<<<<<<<<<<<<<<<<<<  @<<      @<<<<
-'Average Work Points',  @averagework,            $target
-.
-	write TOTAL;
-close TOTAL;
+print REP "\n";
+REP->format_name($format_total[$totalweeks]);
+write REP;
+close REP;
 
 my $oldbeancount = LoadFile "/home/$ENV{USER}/$league/beans.yaml";
 DumpFile "/home/$ENV{USER}/$league/beans.yaml.bak", $oldbeancount;
 DumpFile "/home/$ENV{USER}/$league/beans.yaml", $beancount;
 
+format TOP2 =
+             $class->{league} Classwork
+                    Weeks: Grade(Work Points)
+@<<<        @<<         @<<< @<<<       @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@weeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP5 =
+             $class->{league} Classwork
+                    Weeks: Grade(Work Points)
+@<<<        @<<         @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@weeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP6 =
+             $class->{league} Classwork
+                    Weeks: Grade(Work Points)
+@<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@weeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP7 =
+             $class->{league} Classwork
+                    Weeks: Grade(Work Points)
+@<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@weeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+our ($name, $id, @grades, $total);
+format WEEKS2 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<<<<   @<<
+$name,  $id,	@grades, $total
+.
+format WEEKS5 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<<<<   @<<
+$name,  $id,	@grades, $total
+.
+format WEEKS6 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
+$name,  $id,	@grades, $total
+.
+format WEEKS7 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
+$name,  $id,	@grades, $total
+.
+format TOTAL2 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<<      @<<<<
+'Average Work Points',  @averagework,            $target
+.
+format TOTAL5 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<<      @<<<<
+'Average Work Points',  @averagework,            $target
+.
+format TOTAL6 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
+'Average Work Points',  @averagework,            $target
+.
+format TOTAL7 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
+'Average Work Points',  @averagework,            $target
+.
 __DATA__
 
 my $finalexam = LoadFile "/home/$ENV{USER}/$league/f/gf.yaml";
