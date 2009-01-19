@@ -11,6 +11,7 @@ use IO::Handle;
 
 use Getopt::Long;
 use Pod::Usage;
+use Cwd;
 
 my $man = 0;
 my $help = 0;
@@ -23,8 +24,8 @@ GetOptions (
 pod2usage(1) if $help;
 pod2usage(-exitstatus => 0, -verbose => 2) if $man;
 
-die "Which league: ?" unless $league;
-my $class = LoadFile "/home/$ENV{USER}/$league/league.yaml"
+$league ||= getcwd;
+my $class = LoadFile "$league/league.yaml"
 					or die "No league with this name: $!";
 my @members = sort { $a->{id} cmp $b->{id} } @{$class->{member}};
 my %ids = map { $_->{name} => $_->{id} } @members;
@@ -35,10 +36,10 @@ my $series = $class->{series};
 my @weeks;
 for my $session ( @$series )
 {
-	my $groups = LoadFile "/home/$ENV{USER}/$league/$session/groups.yaml";
+	my $groups = LoadFile "$league/$session/groups.yaml";
 	my @groups = keys %$groups;
 	my $payout = 80 * (keys %$groups) / $totalweeks;
-	my @files = glob("/home/$ENV{USER}/$league/$session/*.yaml");
+	my @files = glob("$league/$session/*.yaml");
 	for my $file ( @files )
 	{
 		next unless (my $week = $file) =~ s/^.*\/(\d+).yaml$/$1/;
@@ -126,9 +127,9 @@ REP->format_name($format_total[$totalweeks]);
 write REP;
 close REP;
 
-my $oldbeancount = LoadFile "/home/$ENV{USER}/$league/beans.yaml";
-DumpFile "/home/$ENV{USER}/$league/beans.yaml.bak", $oldbeancount;
-DumpFile "/home/$ENV{USER}/$league/beans.yaml", $beancount;
+my $oldbeancount = LoadFile "$league/beans.yaml";
+DumpFile "$league/beans.yaml.bak", $oldbeancount;
+DumpFile "$league/beans.yaml", $beancount;
 
 format TOP2 =
              $class->{league} Classwork
@@ -365,7 +366,7 @@ classwork -l m/j -w 14
 
 =item B<--help> This help message
 
-=item B<--league> The league to which the report belongs, a path from my home directory to the directory in which league.yaml exists.
+=item B<--league> The league to which the report belongs, a path from the present working directory to the directory in which league.yaml exists.
 
 =item B<--weeks> The number of weeks that class work was graded. To allow total expected/average score of 80, per student. (Is this necessary? Shouldn't the number of \d+.yaml files be equal to that number?)
 
