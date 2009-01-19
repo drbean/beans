@@ -15,10 +15,11 @@ use Cwd;
 
 my $man = 0;
 my $help = 0;
-my ($league);
+my ($league, $weights);
 
 GetOptions (
 	"league=s" => \$league, 
+	"weights=s" => \$weights,
 	'help|?' => \$help, man => \$man) or pod2usage(2);
 pod2usage(1) if $help;
 pod2usage(-exitstatus => 0, -verbose => 2) if $man;
@@ -36,6 +37,14 @@ my $hwdir = $class->{hw};
 my $hw = LoadFile "$hwdir/cumulative.yaml";
 my $examdirs = $class->{exams};
 my @exams = map { LoadFile "$league/$_/g.yaml" } @$examdirs;
+my $examMax = $class->{examMax};
+my @weights = $weights? split m/,|\s+/, $weights:
+			( $class->{weights}->{classwork},
+			$class->{weights}->{homework},
+			$class->{weights}->{exams} );
+my $total = sum @weights;
+die "No weighting, classwork=>20, homework=>20, exams=>60?" unless
+						$total == 10 || $total == 100;
 
 open REP, '>grades.tmp' or die 'grades.tmp? $!'; 
 my @format_top = qw/'' TOP1 TOP2 TOP3 TOP4/;
@@ -55,9 +64,7 @@ foreach my $member ( @members )
 	warn "$id: " . @examGrades . " exams" unless 
 				all { defined $_ } @examGrades;
 	my $examGrade = sum(@examGrades) / @examGrades ;
-	# our $grade = (min(100, $beans*15) + min(100,$homework*5/2) + $examGrades[0])/3;
-	# our $grade = $beans*2/10 + $homework*2/10 + $examGrade*(100/15)*6/10;
-	our $grade = $beans*2/10 + $homework*4/10 + $examGrade*(100/10)*4/10;
+	our $grade = ( $beans*$weights[0] + $homework*$weights[1] + $examGrade*(100/$examMax)*$weights[2] ) / $total;
 	warn "$id: classwork $beans, homework $homework, exams $examGrade"
 		unless ( defined $beans and defined $homework and 
 				defined $examGrade );
