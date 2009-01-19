@@ -32,7 +32,7 @@ my %names = map { $_->{id} => $_->{name} } @members;
 my @absentees = @{ $class->{absent} } if $class->{absent};
 my (@classScores, @groupscores, @indscores, @indwork, @totalwork, @averagework, @averagescore);
 my $series = $class->{series};
-my @totalweeks  = map { grep {s/^.*\/(\d+)\.yaml$/$1/} glob "$league/$_/*" }
+my @totalweeks  = map { grep m|^.*/\d+\.yaml$|, glob "$league/$_/*" }
 						@$series or die "No weeks\n";
 my @weeks;
 for my $session ( @$series )
@@ -41,9 +41,10 @@ for my $session ( @$series )
 	my @groups = keys %$groups;
 	my $payout = 80 * (keys %$groups) / @totalweeks;
 	my @files = glob("$league/$session/*.yaml");
-	for my $file ( @files )
+	for my $file ( @totalweeks )
 	{
-		next unless (my $week = $file) =~ s/^.*\/(\d+).yaml$/$1/;
+		next unless (my $week = $file) =~
+					s/^$league\/$session\/(\d+)\.yaml$/$1/;
 		push @weeks, $week;
 		die "2 records of Week $1 classwork."
 			if $classScores[$week];
