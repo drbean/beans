@@ -15,11 +15,10 @@ use Cwd;
 
 my $man = 0;
 my $help = 0;
-my ($league, $totalweeks);
+my ($league);
 
 GetOptions (
 	"league=s" => \$league, 
-	"weeks=s" => \$totalweeks, 
 	'help|?' => \$help, man => \$man) or pod2usage(2);
 pod2usage(1) if $help;
 pod2usage(-exitstatus => 0, -verbose => 2) if $man;
@@ -33,12 +32,14 @@ my %names = map { $_->{id} => $_->{name} } @members;
 my @absentees = @{ $class->{absent} } if $class->{absent};
 my (@classScores, @groupscores, @indscores, @indwork, @totalwork, @averagework, @averagescore);
 my $series = $class->{series};
+my @totalweeks  = map { grep {s/^.*\/(\d+)\.yaml$/$1/} glob "$league/$_/*" }
+						@$series or die "No weeks\n";
 my @weeks;
 for my $session ( @$series )
 {
 	my $groups = LoadFile "$league/$session/groups.yaml";
 	my @groups = keys %$groups;
-	my $payout = 80 * (keys %$groups) / $totalweeks;
+	my $payout = 80 * (keys %$groups) / @totalweeks;
 	my @files = glob("$league/$session/*.yaml");
 	for my $file ( @files )
 	{
@@ -90,8 +91,8 @@ my @format_total = qw/'' TOTAL1 TOTAL2 TOTAL3 TOTAL4 TOTAL5 TOTAL6 TOTAL7 TOTAL8
 
 # Name        ID          $romans[1] $romans[2] $romans[3] $romans[5] $romans[6] $romans[7] $romans[8] $romans[10] $romans[11]      Total Classwork
 
-REP->format_top_name($format_top[$totalweeks]);
-REP->format_name($formats[$totalweeks]);
+REP->format_top_name($format_top[@totalweeks]);
+REP->format_name($formats[@totalweeks]);
 
 my $beancount;
 
@@ -120,10 +121,10 @@ foreach my $member ( @members )
 
 # my @averagework = map { int($averagescore[$_]) . "(" . int($averagework[$_]) . ")" } @weeks;
 @averagework = map { floor $_ } @averagework;
-my $target = floor 80 * @weeks / $totalweeks;
+my $target = floor 80 * @weeks / @totalweeks;
 
 print REP "\n";
-REP->format_name($format_total[$totalweeks]);
+REP->format_name($format_total[@totalweeks]);
 write REP;
 close REP;
 
