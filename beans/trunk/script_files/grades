@@ -7,6 +7,7 @@ use List::Util qw/sum min max/;
 use List::MoreUtils qw/all/;
 use YAML qw/LoadFile/;
 use IO::All;
+use IO::Handle;
 
 use Getopt::Long;
 use Pod::Usage;
@@ -27,56 +28,89 @@ my $class = LoadFile "/home/$ENV{USER}/$league/league.yaml"
 my @members = sort { $a->{id} cmp $b->{id} } @{$class->{member}};
 my %ids = map { $_->{name} => $_->{id} } @members;
 my %names = map { $_->{id} => $_->{name} } @members;
-my $beans = LoadFile "/home/$ENV{USER}/$league/beans.yaml";
+my $beancount = LoadFile "/home/$ENV{USER}/$league/beans.yaml";
 my $hwfiles = $class->{hw};
 my $hw = LoadFile "$hwfiles/cumulative.yaml";
 my $examfiles = $class->{exams};
 my @exams = map { LoadFile "/home/$ENV{USER}/$league/$_/g.yaml" } @$examfiles;
 
 open REP, '>grades.tmp' or die 'grades.tmp? $!'; 
-format REP_TOP = 
-                          Grades
-                                               Exams
-Name        ID      Classwork    Homework  I  Final  Total???
-#                                               Exams
-#Name        ID      Beans    Homework      I  II  III  Final  Total???
-#                                           Exams
-# Name        ID      Beans/5    Homework   I    II   III   Total
--------------------------------------------------------------------------
-.
-
+my @format_top = qw/'' TOP1 TOP2 TOP3 TOP4/;
+my @formats = qw/'' EXAM1 EXAM2 EXAM3 EXAM4/;
+REP->format_top_name($format_top[@exams]);
+REP->format_name($formats[@exams]);
 foreach my $member ( @members ) 
 {
-	my $id = $member->{id};
-	my $name = $member->{name};
-	my $homework = min 100, $hw->{$id} || 0;
-	my $beans = min 100, $beans->{$name} || 0;
+	our $id = $member->{id};
+	our $name = $member->{name};
+	our $homework = min 100, $hw->{$id} || 0;
+	our $beans = min 100, $beancount->{$name} || 0;
 	# my $beans = $beans->{$name} || 0;
 	# my @examGrades = map { max 0, $exams[$_]->{$id}*5/6 } 0..$#exams;
 	# my $grade = $beans/5 + $homework + sum @examGrades;
-	my @examGrades = map { max 0, $exams[$_]->{$id} } 0..$#exams;
+	our @examGrades = map { max 0, $exams[$_]->{$id} } 0..$#exams;
 	warn "$id: " . @examGrades . " exams" unless 
 				all { defined $_ } @examGrades;
 	my $examGrade = sum(@examGrades) / @examGrades ;
-	# my $grade = (min(100, $beans*15) + min(100,$homework*5/2) + $examGrades[0])/3;
-	my $grade = $beans*2/10 + $homework*2/10 + $examGrade*24/10;
+	# our $grade = (min(100, $beans*15) + min(100,$homework*5/2) + $examGrades[0])/3;
+	# our $grade = (min(100, $beans*15) + min(100,$homework*5/2) + $examGrades[0])/3;
+	our $grade = $beans*2/10 + $homework*2/10 + $examGrade*(100/15)*6/10;
+	# our $grade = (min(100, $beans*15) + min(100,$homework*5/2) + $examGrades[0])/3;
 	warn "$id: classwork $beans, homework $homework, exams $examGrade"
 		unless ( defined $beans and defined $homework and 
 				defined $examGrade );
 
-# @<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<<<<   @<< @<< @<<  @<   @<
-# @<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<<<<   @<<   @<
-
-	format REP =
-@<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<<<<   @<<  @<<
-$name,      $id,        $beans,  $homework, @examGrades, $grade
-.
 	write REP;
 }
 
 close REP;
 
+format TOP1 = 
+                          Grades
+                                               Exams
+Name        ID      Classwork    Homework  I             Total???
+-------------------------------------------------------------------------
+.
+format TOP2 = 
+                          Grades
+                                               Exams
+Name        ID      Classwork    Homework  I  II         Total???
+-------------------------------------------------------------------------
+.
+format TOP3 = 
+                          Grades
+                                           Exams
+Name        ID      Beans/5    Homework   I    II   III   Total???
+-------------------------------------------------------------------------
+.
+format TOP4 =
+                          Grades
+                                               Exams
+Name        ID      Beans    Homework      I  II  III  Final  Total
+-------------------------------------------------------------------------
+.
+our ($name, $id, $beans, $homework, @examGrades, $grade);
+format EXAM1 =
+@<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<<<<   @<<          @<<
+$name,      $id,        $beans,  $homework, @examGrades, $grade
+.
+format EXAM2 =
+@<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<<<<   @<<  @<<       @<<
+$name,      $id,        $beans,  $homework, @examGrades, $grade
+.
+format EXAM3 =
+@<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<<<<   @<<  @<<  @<<    @<<
+$name,      $id,        $beans,  $homework, @examGrades, $grade
+.
+format EXAM4 =
+@<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<<<<   @<<  @<<  @<<  @<<    @<<
+$name,      $id,        $beans,  $homework, @examGrades, $grade
+.
 __DATA__
+
+# @<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<<<<   @<< @<< @<<  @<   @<
+# @<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<<<<   @<<   @<
+
 
 my $finalexam = LoadFile "/home/$ENV{USER}/$league/f/gf.yaml";
 open FINAL, '>>grades.tmp' or die 'grades.tmp? $!'; 
