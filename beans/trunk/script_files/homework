@@ -21,6 +21,14 @@ sub _build_yaml {
 		my $league = $instance->league;
 		LoadFile "$league/league.yaml"
 }
+
+has 'name' => (is => 'ro', isa => 'Str', lazy_build => 1);
+sub _build_name {
+	my $self = shift;
+	my $data = $self->yaml;
+	$data->{league};
+}
+
 has 'hwdir' => (is => 'ro', isa => 'Str', lazy_build => 1);
 sub _build_hwdir {
 	my $self = shift;
@@ -40,8 +48,7 @@ sub _build_hw {
 	my $self = shift;
 	my $hwdir = $self->hwdir;
 	my $rounds = $self->rounds;
-	my %hw = map { $_ => LoadFile "$hwdir/$_.yaml" } @$rounds;
-	\%hw;
+	+{ map { $_ => LoadFile "$hwdir/$_.yaml" } @$rounds };
 }
 has 'hwMax' => (is => 'ro', isa => 'Int', lazy => 1, default =>
 				sub { shift->yaml->{hwMax} } );
@@ -101,65 +108,62 @@ use IO::Handle;
 use Cwd;
 use Pod::Usage;
 
-my $script = Script->new_with_options( league => getcwd );
-pod2usage(1) if $script->help;
-pod2usage(-exitstatus => 0, -verbose => 2) if $script->man;
-my $league = $script->league;
-my $class = League->new( league => $league ) or die "No $league league: $!";
+run() unless caller;
 
-my $hwMax = $class->hwMax;
-my $rounds = $class->rounds;
-my $totalMax = @$rounds * $hwMax;
-
-my $oldtotal = $class->totalScores;
-my $oldpercent = $class->totalPercent;
-my ($newtotal, $newpercent);
-
-#format STDOUT_TOP = 
-#                            Homework
-#Name        ID          Weeks                 Total HomeWork Grade
-#-------------------------------------------------------------------------
-#.
-
-my @formats = qw/'' WEEKS1 WEEKS2 WEEKS3 WEEKS4 WEEKS5 WEEKS6 WEEKS7 WEEKS8 WEEKS9 WEEKS10 WEEKS11 WEEKS12 WEEKS13/;
-REP->format_name($formats[@$rounds]);
-open REP, '>-' or die 'STDOUT? $!'; 
-# my @romans = qw/'' I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII/;
-my @romans = qw/'' 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18/;
-
-local $,=', ';
-print REP
-"             $class->league Homework
-                    Weeks: Grade(0-$hwMax)/$hwMax
+sub run {
+	my $script = Script->new_with_options( league => getcwd );
+	pod2usage(1) if $script->help;
+	pod2usage(-exitstatus => 0, -verbose => 2) if $script->man;
+	my $league = $script->league;
+	my $class = League->new( league => $league ) or
+		die "No $league league: $!";
+	my $hwMax = $class->hwMax;
+	my $rounds = $class->rounds;
+	my $totalMax = @$rounds * $hwMax;
+	my $oldtotal = $class->totalScores;
+	my $oldpercent = $class->totalPercent;
+	my ($newtotal, $newpercent);
+	my @formats = qw/'' WEEKS1 WEEKS2 WEEKS3 WEEKS4 WEEKS5 WEEKS6 WEEKS7
+		WEEKS8 WEEKS9 WEEKS10 WEEKS11 WEEKS12 WEEKS13/;
+	REP->format_name($formats[@$rounds]);
+	open REP, '>-' or die 'STDOUT? $!'; 
+	my $name = $class->name;
+	my @romans = qw/'' 01 02 03 04 05 06 07
+		08 09 10 11 12 13 14 15 16 17 18/;
+	local $,=', ';
+	print REP
+"             $name Homework
+		    Weeks: Grade(0-$hwMax)/$hwMax
 Name        ID  @romans[@$rounds]   Total/$totalMax Grade/100
 -------------------------------------------------------------------------
 ";
-my $members = $class->members;
-foreach my $member ( @$members ) 
-{
-	our $id = $member->id;
-	our $name = $member->name;
-	# our $indgrades = [ (2) x @$rounds ];
-	our @indgrades = @{ $member->grades };
-	@indgrades = map { $_ == 0.5? substr $_, 1: $_ } @indgrades;
-	die "No homework grade for $name $id" if grep {not defined} @indgrades;
-	our $grade = sum @indgrades;
-	our $percent = 100 * $grade / $totalMax;
-	$newtotal->{$id} = $grade;
-	$newpercent->{$id} = $percent;
-	write REP;
-	# $grades->{$partner} = $newGrade;
-} 
-
-
-my $hwdir = $class->hwdir;
-my $log = io "$hwdir/hwtotal.log";
-localtime() . ": $0 run to calculate homework totals at round $rounds->[-1].\n"
-									>> $log;
-$class->save("$hwdir/total.yaml.bak", $oldtotal);
-$class->save("$hwdir/total.yaml", $newtotal);
-$class->save("$hwdir/percent.yaml.bak", $oldpercent);
-$class->save("$hwdir/percent.yaml", $newpercent);
+	my $members = $class->members;
+	foreach my $member ( @$members ) 
+	{
+		our $id = $member->id;
+		our $name = $member->name;
+		# our $indgrades = [ (2) x @$rounds ];
+		our @indgrades = @{ $member->grades };
+		@indgrades = map { $_ == 0.5? substr $_, 1: $_ } @indgrades;
+		die "No homework grade for $name $id" if grep {not defined} @indgrades;
+		our $grade = sum @indgrades;
+		our $percent = 100 * $grade / $totalMax;
+		$newtotal->{$id} = $grade;
+		$newpercent->{$id} = $percent;
+		write REP;
+		# $grades->{$partner} = $newGrade;
+	} 
+	
+	
+	my $hwdir = $class->hwdir;
+	my $log = io "$hwdir/hwtotal.log";
+	localtime() . ": $0 run to calculate homework totals at round $rounds->[-1].\n"
+										>> $log;
+	$class->save("$hwdir/total.yaml.bak", $oldtotal);
+	$class->save("$hwdir/total.yaml", $newtotal);
+	$class->save("$hwdir/percent.yaml.bak", $oldpercent);
+	$class->save("$hwdir/percent.yaml", $newpercent);
+}
 
 our ($name, $id, @indgrades, $grade, $percent);
 format WEEKS1 =
@@ -218,6 +222,9 @@ format WEEKS14 =
 @<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
 $name,  $id,	@indgrades, $grade, $percent
 .
+
+1;
+
 __END__
 
 =head1 NAME
