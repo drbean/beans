@@ -1,56 +1,112 @@
 #!/usr/bin/perl
 
-use strict;
-use warnings;
-
-package Homework;
+package Script;
 use Moose;
-
 with 'MooseX::Getopt';
 
-has 'man' => (is => 'rw', isa => 'Bool');
-has 'help' => (is => 'rw', isa => 'Bool');
-has 'league' => (traits => ['Getopt'], is => 'rw', isa => 'Str',
+has 'man' => (is => 'ro', isa => 'Bool');
+has 'help' => (is => 'ro', isa => 'Bool');
+has 'league' => (traits => ['Getopt'], is => 'ro', isa => 'Str',
 		cmd_aliases => 'l',);
+
+package League;
+use Moose;
+use YAML qw/LoadFile DumpFile/;
+
+extends 'Script';
+
+has 'yaml' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+sub _build_yaml {
+		my ($instance) = @_;
+		my $league = $instance->league;
+		LoadFile "$league/league.yaml"
+}
+has 'hwdir' => (is => 'ro', isa => 'Str', lazy_build => 1);
+sub _build_hwdir {
+	my $self = shift;
+	my $league = $self->league;
+	my $data = $self->yaml;
+	my $hwdir = $data->{hw} || "$league/homework"
+}
+has 'rounds' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
+sub _build_rounds {
+	my $self = shift;
+	my $hwdir = $self->hwdir;
+	my @hw = glob "$hwdir/*.yaml";
+	[ sort {$a<=>$b} map m/^$hwdir\/(\d+)\.yaml$/, @hw ];
+}
+has 'hw' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+sub _build_hw {
+	my $self = shift;
+	my $hwdir = $self->hwdir;
+	my $rounds = $self->rounds;
+	map { $_ => LoadFile "$hwdir/$_.yaml" } @$rounds;
+}
+has 'hwMax' => (is => 'ro', isa => 'Int', lazy => 1, default =>
+				sub { shift->yaml->{hwMax} } );
+has 'totalScores' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+sub _build_totalScores {
+	my $self = shift;
+	my $hwdir = $self->hwdir;
+	LoadFile "$hwdir/total.yaml";
+}
+has 'totalPercent' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+sub _build_totalPercent {
+	my $self = shift;
+	my $hwdir = $self->hwdir;
+	LoadFile "$hwdir/percent.yaml";
+}
+has 'members' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
+sub _build_members {
+	my $self = shift;
+	my $data = $self->yaml;
+	my @members = sort { $a->{id} cmp $b->{id} } @{$data->{member}};
+	# [ map { Player->new(id=>$_->{id},name=>$_->{name},grades=>$_->{grades})
+	[ map { Player->new(id=>$_->{id},name=>$_->{name})
+			} @members ];
+	# $data->{member};
+}
+
+package Player;
+use Moose;
+extends 'League';
+
+has 'id' => (is => 'ro', isa => 'Str');
+has 'name' => (is => 'ro', isa => 'Str');
+has 'Chinese' => (is => 'ro', isa => 'Str');
+has 'grades' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+sub _build_grades {
+	my $self = shift;
+	my $id = $self->id;
+	my $hw = $self->hw;
+	my $rounds = $self->rounds;
+	[ map { $_ => $hw->{$_}->{$id} } @$rounds ];
+}
 
 package main;
 
+use strict;
+use warnings;
+
 use List::Util qw/sum/;
-use YAML qw/LoadFile DumpFile/;
 use IO::All;
 use IO::Handle;
 use Cwd;
 use Pod::Usage;
 
-my $script = Homework->new_with_options( league => getcwd );
+my $script = Script->new_with_options( league => getcwd );
 pod2usage(1) if $script->help;
 pod2usage(-exitstatus => 0, -verbose => 2) if $script->man;
 my $league = $script->league;
-my $class = LoadFile "$league/league.yaml"
-					or die "No league with this name: $!";
-my @sessions = @{$class->{series}};
-my @members = sort { $a->{id} cmp $b->{id} } @{$class->{member}};
-my %ids = map { $_->{name} => $_->{id} } @members;
-my %names = map { $_->{id} => $_->{name} } @members;
-my @ids = values %ids;
-my @names = values %names;
-my $names = join '|', @names;
-my $nameqr = qr/$names/;
+my $class = League->new( league => $league ) or die "No $league league: $!";
+my $members = $class->members;
 
-my $hwdir = $class->{hw} || "$league/homework";
-my @hwfiles = glob "$hwdir/*.yaml";
-my @rounds = map { m/^$hwdir\/(\d+)\.yaml$/ } @hwfiles;
-@rounds = sort {$a<=>$b} @rounds;
-my $hwMax = $class->{hwMax};
-my $totalMax = @rounds * $hwMax;
-my %hw = map { $_ => LoadFile "$hwdir/$_.yaml" } @rounds;
+my $hwMax = $class->hwMax;
+my $rounds = $class->rounds;
+my $totalMax = @$rounds * $hwMax;
 
-my %grades = map { 	my $id = $_;
-			$id => [ map { $hw{$_}{$id} } @rounds ]
-			} @ids;
-
-my $oldtotal = LoadFile "$hwdir/total.yaml";
-my $oldpercent = LoadFile "$hwdir/percent.yaml";
+my $oldtotal = $class->totalScores;
+my $oldpercent = $class->totalPercent;
 my ($newtotal, $newpercent);
 
 #format STDOUT_TOP = 
@@ -60,23 +116,24 @@ my ($newtotal, $newpercent);
 #.
 
 my @formats = qw/'' WEEKS1 WEEKS2 WEEKS3 WEEKS4 WEEKS5 WEEKS6 WEEKS7 WEEKS8 WEEKS9 WEEKS10 WEEKS11 WEEKS12 WEEKS13/;
-REP->format_name($formats[@rounds]);
+REP->format_name($formats[@$rounds]);
 open REP, '>-' or die 'STDOUT? $!'; 
 # my @romans = qw/'' I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII/;
 my @romans = qw/'' 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18/;
 
 local $,=', ';
 print REP
-"             $class->{league} Homework
-                    Weeks: Grade(0-$hwMax)/100
-Name        ID  @romans[@rounds]   Total/$totalMax Grade/100
+"             $class->league Homework
+                    Weeks: Grade(0-$hwMax)/$hwMax
+Name        ID  @romans[@$rounds]   Total/$totalMax Grade/100
 -------------------------------------------------------------------------
 ";
-foreach my $member ( @members ) 
+foreach my $member ( @$members ) 
 {
-	our $id = $member->{id};
-	our $name = $names{$id};
-	our @indgrades = @{$grades{$id}};
+	our $id = $member->id;
+	our $name = $member->name;
+	# our $indgrades = [ (2) x @$rounds ];
+	our @indgrades = @{ $member->grades };
 	@indgrades = map { $_ == 0.5? substr $_, 1: $_ } @indgrades;
 	die "No homework grade for $name $id" if grep {not defined} @indgrades;
 	our $grade = sum @indgrades;
@@ -88,8 +145,9 @@ foreach my $member ( @members )
 } 
 
 
+my $hwdir = $class->hwdir;
 my $log = io "$hwdir/hwtotal.log";
-localtime() . ": $0 run to calculate homework totals at round $rounds[-1].\n"
+localtime() . ": $0 run to calculate homework totals at round $rounds->[-1].\n"
 									>> $log;
 DumpFile ("$hwdir/total.yaml.bak", $oldtotal);
 DumpFile ("$hwdir/total.yaml", $newtotal);
@@ -140,7 +198,7 @@ $name,  $id,	@indgrades, $grade, $percent
 format WEEKS11 =
 @<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
 $name,  $id,	@indgrades, $grade, $percent
-.
+$.
 format WEEKS12 =
 @<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
 $name,  $id,	@indgrades, $grade, $percent
