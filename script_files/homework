@@ -34,18 +34,20 @@ my @names = values %names;
 my $names = join '|', @names;
 my $nameqr = qr/$names/;
 
-my $hwdir = $class->{hw} || "/home/$ENV{USER}/$league/homework";
+my $hwdir = $class->{hw} || "$league/homework";
 my @hwfiles = glob "$hwdir/*.yaml";
 my @rounds = map { m/^$hwdir\/(\d+)\.yaml$/ } @hwfiles;
 @rounds = sort {$a<=>$b} @rounds;
+my $hwMax = $class->{hwMax};
 my %hw = map { $_ => LoadFile "$hwdir/$_.yaml" } @rounds;
 
 my %grades = map { 	my $id = $_;
 			$id => [ map { $hw{$_}{$id} } @rounds ]
 			} @ids;
 
-my $oldtotal = LoadFile "$hwdir/cumulative.yaml";
-my $newtotal;
+my $oldtotal = LoadFile "$hwdir/total.yaml";
+my $oldpercent = LoadFile "$hwdir/percent.yaml";
+my ($newtotal, $newpercent);
 
 #format STDOUT_TOP = 
 #                            Homework
@@ -57,10 +59,11 @@ open REP, '>-' or die 'STDOUT? $!';
 # my @romans = qw/'' I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII/;
 my @romans = qw/'' 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18/;
 
+local $,=', ';
 print REP
 "             $class->{league} Homework
-                    Weeks: Grade(0, 0,5, 1)
-Name        ID  @romans[@rounds]       Total Homework
+                    Weeks: Grade(0-$hwMax)/100
+Name        ID  @romans[@rounds]   Total Homework Grade/100
 -------------------------------------------------------------------------
 ";
 foreach my $id ( sort values %ids ) 
@@ -70,11 +73,13 @@ foreach my $id ( sort values %ids )
 	@indgrades = map { $_ == 0.5? substr $_, 1: $_ } @indgrades;
 	die "No homework grade for $name $id" if grep {not defined} @indgrades;
 	my $grade = sum @indgrades;
+	my $percent = 100 * $grade / ($hwMax * @rounds);
 	$newtotal->{$id} = $grade;
+	$newpercent->{$id} = $percent;
 	no warnings;
 	format STDOUT =
-@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<
-$name,   $id,	@indgrades, $grade
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<<<<
+$name,   $id,	@indgrades, $grade, $percent
 .
 	write;
 	use warnings;
@@ -85,8 +90,10 @@ $name,   $id,	@indgrades, $grade
 my $log = io "$hwdir/hwtotal.log";
 localtime() . ": $0 run to calculate homework totals at round $rounds[-1].\n"
 									>> $log;
-DumpFile ("$hwdir/cumulative.yaml.bak", $oldtotal);
-DumpFile ("$hwdir/cumulative.yaml", $newtotal);
+DumpFile ("$hwdir/total.yaml.bak", $oldtotal);
+DumpFile ("$hwdir/total.yaml", $newtotal);
+DumpFile ("$hwdir/percent.yaml.bak", $oldtotal);
+DumpFile ("$hwdir/percent.yaml", $newtotal);
 
 __END__
 
