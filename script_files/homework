@@ -40,7 +40,8 @@ sub _build_hw {
 	my $self = shift;
 	my $hwdir = $self->hwdir;
 	my $rounds = $self->rounds;
-	map { $_ => LoadFile "$hwdir/$_.yaml" } @$rounds;
+	my %hw = map { $_ => LoadFile "$hwdir/$_.yaml" } @$rounds;
+	\%hw;
 }
 has 'hwMax' => (is => 'ro', isa => 'Int', lazy => 1, default =>
 				sub { shift->yaml->{hwMax} } );
@@ -61,11 +62,17 @@ sub _build_members {
 	my $self = shift;
 	my $data = $self->yaml;
 	my @members = sort { $a->{id} cmp $b->{id} } @{$data->{member}};
-	# [ map { Player->new(id=>$_->{id},name=>$_->{name},grades=>$_->{grades})
-	[ map { Player->new(id=>$_->{id},name=>$_->{name})
+	[ map { Player->new(league => $self->league, id=>$_->{id},name=>$_->{name})
 			} @members ];
 	# $data->{member};
 }
+
+sub save {
+	my $self = shift;
+	DumpFile shift(), shift();
+}
+	
+
 
 package Player;
 use Moose;
@@ -74,13 +81,13 @@ extends 'League';
 has 'id' => (is => 'ro', isa => 'Str');
 has 'name' => (is => 'ro', isa => 'Str');
 has 'Chinese' => (is => 'ro', isa => 'Str');
-has 'grades' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+has 'grades' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
 sub _build_grades {
 	my $self = shift;
 	my $id = $self->id;
 	my $hw = $self->hw;
 	my $rounds = $self->rounds;
-	[ map { $_ => $hw->{$_}->{$id} } @$rounds ];
+	[ map { $hw->{$_}->{$id} } @$rounds ];
 }
 
 package main;
@@ -99,7 +106,6 @@ pod2usage(1) if $script->help;
 pod2usage(-exitstatus => 0, -verbose => 2) if $script->man;
 my $league = $script->league;
 my $class = League->new( league => $league ) or die "No $league league: $!";
-my $members = $class->members;
 
 my $hwMax = $class->hwMax;
 my $rounds = $class->rounds;
@@ -128,6 +134,7 @@ print REP
 Name        ID  @romans[@$rounds]   Total/$totalMax Grade/100
 -------------------------------------------------------------------------
 ";
+my $members = $class->members;
 foreach my $member ( @$members ) 
 {
 	our $id = $member->id;
@@ -149,10 +156,10 @@ my $hwdir = $class->hwdir;
 my $log = io "$hwdir/hwtotal.log";
 localtime() . ": $0 run to calculate homework totals at round $rounds->[-1].\n"
 									>> $log;
-DumpFile ("$hwdir/total.yaml.bak", $oldtotal);
-DumpFile ("$hwdir/total.yaml", $newtotal);
-DumpFile ("$hwdir/percent.yaml.bak", $oldtotal);
-DumpFile ("$hwdir/percent.yaml", $newtotal);
+$class->save("$hwdir/total.yaml.bak", $oldtotal);
+$class->save("$hwdir/total.yaml", $newtotal);
+$class->save("$hwdir/percent.yaml.bak", $oldpercent);
+$class->save("$hwdir/percent.yaml", $newpercent);
 
 our ($name, $id, @indgrades, $grade, $percent);
 format WEEKS1 =
@@ -198,7 +205,7 @@ $name,  $id,	@indgrades, $grade, $percent
 format WEEKS11 =
 @<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
 $name,  $id,	@indgrades, $grade, $percent
-$.
+.
 format WEEKS12 =
 @<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
 $name,  $id,	@indgrades, $grade, $percent
