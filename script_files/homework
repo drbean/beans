@@ -10,6 +10,7 @@ use List::Util qw/sum/;
 
 use Getopt::Long;
 use Pod::Usage;
+use Cwd;
 
 my $man = 0;
 my $help = 0;
@@ -21,8 +22,8 @@ GetOptions (
 pod2usage(1) if $help;
 pod2usage(-exitstatus => 0, -verbose => 2) if $man;
 
-die "League: ?" unless $league;
-my $class = LoadFile "/home/$ENV{USER}/$league/league.yaml"
+$league ||= getcwd;
+my $class = LoadFile "$league/league.yaml"
 					or die "No league with this name: $!";
 my @sessions = @{$class->{series}};
 my @members = @{$class->{member}};
