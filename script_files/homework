@@ -8,10 +8,13 @@ has 'man' => (is => 'ro', isa => 'Bool');
 has 'help' => (is => 'ro', isa => 'Bool');
 has 'league' => (traits => ['Getopt'], is => 'ro', isa => 'Str',
 		cmd_aliases => 'l',);
+has 'player' => (traits => ['Getopt'], is => 'ro', isa => 'Str',
+		cmd_aliases => 'p',);
 
 package League;
 use Moose;
 use YAML qw/LoadFile DumpFile/;
+use List::MoreUtils qw/firstval/;
 
 extends 'Script';
 
@@ -72,6 +75,15 @@ sub _build_members {
 	[ map { Player->new(league => $self->league, id=>$_->{id},name=>$_->{name})
 			} @members ];
 	# $data->{member};
+}
+
+sub member {
+	my $self = shift;
+	my $id = shift;
+	my $data = $self->yaml;
+	my $member = firstval { $_->{id} eq $id } @{$data->{member}};
+	Player->new( league => $self->league, id => $id,
+				name => $member->{name} );
 }
 
 sub save {
@@ -137,7 +149,8 @@ sub run {
 Name        ID  @romans[@$rounds]   Total/$totalMax Grade/100
 -------------------------------------------------------------------------
 ";
-	my $members = $class->members;
+	my $members = [ $class->member( $script->player ) ];
+	$members ||= $class->members;
 	foreach my $member ( @$members ) 
 	{
 		our $id = $member->id;
