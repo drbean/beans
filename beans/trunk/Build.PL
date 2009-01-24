@@ -12,7 +12,7 @@ my $builder = Module::Build->new(
     },
     add_to_cleanup      => [ 'Bean-Counter-*' ],
     script_files	=>  [qw[script_files/beans script_files/hwtotal
-    				script_files/cumulative
+    				script_files/homework
     				script_files/classwork
     				script_files/checkbeans
 				script_files/grades script_files/id2name]],
