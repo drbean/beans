@@ -3,26 +3,29 @@
 use strict;
 use warnings;
 
+package Homework;
+use Moose;
+
+with 'MooseX::Getopt';
+
+has 'man' => (is => 'rw', isa => 'Bool');
+has 'help' => (is => 'rw', isa => 'Bool');
+has 'league' => (traits => ['Getopt'], is => 'rw', isa => 'Str',
+		cmd_aliases => 'l',);
+
+package main;
+
 use List::Util qw/sum/;
 use YAML qw/LoadFile DumpFile/;
 use IO::All;
 use IO::Handle;
-
-use Getopt::Long;
-use Pod::Usage;
 use Cwd;
+use Pod::Usage;
 
-my $man = 0;
-my $help = 0;
-my ($league );
-
-GetOptions (
-	"league=s" => \$league,
-	'help|?' => \$help, man => \$man) or pod2usage(2);
-pod2usage(1) if $help;
-pod2usage(-exitstatus => 0, -verbose => 2) if $man;
-
-$league ||= getcwd;
+my $script = Homework->new_with_options( league => getcwd );
+pod2usage(1) if $script->help;
+pod2usage(-exitstatus => 0, -verbose => 2) if $script->man;
+my $league = $script->league;
 my $class = LoadFile "$league/league.yaml"
 					or die "No league with this name: $!";
 my @sessions = @{$class->{series}};
