@@ -14,7 +14,7 @@ has 'player' => (traits => ['Getopt'], is => 'ro', isa => 'Str',
 package League;
 use Moose;
 use YAML qw/LoadFile DumpFile/;
-use List::MoreUtils qw/firstval/;
+use List::MoreUtils qw/any/;
 
 extends 'Script';
 
@@ -72,18 +72,16 @@ sub _build_members {
 	my $self = shift;
 	my $data = $self->yaml;
 	my @members = sort { $a->{id} cmp $b->{id} } @{$data->{member}};
-	[ map { Player->new(league => $self->league, id=>$_->{id},name=>$_->{name})
+	[ map { Player->new(league => $self, id=>$_->{id},name=>$_->{name})
 			} @members ];
 	# $data->{member};
 }
 
-sub member {
+sub is_member {
 	my $self = shift;
 	my $id = shift;
 	my $data = $self->yaml;
-	my $member = firstval { $_->{id} eq $id } @{$data->{member}};
-	Player->new( league => $self->league, id => $id,
-				name => $member->{name} );
+	any { $_->{id} eq $id } @{$data->{member}};
 }
 
 sub save {
@@ -96,9 +94,18 @@ sub save {
 package Player;
 use Moose;
 extends 'League';
+use List::MoreUtils qw/firstval/;
 
-has 'id' => (is => 'ro', isa => 'Str');
-has 'name' => (is => 'ro', isa => 'Str');
+has 'league' => (is => 'ro', isa => 'League', required => 1);
+has 'id' => (is => 'ro', isa => 'Str', required => 1);
+has 'name' => (is => 'ro', isa => 'Str', lazy_build => 1);
+sub _build_name {
+	my $self = shift;
+	my $league = $self->league;
+	my $id = $self->id;
+	my $members = $league->members;
+	my $name = firstval { $_->id eq $id and $_->name } @$members;
+}
 has 'Chinese' => (is => 'ro', isa => 'Str');
 has 'grades' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
 sub _build_grades {
@@ -126,20 +133,20 @@ sub run {
 	my $script = Script->new_with_options( league => getcwd );
 	pod2usage(1) if $script->help;
 	pod2usage(-exitstatus => 0, -verbose => 2) if $script->man;
-	my $league = $script->league;
-	my $class = League->new( league => $league ) or
-		die "No $league league: $!";
-	my $hwMax = $class->hwMax;
-	my $rounds = $class->rounds;
+	my $leagueId = $script->league;
+	my $league = League->new( league => $leagueId ) or
+		die "No $leagueId league: $!";
+	my $hwMax = $league->hwMax;
+	my $rounds = $league->rounds;
 	my $totalMax = @$rounds * $hwMax;
-	my $oldtotal = $class->totalScores;
-	my $oldpercent = $class->totalPercent;
+	my $oldtotal = $league->totalScores;
+	my $oldpercent = $league->totalPercent;
 	my ($newtotal, $newpercent);
 	my @formats = qw/'' WEEKS1 WEEKS2 WEEKS3 WEEKS4 WEEKS5 WEEKS6 WEEKS7
 		WEEKS8 WEEKS9 WEEKS10 WEEKS11 WEEKS12 WEEKS13/;
 	REP->format_name($formats[@$rounds]);
 	open REP, '>-' or die 'STDOUT? $!'; 
-	my $name = $class->name;
+	my $name = $league->name;
 	my @romans = qw/'' 01 02 03 04 05 06 07
 		08 09 10 11 12 13 14 15 16 17 18/;
 	local $,=', ';
@@ -149,8 +156,9 @@ sub run {
 Name        ID  @romans[@$rounds]   Total/$totalMax Grade/100
 -------------------------------------------------------------------------
 ";
-	my $members = [ $class->member( $script->player ) ];
-	$members ||= $class->members;
+	my $members = $league->is_member( $script->player )? 
+		[ Player->new( id => $script->player, league => $league ) ]:
+		$league->members;
 	foreach my $member ( @$members ) 
 	{
 		our $id = $member->id;
@@ -168,14 +176,14 @@ Name        ID  @romans[@$rounds]   Total/$totalMax Grade/100
 	} 
 	
 	
-	my $hwdir = $class->hwdir;
+	my $hwdir = $league->hwdir;
 	my $log = io "$hwdir/hwtotal.log";
 	localtime() . ": $0 run to calculate homework totals at round $rounds->[-1].\n"
 										>> $log;
-	$class->save("$hwdir/total.yaml.bak", $oldtotal);
-	$class->save("$hwdir/total.yaml", $newtotal);
-	$class->save("$hwdir/percent.yaml.bak", $oldpercent);
-	$class->save("$hwdir/percent.yaml", $newpercent);
+	$league->save("$hwdir/total.yaml.bak", $oldtotal);
+	$league->save("$hwdir/total.yaml", $newtotal);
+	$league->save("$hwdir/percent.yaml.bak", $oldpercent);
+	$league->save("$hwdir/percent.yaml", $newpercent);
 }
 
 our ($name, $id, @indgrades, $grade, $percent);
