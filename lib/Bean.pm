@@ -14,8 +14,6 @@ use Moose;
 use YAML qw/LoadFile DumpFile/;
 use List::MoreUtils qw/any/;
 
-# extends 'Script';
-
 has 'leagueId' => (is => 'ro', isa => 'Str', required => 1);
 has 'yaml' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 sub _build_yaml {
@@ -99,7 +97,6 @@ sub save {
 
 package Player;
 use Moose;
-# extends 'League';
 use List::MoreUtils qw/firstval/;
 use List::Util qw/sum/;
 use POSIX;
