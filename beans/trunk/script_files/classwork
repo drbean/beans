@@ -5,44 +5,29 @@ use warnings;
 
 use List::Util qw/sum min max/;
 use POSIX;
-use YAML qw/LoadFile DumpFile/;
 use IO::All;
 use IO::Handle;
 
-use Getopt::Long;
 use Pod::Usage;
 use Cwd;
 
-my $man = 0;
-my $help = 0;
-my ($league);
+run() unless caller;
 
-GetOptions (
-	"league=s" => \$league, 
-	'help|?' => \$help, man => \$man) or pod2usage(2);
-pod2usage(1) if $help;
-pod2usage(-exitstatus => 0, -verbose => 2) if $man;
-
-$league ||= getcwd;
-my $class = LoadFile "$league/league.yaml"
-					or die "No league with this name: $!";
-my @members = sort { $a->{id} cmp $b->{id} } @{$class->{member}};
-my %ids = map { $_->{name} => $_->{id} } @members;
-my %names = map { $_->{id} => $_->{name} } @members;
-my @absentees = @{ $class->{absent} } if $class->{absent};
-my (@classScores, @groupscores, @indscores, @indwork, @totalwork, @averagework, @averagescore);
-my $series = $class->{series};
-my @totalweeks  = map { grep m|^.*/\d+\.yaml$|, glob "$league/$_/*" }
-						@$series or die "No weeks\n";
-my @weeks;
-for my $session ( @$series )
-{
-	my $groups = LoadFile "$league/$session/groups.yaml";
-	my @groups = keys %$groups;
-	my $payout = 80 * (keys %$groups) / @totalweeks;
-	my @files = glob("$league/$session/*.yaml");
-	for my $file ( @totalweeks )
+sub run {
+	my $script = Script->new_with_options( league => getcwd );
+	pod2usage(1) if $script->help;
+	pod2usage(-exitstatus => 0, -verbose => 2) if $script->man;
+	my $leagueId = $script->league;
+	my $league = Classwork->new( leagueId => $leagueId ) or
+		die "No $leagueId league: $!";
+	my $series = $league->series;
+	my (@classScores, @groupscores, @indscores, @indwork, @totalwork, @averagework, @averagescore);
+	for my $session ( @$series )
 	{
+		my $groups = $league->groups($session);
+		my @weeks = $league->sessionweeks($session);
+		for my $week ( @weeks )
+		{
 		next unless (my $week = $file) =~
 					s/^$league\/$session\/(\d+)\.yaml$/$1/;
 		push @weeks, $week;
@@ -128,10 +113,6 @@ print REP "\n";
 REP->format_name($format_total[@totalweeks]);
 write REP;
 close REP;
-
-my $oldbeancount = LoadFile "$league/beans.yaml";
-DumpFile "$league/beans.yaml.bak", $oldbeancount;
-DumpFile "$league/beans.yaml", $beancount;
 
 format TOP2 =
              $class->{league} Classwork
