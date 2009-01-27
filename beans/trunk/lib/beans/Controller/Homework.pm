@@ -4,8 +4,7 @@ use strict;
 use warnings;
 use parent 'Catalyst::Controller';
 
-use lib 'lib/beans';
-use Homework;
+use Bean;
 
 =head1 NAME
 
