@@ -49,19 +49,26 @@ Calculate homework score for one player using Moose homework script.
 sub list : Local {
 	my ($self, $c) = @_;
 	my $params = $c->request->params;
-	my $league = $params->{league};
-	my $player = $params->{player};
-	my $id = $params->{id};
-$DB::single=1;
-	$c->stash->{player} = "DrBean";
-	$c->stash->{id} = "DrBean";
-	my @weeks = (
-		{ name => 1, score => 2 },
-		{ name => 3, score => 2 },
-		{ name => 5, score => 0 },
-	);
-	$c->stash->{weeks} = \@weeks;
-	# $c->stash->{template} = "homework/list.tt2";
+	my $leagueId = $params->{league};
+	my $playerName = $params->{player};
+	my $playerId = $params->{id};
+	my $league = League->new( leagueId => "/home/drbean/class/$leagueId" );
+	if ( $league and $league->is_member($playerId) )
+	{
+		my $player = Player->new( league => $league, id => $playerId );
+		if ( $playerName eq $player->name ) {
+			my $rounds = $league->rounds;
+			my $grades = $player->grades;
+			$c->stash->{league} = $leagueId;
+			$c->stash->{player} = $playerName;
+			$c->stash->{id} = $playerId;
+			$c->stash->{weeks} = [ map { { name => $rounds->[$_],
+				score => $grades->[$_] } } 0..$#$grades ];
+			$c->stash->{total} = $player->total;
+			$c->stash->{percent} = $player->percent;
+
+		}
+	}
 }
 
 =head1 AUTHOR
