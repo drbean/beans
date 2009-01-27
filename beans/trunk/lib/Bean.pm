@@ -1,12 +1,10 @@
-#!/usr/bin/perl
-
 package Script;
 use Moose;
 with 'MooseX::Getopt';
 
 has 'man' => (is => 'ro', isa => 'Bool');
 has 'help' => (is => 'ro', isa => 'Bool');
-has 'leagueId' => (traits => ['Getopt'], is => 'ro', isa => 'Str',
+has 'league' => (traits => ['Getopt'], is => 'ro', isa => 'Str',
 		cmd_aliases => 'l',);
 has 'player' => (traits => ['Getopt'], is => 'ro', isa => 'Str',
 		cmd_aliases => 'p',);
@@ -16,8 +14,9 @@ use Moose;
 use YAML qw/LoadFile DumpFile/;
 use List::MoreUtils qw/any/;
 
-extends 'Script';
+# extends 'Script';
 
+has 'leagueId' => (is => 'ro', isa => 'Str', required => 1);
 has 'yaml' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 sub _build_yaml {
 		my ($instance) = @_;
@@ -100,7 +99,7 @@ sub save {
 
 package Player;
 use Moose;
-extends 'League';
+# extends 'League';
 use List::MoreUtils qw/firstval/;
 use List::Util qw/sum/;
 use POSIX;
