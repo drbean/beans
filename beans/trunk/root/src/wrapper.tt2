@@ -23,7 +23,7 @@ html1/DTD/xhtml1-strict.dtd">
     <ul>
         <li><a href="[% c.uri_for('/books/list') %]">Home</a></li>
         <li><a href="[% c.uri_for('/') %]" title="Catalyst Welcome Page">Welcome</a></li>
-        <li><a href="mailto:nobody@nowhere.com" title="Contact Us">Contact Us</a></li>
+        <li><a href="mailto:drbean@freeshell.org" title="Contact Us">Contact Us</a></li>
     </ul>
 </div><!-- end menu -->
 

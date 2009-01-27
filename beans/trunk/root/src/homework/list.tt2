@@ -1,5 +1,5 @@
 [% # Provide a title to root/lib/site/header -%]
-[% META title = 'Homwork scores' -%]
+[% META title = 'Homework scores' -%]
 
 <table>
 <tr><th>Class</th><th>Name</th><th>ID</th>
@@ -7,13 +7,15 @@
     <th>[% week.name %]</th>[% END %]
 <th>Total Score</th><th>Grade</th></tr>
   <tr>
-    <td>[% league.id %]</td>
+    <td>[% league %]</td>
     <td>[% player %]</td>
     <td>[% id %]</td>
     <td></td>
 [% FOREACH week IN weeks -%]
     <td>[% week.score %]</td>
 [% END -%]
+    <td>[% total %]</td>
+    <td>[% percent %]</td>
   </tr>
 </table>
 
