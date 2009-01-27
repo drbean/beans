@@ -28,6 +28,34 @@ sub _build_name {
 	my $data = $self->yaml;
 	$data->{league};
 }
+has 'members' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
+sub _build_members {
+	my $self = shift;
+	my $data = $self->yaml;
+	my @members = sort { $a->{id} cmp $b->{id} } @{$data->{member}};
+	[ map { Player->new(league => $self, id=>$_->{id},name=>$_->{name})
+			} @members ];
+	# $data->{member};
+}
+has 'absentees' => (is => 'ro', isa => 'ArrayRef', lazy => 1, default =>
+				sub { shift->yaml->{absentees} } );
+sub is_member {
+	my $self = shift;
+	my $id = shift;
+	my $data = $self->yaml;
+	any { $_->{id} eq $id } @{$data->{member}};
+}
+
+sub save {
+	my $self = shift;
+	DumpFile shift(), shift();
+}
+
+
+package Homework;
+use Moose;
+extends 'League';
+use YAML qw/LoadFile DumpFile/;
 
 has 'hwdir' => (is => 'ro', isa => 'Str', lazy_build => 1);
 sub _build_hwdir {
@@ -71,29 +99,102 @@ sub _build_totalPercent {
 	my $hwdir = $self->hwdir;
 	LoadFile "$hwdir/percent.yaml";
 }
-has 'members' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
-sub _build_members {
+
+package Classwork;
+use Moose;
+extends 'League';
+use YAML qw/LoadFile/;
+
+has 'series' => (is => 'ro', isa => 'ArrayRef', lazy => 1, default =>
+				sub { shift->yaml->{series} } );
+has 'groupseries' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+sub _build_groupseries {
 	my $self = shift;
-	my $data = $self->yaml;
-	my @members = sort { $a->{id} cmp $b->{id} } @{$data->{member}};
-	[ map { Player->new(league => $self, id=>$_->{id},name=>$_->{name})
-			} @members ];
-	# $data->{member};
+	my $series = $self->series;
+	my $league = $self->leagueId;
+	+{ map { $_ => LoadFile "$league/$_/groups.yaml" } @$series };
+}
+has 'files'  => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
+sub _build_files {
+	my $self = shift;
+	my $league = $self->leagueId;
+	my $series = $self->series;
+	[ map { grep m|/(\d+)\.yaml$|, glob "$league/$_/*" } @$series ];
+}
+has 'weeks' => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
+sub _build_weeks {
+	my $self = shift;
+	my $files = $self->files;
+	[ map s/^.*\/(\d+)\.yaml$/$1/, @$files ];
+}
+has 'data' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+sub _build_data {
+	my $self = shift;
+	my $files = $self->files;
+	my $weeks = $self->weeks;
+	+{ map { $_=> LoadFile $files->{$_} } @$weeks };
 }
 
-sub is_member {
+sub merits {
 	my $self = shift;
-	my $id = shift;
-	my $data = $self->yaml;
-	any { $_->{id} eq $id } @{$data->{member}};
+	my $data = $self->data;
+	my $session = shift;
+	my $weeks = $self->sessionweeks($session);
+	my $groups = $self->groups($session);
+	my %classwork = map { $_ => $data->{$_} } %$weeks;
+	+{ map { $_ => $classwork->{$_}->{merits} } keys %$groups };
 }
 
-sub save {
+has 'absences' => (is => 'ro', isa => 'Hashref', lazy_build => 1);
+sub _build_absences {
 	my $self = shift;
-	DumpFile shift(), shift();
+	my $data = $self->data;
+	my $weeks = $self->weeks;
+	+{ map { $_ => $data->{$_}->{absences} } @weeks };
 }
-	
 
+has 'tardies' => (is => 'ro', isa => 'Hashref', lazy_build => 1);
+sub _build_tardies {
+	my $self = shift;
+	my $data = $self->data;
+	my $weeks = $self->weeks;
+	+{ map { $_ => $data->{$_}->{tardies} } @weeks };
+}
+
+sub sessionfiles {
+	my $self = shift;
+	my $session = shift;
+	[ grep m/\/$session\/(d+)\.yaml$/, @{$self->files} ];
+}
+
+sub sessionweeks {
+	my $self = shift;
+	my $session = shift;
+	my $files = $self->files;
+	[ map s/\/$session\/(\d+)\.yaml$/$1/, @$files ];
+}
+
+sub groups {
+	my $self = shift;
+	my $session = shift;
+	($self->groupseries)->{$session};
+}
+
+sub payout {
+	my $self = shift;
+	my $session = shift;
+	my $groups = $self->groups($session);
+	my $weeks = $self->weeks;
+	my $payout = 80 * (keys %$groups) / @weeks;
+}
+
+sub maxDemerit {
+	my $self = shift;
+	my $week = shift;
+	my $absences = ($self->absences)->{$week};
+	my $tardies = ($self->tardies)->{$week};
+	my $groups = $self->groups;
+	max ( map { $absences->
 
 package Player;
 use Moose;
