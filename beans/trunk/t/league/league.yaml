@@ -1,6 +1,6 @@
 ---
 league: 日華文大學二甲
-hw: /home/drbean/class/CLA0011/homework
+hw: t/league/homework
 member:
   - id: N9561713
     Chinese: 袁敏萱
@@ -165,6 +165,7 @@ member:
     Chinese: 羅文聰
     name: Steven
 absent:
+  - Steven
 series:
   - first
   - second
