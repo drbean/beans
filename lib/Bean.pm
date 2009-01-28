@@ -35,10 +35,9 @@ sub _build_members {
 	my @members = sort { $a->{id} cmp $b->{id} } @{$data->{member}};
 	[ map { Player->new(league => $self, id=>$_->{id},name=>$_->{name})
 			} @members ];
-	# $data->{member};
 }
 has 'absentees' => (is => 'ro', isa => 'ArrayRef', lazy => 1, default =>
-				sub { shift->yaml->{absentees} } );
+				sub { shift->yaml->{absent} } );
 sub is_member {
 	my $self = shift;
 	my $id = shift;
@@ -104,6 +103,8 @@ package Classwork;
 use Moose;
 extends 'League';
 use YAML qw/LoadFile/;
+use List::Util qw/max/;
+use List::MoreUtils qw/any/;
 
 has 'series' => (is => 'ro', isa => 'ArrayRef', lazy => 1, default =>
 				sub { shift->yaml->{series} } );
@@ -114,87 +115,115 @@ sub _build_groupseries {
 	my $league = $self->leagueId;
 	+{ map { $_ => LoadFile "$league/$_/groups.yaml" } @$series };
 }
-has 'files'  => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
-sub _build_files {
+has 'allfiles'  => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
+sub _build_allfiles {
 	my $self = shift;
 	my $league = $self->leagueId;
 	my $series = $self->series;
 	[ map { grep m|/(\d+)\.yaml$|, glob "$league/$_/*" } @$series ];
 }
-has 'weeks' => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
-sub _build_weeks {
+has 'allweeks' => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
+sub _build_allweeks {
 	my $self = shift;
-	my $files = $self->files;
-	[ map s/^.*\/(\d+)\.yaml$/$1/, @$files ];
+	my $files = $self->allfiles;
+	[ map { m|/(\d+)\.yaml$|; $1 } @$files ];
 }
 has 'data' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 sub _build_data {
 	my $self = shift;
-	my $files = $self->files;
-	my $weeks = $self->weeks;
-	+{ map { $_=> LoadFile $files->{$_} } @$weeks };
+	my $files = $self->allfiles;
+	my $weeks = $self->allweeks;
+	+{ map { $weeks->[$_] => LoadFile $files->[$_] } 0..$#$weeks };
 }
 
 sub merits {
 	my $self = shift;
 	my $data = $self->data;
-	my $session = shift;
-	my $weeks = $self->sessionweeks($session);
+	my $week = shift;
+	my $session = $self->week2session($week);
 	my $groups = $self->groups($session);
-	my %classwork = map { $_ => $data->{$_} } %$weeks;
-	+{ map { $_ => $classwork->{$_}->{merits} } keys %$groups };
+	my $card = $data->{$week};
+	+{ map { $_ => $card->{$_}->{merits} } keys %$groups };
 }
 
-has 'absences' => (is => 'ro', isa => 'Hashref', lazy_build => 1);
-sub _build_absences {
+sub absences {
 	my $self = shift;
 	my $data = $self->data;
-	my $weeks = $self->weeks;
-	+{ map { $_ => $data->{$_}->{absences} } @weeks };
+	my $week = shift;
+	my $session = $self->week2session($week);
+	my $groups = $self->groups($session);
+	my $card = $data->{$week};
+	+{ map { $_ => $card->{$_}->{absences} } keys %$groups };
 }
 
-has 'tardies' => (is => 'ro', isa => 'Hashref', lazy_build => 1);
-sub _build_tardies {
+sub tardies {
 	my $self = shift;
 	my $data = $self->data;
-	my $weeks = $self->weeks;
-	+{ map { $_ => $data->{$_}->{tardies} } @weeks };
+	my $week = shift;
+	my $session = $self->week2session($week);
+	my $groups = $self->groups($session);
+	my $card = $data->{$week};
+	+{ map { $_ => $card->{$_}->{tardies} } keys %$groups };
 }
 
-sub sessionfiles {
+sub files {
 	my $self = shift;
 	my $session = shift;
-	[ grep m/\/$session\/(d+)\.yaml$/, @{$self->files} ];
+	my $allfiles = $self->allfiles;
+	[ grep m|/$session/\d+\.yaml$|, @$allfiles ];
 }
 
-sub sessionweeks {
+sub weeks {
 	my $self = shift;
 	my $session = shift;
-	my $files = $self->files;
-	[ map s/\/$session\/(\d+)\.yaml$/$1/, @$files ];
+	my $files = $self->files($session);
+	[ map { m|(\d+)\.yaml$|; $1 } @$files ];
+}
+
+sub week2session {
+	my $self = shift;
+	my $week = shift;
+	my $sessions = $self->series;
+	my %sessions2weeks = map { $_ => $self->weeks($_) } @$sessions;
+	while ( my ($session, $weeks) = each %sessions2weeks ) {
+		return $session if any { $_ eq $week } @$weeks;
+	}
+	die "Week $week in none of @$sessions sessions.\n";
 }
 
 sub groups {
 	my $self = shift;
 	my $session = shift;
-	($self->groupseries)->{$session};
+	$self->groupseries->{$session};
 }
 
 sub payout {
 	my $self = shift;
 	my $session = shift;
+	my $sessions = $self->series;
 	my $groups = $self->groups($session);
-	my $weeks = $self->weeks;
-	my $payout = 80 * (keys %$groups) / @weeks;
+	my $weeks = $self->weeks($session);
+	my $payout = (80/@$sessions) * (keys %$groups) / @$weeks;
 }
 
 sub maxDemerit {
 	my $self = shift;
 	my $week = shift;
-	my $absences = ($self->absences)->{$week};
-	my $tardies = ($self->tardies)->{$week};
-	my $groups = $self->groups;
-	max ( map { $absences->
+	my $absences = $self->absences($week);
+	my $tardies = $self->tardies($week);
+	my $session = $self->week2session($week);
+	my $groups = $self->groups($session);
+	max map +($absences->{$_} * 2 + $tardies->{$_} * 1), keys %$groups ;
+}
+
+sub meritDemerit {
+	my $self = shift;
+	my $week = shift;
+	my $merits = $self->merits($week);
+	my $absences = $self->absences($week);
+	my $tardies = $self->tardies($week);
+	my $maxDemerit = $self->maxDemerit($week);
+}
 
 package Player;
 use Moose;
