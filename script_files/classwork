@@ -25,9 +25,11 @@ sub run {
 	for my $session ( @$series )
 	{
 		my $groups = $league->groups($session);
-		my @weeks = $league->sessionweeks($session);
+		my @weeks = $league->weeks($session);
 		for my $week ( @weeks )
 		{
+			my $maxDemerit = $league->maxDemerit($week);
+		}
 		next unless (my $week = $file) =~
 					s/^$league\/$session\/(\d+)\.yaml$/$1/;
 		push @weeks, $week;
