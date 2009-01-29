@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use Test::More;
 
-plan tests => 16;
+plan tests => 20;
 plan skip_all => 'unset NO_TEST to enable this test' if $ENV{NO_TEST};
 
 use lib 'lib';
@@ -135,3 +135,16 @@ is_deeply( $l->tardies(2), {
    Gray   => 1, LightBlue => 2, LightGreen => 1, Orange => 3, Pink   => 1,
    Purple => 1, Red    => 0, White  => 0, Yellow => 1 }, "How many people late in each group in week 2");
 is( $l->payout('second'), 70, "If the total paid to players this week is 70, the average grade over the semester should be 80.");
+is_deeply( $l->demerits(2), {
+   Black  => 3, BlackBlack => 6, Brown  => 4, DarkBlue => 3, DarkGreen => 4,
+   Gray   => 3, LightBlue => 6, LightGreen => 3, Orange => 5, Pink   => 7,
+   Purple => 3, Red    => 0, White  => 4, Yellow => 7 }, "2*absences+tardies");
+is_deeply( $l->favor(2), {
+   Black  => 1, BlackBlack => 1, Brown  => 1, DarkBlue => 1, DarkGreen => 1,
+   Gray   => 1, LightBlue => 1, LightGreen => 1, Orange => 1, Pink   => 0,
+   Purple => 1, Red    => 1, White  => 1, Yellow => 0}, "favor to avoid 0");
+is( $l->maxDemerit(2), 7, "group with most absences, tardies");
+is_deeply( $l->meritDemerit(2), {
+  Black  => 11, BlackBlack => 2, Brown  => 10, DarkBlue => 10, DarkGreen =>11,
+  Gray   => 11, LightBlue => 8, LightGreen => 9, Orange => 10, Pink   => 5,
+  Purple => 8, Red    => 13, White  => 8, Yellow => 0 }, "merits - demerits");
