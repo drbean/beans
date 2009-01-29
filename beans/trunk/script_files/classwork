@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use List::Util qw/sum min max/;
+use List::MoreUtils qw/any/;
 use POSIX;
 use IO::All;
 use IO::Handle;
@@ -21,45 +22,36 @@ sub run {
 	my $league = Classwork->new( leagueId => $leagueId ) or
 		die "No $leagueId league: $!";
 	my $series = $league->series;
-	my (@classScores, @groupscores, @indscores, @indwork, @totalwork, @averagework, @averagescore);
+	my $leaguemembers = $league->members;
+	my @groupmembers = 
+	my %ids = map { $_->{id} => $_ } @$members;
+	my (@groupscores, @indscores, @indwork, @totalwork, @averagework, @averagescore);
 	for my $session ( @$series )
 	{
 		my $groups = $league->groups($session);
+
+		die "$session session, groups not arrayed.\n"
+			if any { ref {$_} ne 'ARRAY' } values %$groups;
+		die "$session session, week $week: @members in $group?"
+			if grep { not defined $_ } @ids;
 		my @weeks = $league->weeks($session);
 		for my $week ( @weeks )
 		{
-			my $maxDemerit = $league->maxDemerit($week);
+			my $work = $league->meritDemerit($week);
+			my %logwork = map { $_ => $work->{$_} == 0 ?
+				0 : 1 + log $work->{$_} } keys %$groups;
+			my $totallogwork = sum values %logwork;
+			my $payout = $league->payout($week);
+			$groupscores{$week} = map { $_ => $totallogwork == 0? 0:
+				floor($logwork{$group}*$payout/$totallogwork) }
+				keys %$groups;
 		}
-		next unless (my $week = $file) =~
-					s/^$league\/$session\/(\d+)\.yaml$/$1/;
-		push @weeks, $week;
-		die "2 records of Week $1 classwork."
-			if $classScores[$week];
-		my $weekwork = LoadFile $file;
-		my %logweekwork;
-		for my $key (keys %$weekwork)
-		{
-			my $work = $weekwork->{$key};
-			my $log;
-			$logweekwork{$key} = $work == 0 ? 0 : 1 + log $work;
-		}
-		my $totalwork = sum values %$weekwork;
-		push @totalwork, $totalwork;
-		push @averagework, $totalwork/@groups;
-		my $totallogwork = sum values %logweekwork;
 		my %weekscores;
 		my $total;
 		for my $group ( @groups )
 		{
-			my $lot = $totallogwork == 0? 0 : floor(
-				$logweekwork{$group}*$payout/$totallogwork);
-			$groupscores[$week]{$group} = $lot;
-			die "$session session, $group group, not arrayed\n"
-					unless ref $groups->{$group} eq 'ARRAY';
 			my @members = @{$groups->{$group}};
 			my @ids = @ids{@members};
-			die "$session session, week $week: @members in $group?"
-				if grep { not defined $_ } @ids;
 			die "$session session, week $week: @members partition?"
 			 	if @weekscores{@ids};
 			@weekscores{@ids} = ($lot)x@ids;
@@ -89,7 +81,7 @@ foreach my $member ( @members )
 	our $name = $member->{name};
 	next if grep { $name eq $_ } @absentees;
 	our $id = $member->{id};
-	my $lastpoints = $indwork[$weeks[-1]]{$id};
+	my $lastpoints = $indwork{$lastweek}{$id};
 	my @missing;
 	our @grades = ();
 	for my $week ( @weeks) {
