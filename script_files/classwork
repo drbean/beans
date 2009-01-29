@@ -3,6 +3,8 @@
 use strict;
 use warnings;
 
+use lib 'lib';
+use Bean;
 use List::Util qw/sum min max/;
 use List::MoreUtils qw/any/;
 use POSIX;
@@ -22,10 +24,10 @@ sub run {
 	my $league = Classwork->new( leagueId => $leagueId ) or
 		die "No $leagueId league: $!";
 	my $series = $league->series;
-	my $totalweeks = $league->allweeks;
+	our $totalweeks = $league->allweeks;
 	my $lastweek = $league->lastweek;
 	my $leaguemembers = $league->members;
-	my (%groupscores, %indscores, %indwork, @averagework, %averagescore);
+	my (%groupscores, %indscores, %indwork, $totalaverage, %averagescore);
 	for my $session ( @$series )
 	{
 		my $groups = $league->groups($session);
@@ -58,8 +60,10 @@ sub run {
 		}
 	}
 
+	$totalaverage = sum @averagescore{@$totalweeks};
+
 	open REP, '>class.tmp' or die 'class.tmp? $!'; 
-	my @romans = qw/'' I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII/;
+	our @romans = qw/'' I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII/;
 	my @format_top = qw/'' TOP1 TOP2 TOP3 TOP4 TOP5 TOP6 TOP7 TOP8 TOP9 TOP10 TOP11 TOP12 TOP13/;
 	my @formats = qw/'' WEEKS1 WEEKS2 WEEKS3 WEEKS4 WEEKS5 WEEKS6 WEEKS7 WEEKS8 WEEKS9 WEEKS10 WEEKS11 WEEKS12 WEEKS13/;
 	my @format_total = qw/'' TOTAL1 TOTAL2 TOTAL3 TOTAL4 TOTAL5 TOTAL6 TOTAL7 TOTAL8 TOTAL9 TOTAL10 TOTAL11 TOTAL12 TOTAL13/;
@@ -86,10 +90,6 @@ sub run {
 	
 	}
 
-# my @averagework = map { int($averagescore[$_]) . "(" . int($averagework[$_]) . ")" } @weeks;
-@averagework = map { floor $_ } @averagework;
-my $target = floor 80 * @weeks / @$totalweeks;
-
 	print REP "\n";
 	REP->format_name($format_total[@$totalweeks]);
 	write REP;
@@ -97,74 +97,75 @@ my $target = floor 80 * @weeks / @$totalweeks;
 
 }
 
+our (@romans, $totalweeks);
 format TOP2 =
              $class->{league} Classwork
                     Weeks: Grade(Work Points)
 @<<<        @<<         @<<< @<<<       @<<<<<<<<<<<<<<
-'Name', 'ID', @romans[@weeks], 'Total Classwork'
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
 format TOP4 =
              $class->{league} Classwork
                     Weeks: Grade(Work Points)
 @<<<        @<<         @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
-'Name', 'ID', @romans[@weeks], 'Total Classwork'
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
 format TOP5 =
              $class->{league} Classwork
                     Weeks: Grade(Work Points)
 @<<<        @<<         @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
-'Name', 'ID', @romans[@weeks], 'Total Classwork'
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
 format TOP6 =
              $class->{league} Classwork
                     Weeks: Grade(Work Points)
 @<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
-'Name', 'ID', @romans[@weeks], 'Total Classwork'
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
 format TOP7 =
              $class->{league} Classwork
                     Weeks: Grade(Work Points)
 @<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
-'Name', 'ID', @romans[@weeks], 'Total Classwork'
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
 format TOP8 =
              $class->{league} Classwork
                     Weeks: Grade(Work Points)
 @<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
-'Name', 'ID', @romans[@weeks], 'Total Classwork'
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
 format TOP9 =
              $class->{league} Classwork
                     Weeks: Grade(Work Points)
 @<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
-'Name', 'ID', @romans[@weeks], 'Total Classwork'
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
 format TOP10 =
              $class->{league} Classwork
                     Weeks: Grade(Work Points)
 @<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
-'Name', 'ID', @romans[@weeks], 'Total Classwork'
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
 format TOP11 =
              $class->{league} Classwork
                     Weeks: Grade(Work Points)
 @<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
-'Name', 'ID', @romans[@weeks], 'Total Classwork'
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
 format TOP12 =
              $class->{league} Classwork
                     Weeks: Grade(Work Points)
 @<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
-'Name', 'ID', @romans[@weeks], 'Total Classwork'
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
 format TOP13 =
@@ -219,6 +220,8 @@ format WEEKS13 =
 @<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
 $name,  $id,	@grades, $total
 .
+
+our (@averagework, $target);
 format TOTAL2 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<<      @<<<<
 'Average Work Points',  @averagework,            $target
