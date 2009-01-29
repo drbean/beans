@@ -268,7 +268,7 @@ sub favor {
 	my $demerits = $self->demerits($week);
 	my $session = $self->week2session($week);
 	my $groups = $self->groups($session);
-	+{ map {$_ => ($demerits->{$_} < 7? 1.5: 0)} keys %$groups };
+	+{ map {$_ => ($demerits->{$_} < 7? 1: 0)} keys %$groups };
 }
 
 =over 1
