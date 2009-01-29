@@ -128,12 +128,81 @@ sub _build_allweeks {
 	my $files = $self->allfiles;
 	[ map { m|/(\d+)\.yaml$|; $1 } @$files ];
 }
+has 'lastweek' => ( is => 'ro', isa => 'Int', lazy_build => 1 );
+sub _build_lastweek {
+	my $self = shift;
+	my $weeks = $self->allweeks;
+	max @$weeks;
+}
 has 'data' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 sub _build_data {
 	my $self = shift;
 	my $files = $self->allfiles;
 	my $weeks = $self->allweeks;
 	+{ map { $weeks->[$_] => LoadFile $files->[$_] } 0..$#$weeks };
+}
+
+sub groups {
+	my $self = shift;
+	my $session = shift;
+	$self->groupseries->{$session};
+}
+
+sub files {
+	my $self = shift;
+	my $session = shift;
+	my $allfiles = $self->allfiles;
+	[ grep m|/$session/\d+\.yaml$|, @$allfiles ];
+}
+
+sub weeks {
+	my $self = shift;
+	my $session = shift;
+	my $files = $self->files($session);
+	[ map { m|(\d+)\.yaml$|; $1 } @$files ];
+}
+
+sub week2session {
+	my $self = shift;
+	my $week = shift;
+	my $sessions = $self->series;
+	my %sessions2weeks = map { $_ => $self->weeks($_) } @$sessions;
+	while ( my ($session, $weeks) = each %sessions2weeks ) {
+		return $session if any { $_ eq $week } @$weeks;
+	}
+	die "Week $week in none of @$sessions sessions.\n";
+}
+
+sub names2groups {
+	my $self = shift;
+	my $session = shift;
+	my $name = shift;
+	my $groups = $self->groups($session);
+	my @names; push @names, @$_ for values %$groups;
+	my %names2groups;
+	while ( my ($group, $names) = each %$groups ) {
+		for my $name ( @$names ) {
+		die "$name in $group and other group in $session session.\n"
+				if $names2groups{$name};
+			$names2groups{$name} = $group;
+		}
+	}
+	\%names2groups;
+}
+
+sub name2group {
+	my $self = shift;
+	my $session = shift;
+	my $name = shift;
+	my $groups = $self->groups($session);
+	my @names; push @names, @$_ for values %$groups;
+	my @name2groups;
+	while ( my ($group, $names) = each %$groups ) {
+		push @name2groups, $group for grep /^$name$/, @$names;
+	}
+	die "$name not in exactly one group in $session session.\n"
+				unless @name2groups == 1;
+	shift @name2groups;
 }
 
 sub merits {
@@ -166,37 +235,6 @@ sub tardies {
 	+{ map { $_ => $card->{$_}->{tardies} } keys %$groups };
 }
 
-sub files {
-	my $self = shift;
-	my $session = shift;
-	my $allfiles = $self->allfiles;
-	[ grep m|/$session/\d+\.yaml$|, @$allfiles ];
-}
-
-sub weeks {
-	my $self = shift;
-	my $session = shift;
-	my $files = $self->files($session);
-	[ map { m|(\d+)\.yaml$|; $1 } @$files ];
-}
-
-sub week2session {
-	my $self = shift;
-	my $week = shift;
-	my $sessions = $self->series;
-	my %sessions2weeks = map { $_ => $self->weeks($_) } @$sessions;
-	while ( my ($session, $weeks) = each %sessions2weeks ) {
-		return $session if any { $_ eq $week } @$weeks;
-	}
-	die "Week $week in none of @$sessions sessions.\n";
-}
-
-sub groups {
-	my $self = shift;
-	my $session = shift;
-	$self->groupseries->{$session};
-}
-
 sub payout {
 	my $self = shift;
 	my $session = shift;
@@ -206,23 +244,67 @@ sub payout {
 	my $payout = (80/@$sessions) * (keys %$groups) / @$weeks;
 }
 
-sub maxDemerit {
+=over 1
+
+demerits
+
+The demerits that week. calculated as twice the number of absences, plus the number of tardies. In a four-member group, this ranges from 0 to 8.
+
+=cut
+
+sub demerits {
 	my $self = shift;
 	my $week = shift;
 	my $absences = $self->absences($week);
 	my $tardies = $self->tardies($week);
 	my $session = $self->week2session($week);
 	my $groups = $self->groups($session);
-	max map +($absences->{$_} * 2 + $tardies->{$_} * 1), keys %$groups ;
+	+{map {$_ => ($absences->{$_} * 2 + $tardies->{$_} * 1)} keys %$groups};
 }
+
+sub favor {
+	my $self = shift;
+	my $week = shift;
+	my $demerits = $self->demerits($week);
+	my $session = $self->week2session($week);
+	my $groups = $self->groups($session);
+	+{ map {$_ => ($demerits->{$_} < 7? 1.5: 0)} keys %$groups };
+}
+
+=over 1
+
+maxDemerit
+
+The max demerit that week. achieved by the group with the most absences and tardies.
+
+=cut
+
+sub maxDemerit {
+	my $self = shift;
+	my $week = shift;
+	my $demerits = $self->demerits($week);
+	max( values %$demerits );
+}
+
+=over 1
+
+meritDemerit
+
+Let groups with no merits, and no demerits get a score greater than 1, so the log score is greater than 0. Let groups with 3 or more absences and 1 tardies not be eligible for this favor, but get at least 0. Let other groups get the number of merits - number of demerits, but also be eligible for the favor, and get a score of above 1.
+
+=cut
 
 sub meritDemerit {
 	my $self = shift;
 	my $week = shift;
 	my $merits = $self->merits($week);
-	my $absences = $self->absences($week);
-	my $tardies = $self->tardies($week);
+	my $demerits = $self->demerits($week);
 	my $maxDemerit = $self->maxDemerit($week);
+	my $favor = $self->favor($week);
+	my $session = $self->week2session($week);
+	my $groups = $self->groups($session);
+	+{ map {$_=> $maxDemerit+$merits->{$_}+$favor->{$_}-$demerits->{$_}}
+		keys %$groups };
 }
 
 package Player;
