@@ -23,17 +23,15 @@ sub run {
 		die "No $leagueId league: $!";
 	my $series = $league->series;
 	my $leaguemembers = $league->members;
-	my @groupmembers = 
-	my %ids = map { $_->{id} => $_ } @$members;
 	my (@groupscores, @indscores, @indwork, @totalwork, @averagework, @averagescore);
 	for my $session ( @$series )
 	{
 		my $groups = $league->groups($session);
-
 		die "$session session, groups not arrayed.\n"
 			if any { ref {$_} ne 'ARRAY' } values %$groups;
+		my $members2groups = $league->names2groups($session);
 		die "$session session, week $week: @members in $group?"
-			if grep { not defined $_ } @ids;
+			if @leaguemembers != keys %$members2groups;
 		my @weeks = $league->weeks($session);
 		for my $week ( @weeks )
 		{
