@@ -22,89 +22,80 @@ sub run {
 	my $league = Classwork->new( leagueId => $leagueId ) or
 		die "No $leagueId league: $!";
 	my $series = $league->series;
+	my $totalweeks = $league->allweeks;
+	my $lastweek = $league->lastweek;
 	my $leaguemembers = $league->members;
-	my (@groupscores, @indscores, @indwork, @totalwork, @averagework, @averagescore);
+	my (%groupscores, %indscores, %indwork, @averagework, %averagescore);
 	for my $session ( @$series )
 	{
 		my $groups = $league->groups($session);
 		die "$session session, groups not arrayed.\n"
 			if any { ref {$_} ne 'ARRAY' } values %$groups;
 		my $members2groups = $league->names2groups($session);
-		die "$session session, week $week: @members in $group?"
-			if @leaguemembers != keys %$members2groups;
+		for my $leaguemember ( @$leaguemembers ) {
+			my $name = $leaguemember->name;
+			die "$session session, $name in no group.\n"
+				unless $members2groups->{$name};
+		}
 		my @weeks = $league->weeks($session);
 		for my $week ( @weeks )
 		{
 			my $work = $league->meritDemerit($week);
 			my %logwork = map { $_ => $work->{$_} == 0 ?
 				0 : 1 + log $work->{$_} } keys %$groups;
-			my $totallogwork = sum values %logwork;
+			my $totalwork = sum values %logwork;
 			my $payout = $league->payout($week);
-			$groupscores{$week} = map { $_ => $totallogwork == 0? 0:
-				floor($logwork{$group}*$payout/$totallogwork) }
-				keys %$groups;
-		}
-		my %weekscores;
-		my $total;
-		for my $group ( @groups )
-		{
-			my @members = @{$groups->{$group}};
-			my @ids = @ids{@members};
-			die "$session session, week $week: @members partition?"
-			 	if @weekscores{@ids};
-			@weekscores{@ids} = ($lot)x@ids;
-			$averagescore[$week] = 
-				sum( values %{$groupscores[$week]} )/@groups;
-			$indscores[$week]{$_} =  $weekscores{$_} for @ids;
-			$indwork[$week]{$_} = $weekwork->{$group} for @ids;
+			while ( my ($group, $names) = each %$groups ) {
+				$groupscores{$week}{$group} = $totalwork == 0?
+				  0: floor($logwork{$group}*$payout/$totalwork);
+				$indscores{$week}{$_} =
+					$groupscores{$week}{$group} for @$names;
+				$indwork{$week}{$_} =
+					$work->{$group} for @$names;
+			}
+			$averagescore{$week} = 
+				sum( values %{$groupscores{$week}} )/@$groups;
 		}
 	}
-}
 
-open REP, '>class.tmp' or die 'class.tmp? $!'; 
-my @romans = qw/'' I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII/;
-my @format_top = qw/'' TOP1 TOP2 TOP3 TOP4 TOP5 TOP6 TOP7 TOP8 TOP9 TOP10 TOP11 TOP12 TOP13/;
-my @formats = qw/'' WEEKS1 WEEKS2 WEEKS3 WEEKS4 WEEKS5 WEEKS6 WEEKS7 WEEKS8 WEEKS9 WEEKS10 WEEKS11 WEEKS12 WEEKS13/;
-my @format_total = qw/'' TOTAL1 TOTAL2 TOTAL3 TOTAL4 TOTAL5 TOTAL6 TOTAL7 TOTAL8 TOTAL9 TOTAL10 TOTAL11 TOTAL12 TOTAL13/;
+	open REP, '>class.tmp' or die 'class.tmp? $!'; 
+	my @romans = qw/'' I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII/;
+	my @format_top = qw/'' TOP1 TOP2 TOP3 TOP4 TOP5 TOP6 TOP7 TOP8 TOP9 TOP10 TOP11 TOP12 TOP13/;
+	my @formats = qw/'' WEEKS1 WEEKS2 WEEKS3 WEEKS4 WEEKS5 WEEKS6 WEEKS7 WEEKS8 WEEKS9 WEEKS10 WEEKS11 WEEKS12 WEEKS13/;
+	my @format_total = qw/'' TOTAL1 TOTAL2 TOTAL3 TOTAL4 TOTAL5 TOTAL6 TOTAL7 TOTAL8 TOTAL9 TOTAL10 TOTAL11 TOTAL12 TOTAL13/;
 
-# Name        ID          $romans[1] $romans[2] $romans[3] $romans[5] $romans[6] $romans[7] $romans[8] $romans[10] $romans[11]      Total Classwork
+	REP->format_top_name($format_top[@$totalweeks]);
+	REP->format_name($formats[@$totalweeks]);
 
-REP->format_top_name($format_top[@totalweeks]);
-REP->format_name($formats[@totalweeks]);
-
-my $beancount;
-
-foreach my $member ( @members ) 
-{
-	our $name = $member->{name};
-	next if grep { $name eq $_ } @absentees;
-	our $id = $member->{id};
-	my $lastpoints = $indwork{$lastweek}{$id};
-	my @missing;
-	our @grades = ();
-	for my $week ( @weeks) {
-		my $score = $indscores[$week]{$id};
-		push @missing, $week if not defined $score;
-		push @grades, $score;
+	foreach my $member ( @$leaguemembers ) 
+	{
+		our $name = $member->name;
+		our $id = $member->id;
+		my $lastpoints = $indwork{$lastweek}{$id};
+		my @missing;
+		our @grades = ();
+		for my $week ( @$totalweeks) {
+			my $score = $indscores{$week}{$id};
+			push @missing, $week if not defined $score;
+			push @grades, $score;
+		}
+		warn "${name}'s grade missing for weeks @romans[@missing]" if @missing;
+		our $total = sum @grades;
+		$grades[-1] = $grades[-1] . "(" . $lastpoints . ")";
+		write REP;
+	
 	}
-	warn "${name}'s grade missing for weeks @romans[@missing]" if @missing;
-	our $total = sum @grades;
-	$beancount->{$name} = $total;
-	$grades[-1] = $grades[-1] . "(" . $lastpoints . ")";
-	# my @figures = map { "$grades[$_]($beans[$_])" } 0..$#weeks;
-	# no warnings;
-	write REP;
-	# use warnings;
-}
 
 # my @averagework = map { int($averagescore[$_]) . "(" . int($averagework[$_]) . ")" } @weeks;
 @averagework = map { floor $_ } @averagework;
-my $target = floor 80 * @weeks / @totalweeks;
+my $target = floor 80 * @weeks / @$totalweeks;
 
-print REP "\n";
-REP->format_name($format_total[@totalweeks]);
-write REP;
-close REP;
+	print REP "\n";
+	REP->format_name($format_total[@$totalweeks]);
+	write REP;
+	close REP;
+
+}
 
 format TOP2 =
              $class->{league} Classwork
@@ -180,7 +171,7 @@ format TOP13 =
              $class->{league} Classwork
                     Weeks: Grade(Work Points)
 @<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
-'Name', 'ID', @romans[@weeks], 'Total Classwork'
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
 our ($name, $id, @grades, $total);
