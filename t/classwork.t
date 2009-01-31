@@ -119,7 +119,7 @@ is_deeply( $l->names2groups('fourth'), {
          }, 'map names to groups in 4th session');
 is( $l->name2group('third', 'Rick'), 'Gray', 'Which group is Rick in in 3th session');
 is( $l->name2group('second', 'Nancy'), 'DarkBlue', 'Which group is Nancy in in 2th session');
-is( eval{ $l->name2group('second', 'KarlMarx') }, undef, 'Which group is Karl Marx in in 2th session');
+is( eval{ $l->name2group('second', 'KarlMarx') }, undef, 'Which group is Karl Marx in in 2th session, but dies.');
 is_deeply( $l->merits(14), {
     Black  => 9, BlackBlack => 4, Brown  => 2, DarkBlue => 4, DarkGreen => 11,
     Gray   => 6, LightBlue => 1, LightGreen => 3, Orange => 6, Pink  => 6,
@@ -143,7 +143,7 @@ is_deeply( $l->favor(2), {
    Black  => 1, BlackBlack => 1, Brown  => 1, DarkBlue => 1, DarkGreen => 1,
    Gray   => 1, LightBlue => 1, LightGreen => 1, Orange => 1, Pink   => 0,
    Purple => 1, Red    => 1, White  => 1, Yellow => 0}, "favor to avoid 0");
-is( $l->maxDemerit(2), 7, "group with most absences, tardies");
+is( $l->maxDemerit(2), 7, "group with most absences, tardies' demerits");
 is_deeply( $l->meritDemerit(2), {
   Black  => 11, BlackBlack => 2, Brown  => 10, DarkBlue => 10, DarkGreen =>11,
   Gray   => 11, LightBlue => 8, LightGreen => 9, Orange => 10, Pink   => 5,
