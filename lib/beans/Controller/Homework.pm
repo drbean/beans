@@ -29,47 +29,6 @@ sub index :Path :Args(0) {
     $c->response->body('Matched beans::Controller::Homework in Homework.');
 }
 
-=head2 request
-
-Seek listing of homework scores for one player.
-
-=cut
-
-sub request : Local {
-	my ($self, $c) = @_;
-}
-
-=head2 list
-
-Calculate homework score for one player using Moose homework script.
-
-=cut
-
-sub list : Local {
-	my ($self, $c) = @_;
-	my $params = $c->request->params;
-	my $leagueId = $params->{league};
-	my $playerName = $params->{player};
-	my $playerId = $params->{id};
-	my $league = Homework->new( leagueId => "/home/greg/beans/$leagueId" );
-	if ( $league and $league->is_member($playerId) )
-	{
-		my $player = Player->new( league => $league, id => $playerId );
-		if ( $playerName eq $player->name ) {
-			my $rounds = $league->rounds;
-			my $grades = $player->grades;
-			$c->stash->{league} = $leagueId;
-			$c->stash->{player} = $playerName;
-			$c->stash->{id} = $playerId;
-			$c->stash->{weeks} = [ map { { name => $rounds->[$_],
-				score => $grades->[$_] } } 0..$#$grades ];
-			$c->stash->{total} = $player->total;
-			$c->stash->{percent} = $player->percent;
-
-		}
-	}
-}
-
 =head1 AUTHOR
 
 Dr Bean
