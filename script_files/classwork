@@ -27,26 +27,27 @@ sub run {
 	our $totalweeks = $league->allweeks;
 	my $lastweek = $league->lastweek;
 	my $leaguemembers = $league->members;
-	my (%groupscores, %indscores, %indwork, $totalaverage, %averagescore);
+	my (%groupscores, %indscores, %indwork, %averagescore);
 	for my $session ( @$series )
 	{
 		my $groups = $league->groups($session);
 		die "$session session, groups not arrayed.\n"
-			if any { ref {$_} ne 'ARRAY' } values %$groups;
+			if any { ref($_) ne 'ARRAY' } values %$groups;
 		my $members2groups = $league->names2groups($session);
 		for my $leaguemember ( @$leaguemembers ) {
 			my $name = $leaguemember->name;
 			die "$session session, $name in no group.\n"
 				unless $members2groups->{$name};
 		}
-		my @weeks = $league->weeks($session);
-		for my $week ( @weeks )
+		my $weeks = $league->weeks($session);
+		my $payout = $league->payout($session);
+		our %averagework;
+		for my $week ( @$weeks )
 		{
 			my $work = $league->meritDemerit($week);
 			my %logwork = map { $_ => $work->{$_} == 0 ?
 				0 : 1 + log $work->{$_} } keys %$groups;
 			my $totalwork = sum values %logwork;
-			my $payout = $league->payout($week);
 			while ( my ($group, $names) = each %$groups ) {
 				$groupscores{$week}{$group} = $totalwork == 0?
 				  0: floor($logwork{$group}*$payout/$totalwork);
@@ -55,12 +56,14 @@ sub run {
 				$indwork{$week}{$_} =
 					$work->{$group} for @$names;
 			}
+			$averagework{$week} = $totalwork / keys %$groups;
 			$averagescore{$week} = 
-				sum( values %{$groupscores{$week}} )/@$groups;
+				sum( values %{$groupscores{$week}} )
+						/ keys %$groups;
 		}
 	}
 
-	$totalaverage = sum @averagescore{@$totalweeks};
+	our $target = sum @averagescore{@$totalweeks};
 
 	open REP, '>class.tmp' or die 'class.tmp? $!'; 
 	our @romans = qw/'' I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII/;
@@ -75,11 +78,11 @@ sub run {
 	{
 		our $name = $member->name;
 		our $id = $member->id;
-		my $lastpoints = $indwork{$lastweek}{$id};
+		my $lastpoints = $indwork{$lastweek}{$name};
 		my @missing;
 		our @grades = ();
 		for my $week ( @$totalweeks) {
-			my $score = $indscores{$week}{$id};
+			my $score = $indscores{$week}{$name};
 			push @missing, $week if not defined $score;
 			push @grades, $score;
 		}
@@ -221,50 +224,50 @@ format WEEKS13 =
 $name,  $id,	@grades, $total
 .
 
-our (@averagework, $target);
+our (%averagework, $target);
 format TOTAL2 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<<      @<<<<
-'Average Work Points',  @averagework,            $target
+'Average Work Points',  @averagework{@$totalweeks},            $target
 .
 format TOTAL4 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<<      @<<<<
-'Average Work Points',  @averagework,            $target
+'Average Work Points',  @averagework{@$totalweeks},            $target
 .
 format TOTAL5 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<<      @<<<<
-'Average Work Points',  @averagework,            $target
+'Average Work Points',  @averagework{@$totalweeks},            $target
 .
 format TOTAL6 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
-'Average Work Points',  @averagework,            $target
+'Average Work Points',  @averagework{@$totalweeks},            $target
 .
 format TOTAL7 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
-'Average Work Points',  @averagework,            $target
+'Average Work Points',  @averagework{@$totalweeks},            $target
 .
 format TOTAL8 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
-'Average Work Points',  @averagework,            $target
+'Average Work Points',  @averagework{@$totalweeks},            $target
 .
 format TOTAL9 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
-'Average Work Points',  @averagework,            $target
+'Average Work Points',  @averagework{@$totalweeks},            $target
 .
 format TOTAL10 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
-'Average Work Points',  @averagework,            $target
+'Average Work Points',  @averagework{@$totalweeks},            $target
 .
 format TOTAL11 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
-'Average Work Points',  @averagework,            $target
+'Average Work Points',  @averagework{@$totalweeks},            $target
 .
 format TOTAL12 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
-'Average Work Points',  @averagework,            $target
+'Average Work Points',  @averagework{@$totalweeks},            $target
 .
 format TOTAL13 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
-'Average Work Points',  @averagework,            $target
+'Average Work Points',  @averagework{@$totalweeks},            $target
 .
 __DATA__
 
