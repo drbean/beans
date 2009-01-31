@@ -11,6 +11,7 @@ use IO::Handle;
 use Cwd;
 use Pod::Usage;
 
+use lib 'lib';
 use Bean;
 
 run() unless caller;
