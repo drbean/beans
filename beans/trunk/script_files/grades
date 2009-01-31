@@ -24,9 +24,6 @@ sub run {
 	my $leagueId = $script->league;
 	my $league = Grades->new( leagueId => $leagueId ) or die 
 		"No $leagueId league: $!";
-	my @members = sort { $a->{id} cmp $b->{id} } @{$league->{member}};
-	my %ids = map { $_->{name} => $_->{id} } @members;
-	my %names = map { $_->{id} => $_->{name} } @members;
 	my $hw = $league->hw;
 	my $examdirs = $league->{exams};
 	my @exams;
