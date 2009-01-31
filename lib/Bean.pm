@@ -38,6 +38,7 @@ sub _build_members {
 }
 has 'absentees' => (is => 'ro', isa => 'ArrayRef', lazy => 1, default =>
 				sub { shift->yaml->{absent} } );
+
 sub is_member {
 	my $self = shift;
 	my $id = shift;
@@ -236,9 +237,7 @@ sub tardies {
 	+{ map { $_ => $card->{$_}->{tardies} } keys %$groups };
 }
 
-=head2
-
-payout
+=head2 payout
 
 How much should be given out for each week in this session, so that the total score of each player over the series averages 80?
 
@@ -253,9 +252,7 @@ sub payout {
 	my $payout = (80/@$sessions) * (keys %$groups) / @$weeks;
 }
 
-=head2
-
-demerits
+=head2 demerits
 
 The demerits that week. calculated as twice the number of absences, plus the number of tardies. In a four-member group, this ranges from 0 to 8.
 
@@ -271,9 +268,7 @@ sub demerits {
 	+{map {$_ => ($absences->{$_} * 2 + $tardies->{$_} * 1)} keys %$groups};
 }
 
-=head2
-
-favor
+=head2 favor
 
 A score of 2 given to groups with no more than 6 demerits, to prevent groups who were all there but didn't do anything (ie had no merits and no demerits) from getting a log score of 0, and so getting a grade of 0 for that week.
 
@@ -288,9 +283,7 @@ sub favor {
 	+{ map {$_ => ($demerits->{$_} < 7? 1: 0)} keys %$groups };
 }
 
-=head2
-
-maxDemerit
+=head2 maxDemerit
 
 The max demerit that week. achieved by the group with the most absences and tardies.
 
@@ -303,9 +296,7 @@ sub maxDemerit {
 	max( values %$demerits );
 }
 
-=head2
-
-meritDemerit
+=head2 meritDemerit
 
 Let groups with no merits, and no demerits get a score greater than 1, so the log score is greater than 0. Let groups with 3 or more absences and 1 tardies not be eligible for this favor, but get at least 0. Let other groups get the number of merits - number of demerits, but also be eligible for the favor, and get a score of above 1.
 
@@ -323,6 +314,13 @@ sub meritDemerit {
 	+{ map {$_=> $maxDemerit+$merits->{$_}+$favor->{$_}-$demerits->{$_}}
 		keys %$groups };
 }
+
+package Grades;
+use Moose;
+extends 'League';
+
+has 'weights' => (is => 'ro', isa => 'HashRef', lazy => 1, required => 1,
+				default => sub { shift->yaml->{weights} } );
 
 package Player;
 use Moose;
@@ -342,8 +340,8 @@ sub _build_name {
 	$member->name;
 }
 has 'Chinese' => (is => 'ro', isa => 'Str');
-has 'grades' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
-sub _build_grades {
+has 'hwgrades' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
+sub _build_hwgrades {
 	my $self = shift;
 	my $id = $self->id;
 	my $league = $self->league;
@@ -354,8 +352,8 @@ sub _build_grades {
 has 'total' => (is => 'ro', isa => 'Int', lazy_build => 1);
 sub _build_total {
 	my $self = shift;
-	my $grades = $self->grades;
-	sum @$grades;
+	my $hwgrades = $self->hwgrades;
+	sum @$hwgrades;
 }
 has 'percent' => (is => 'ro', isa => 'Int', lazy_build => 1);
 sub _build_percent {
