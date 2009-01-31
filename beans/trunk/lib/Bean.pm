@@ -315,6 +315,22 @@ sub meritDemerit {
 		keys %$groups };
 }
 
+=head2 logwork
+
+The points given by the teacher are log-scaled to prevent active students from taking all the payout, and the other students getting very low grades. There may be better ways of grading to the curve than using log scaling. The log of one point is 0, which results in a grade of 0 for that week for that group.
+
+=cut
+
+sub logwork {
+	my $self = shift;
+	my $week = shift;
+	my $work = $self->meritDemerit($week);
+	my $session = $self->week2session($week);
+	my $groups = $self->groups($session);
+	+{ map { $_ => $work->{$_} == 0 ?  0 : 1 + log $work->{$_} }
+		keys %$groups };
+}
+
 package Grades;
 use Moose;
 extends 'League';
