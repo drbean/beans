@@ -4,6 +4,9 @@ use strict;
 use warnings;
 use parent 'Catalyst::Controller';
 
+use lib 'lib';
+use Bean;
+
 #
 # Sets the actions in this controller to be registered with no prefix
 # so they function identically to actions created in MyApp.pm
@@ -70,13 +73,13 @@ sub homework_listing : Local {
 	my $leagueId = $params->{league};
 	my $playerName = $params->{player};
 	my $playerId = $params->{id};
-	my $league = League->new( leagueId => "/home/drbean/class/$leagueId" );
+	my $league = Homework->new( leagueId => "/home/greg/beans/$leagueId" );
 	if ( $league and $league->is_member($playerId) )
 	{
 		my $player = Player->new( league => $league, id => $playerId );
 		if ( $playerName eq $player->name ) {
 			my $rounds = $league->rounds;
-			my $grades = $player->grades;
+			my $grades = $player->hwgrades;
 			$c->stash->{league} = $leagueId;
 			$c->stash->{player} = $playerName;
 			$c->stash->{id} = $playerId;
@@ -98,35 +101,25 @@ sub classwork : Local {
 	my ($self, $c) = @_;
 }
 
-=head2 homework
+=head2 classwork_listing
 
-Seek listing of homework scores for one player.
-
-=cut
-
-sub homework : Local {
-	my ($self, $c) = @_;
-}
-
-=head2 homework_listing
-
-Calculate homework score for one player using Moose homework script.
+Calculate classwork score for one player using Moose classwork script.
 
 =cut
 
-sub homework_listing : Local {
+sub classwork_listing : Local {
 	my ($self, $c) = @_;
 	my $params = $c->request->params;
 	my $leagueId = $params->{league};
 	my $playerName = $params->{player};
 	my $playerId = $params->{id};
-	my $league = League->new( leagueId => "/home/drbean/class/$leagueId" );
+	my $league = Classwork->new( leagueId => "/home/greg/beans/$leagueId" );
 	if ( $league and $league->is_member($playerId) )
 	{
 		my $player = Player->new( league => $league, id => $playerId );
 		if ( $playerName eq $player->name ) {
 			my $rounds = $league->rounds;
-			my $grades = $player->grades;
+			my $grades = $player->hwgrades;
 			$c->stash->{league} = $leagueId;
 			$c->stash->{player} = $playerName;
 			$c->stash->{id} = $playerId;
