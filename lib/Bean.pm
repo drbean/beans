@@ -104,9 +104,10 @@ package Classwork;
 use Moose;
 extends 'League';
 use YAML qw/LoadFile/;
-use List::Util qw/max/;
+use List::Util qw/max sum/;
 use List::MoreUtils qw/any/;
 use Carp;
+use POSIX;
 
 has 'series' => (is => 'ro', isa => 'ArrayRef', lazy => 1, default =>
 				sub { shift->yaml->{series} } );
@@ -329,6 +330,24 @@ sub logwork {
 	my $groups = $self->groups($session);
 	+{ map { $_ => $work->{$_} == 0 ?  0 : 1 + log $work->{$_} }
 		keys %$groups };
+}
+
+=head2 work2grades
+
+The work (ie merits - demerits) of the groups for the week, as a percentage of the total work, determines the payout of grades, which should average 80 over the sessions of play.
+
+=cut
+
+sub work2grades {
+	my $self = shift;
+	my $week = shift;
+	my $work = $self->logwork($week);
+	my $session = $self->week2session($week);
+	my $groups = $self->groups($session);
+	my $totalwork = sum values %$work;
+	my $payout = $self->payout($session);
+	+{ map { $_ => $totalwork == 0? 0: floor( $work->{$_}*$payout/
+						$totalwork ) } keys %$groups };
 }
 
 package Grades;
