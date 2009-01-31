@@ -16,7 +16,7 @@ beans::Controller::Root - Root Controller for beans
 
 =head1 DESCRIPTION
 
-[enter your description here]
+Only 3 actions are possible for the user with this Controller, homework, classwork and grades requests, so they are here rather than have separate namespaces.
 
 =head1 METHODS
 
@@ -47,6 +47,16 @@ Attempt to render a view, if needed.
 =cut 
 
 sub end : ActionClass('RenderView') {}
+
+=head2 classwork
+
+Request a listing of classwork results
+
+=cut 
+
+sub classwork : Local {
+	my ($self, $c) = @_;
+}
 
 =head1 AUTHOR
 
