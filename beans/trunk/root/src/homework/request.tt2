@@ -5,6 +5,7 @@
   <tr><td>League:</td><td>
   <select name="league" size="[% leagues.size %]">
 
+<option value="t/league">Test League</option>
 <option value="GL00032">GL00032日語文共同學制虛擬班二 初級英文聽說訓練</option>
 <option value="GL00037">GL00037日語文共同學制虛擬班二 初級英文聽說訓練</option>
 <option value="GL00036">GL00036日語文共同學制虛擬班二 中級英文聽說訓練</option>
