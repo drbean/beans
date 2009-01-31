@@ -51,7 +51,7 @@ sub list : Local {
 	my $leagueId = $params->{league};
 	my $playerName = $params->{player};
 	my $playerId = $params->{id};
-	my $league = League->new( leagueId => "/home/drbean/class/$leagueId" );
+	my $league = Homework->new( leagueId => "/home/greg/beans/$leagueId" );
 	if ( $league and $league->is_member($playerId) )
 	{
 		my $player = Player->new( league => $league, id => $playerId );
