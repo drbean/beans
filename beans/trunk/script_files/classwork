@@ -46,16 +46,15 @@ sub run {
 		{
 			my $work = $league->meritDemerit($week);
 			my $logwork = $league->logwork($week);
-			my $totalwork = sum values %$logwork;
+			my $totalwork = sum values %$work;
+			$groupscores{$week} = $league->work2grades($week);
 			while ( my ($group, $names) = each %$groups ) {
-				$groupscores{$week}{$group} =
-$totalwork == 0? 0: floor($logwork->{$group}*$payout/$totalwork);
 				$indscores{$week}{$_} =
 					$groupscores{$week}{$group} for @$names;
 				$indwork{$week}{$_} =
 					$work->{$group} for @$names;
 			}
-			$averagework{$week} = $totalwork / keys %$groups;
+			$averagework{$week} = floor($totalwork / keys %$groups);
 			$averagescore{$week} = 
 				sum( values %{$groupscores{$week}} )
 						/ keys %$groups;
