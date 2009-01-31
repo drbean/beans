@@ -236,7 +236,7 @@ sub tardies {
 	+{ map { $_ => $card->{$_}->{tardies} } keys %$groups };
 }
 
-=over 1
+=head2
 
 payout
 
@@ -253,7 +253,7 @@ sub payout {
 	my $payout = (80/@$sessions) * (keys %$groups) / @$weeks;
 }
 
-=over 1
+=head2
 
 demerits
 
@@ -271,6 +271,14 @@ sub demerits {
 	+{map {$_ => ($absences->{$_} * 2 + $tardies->{$_} * 1)} keys %$groups};
 }
 
+=head2
+
+favor
+
+A score of 2 given to groups with no more than 6 demerits, to prevent groups who were all there but didn't do anything (ie had no merits and no demerits) from getting a log score of 0, and so getting a grade of 0 for that week.
+
+=cut
+
 sub favor {
 	my $self = shift;
 	my $week = shift;
@@ -280,7 +288,7 @@ sub favor {
 	+{ map {$_ => ($demerits->{$_} < 7? 1: 0)} keys %$groups };
 }
 
-=over 1
+=head2
 
 maxDemerit
 
@@ -295,7 +303,7 @@ sub maxDemerit {
 	max( values %$demerits );
 }
 
-=over 1
+=head2
 
 meritDemerit
 
