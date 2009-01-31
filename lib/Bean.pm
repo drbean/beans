@@ -105,6 +105,7 @@ extends 'League';
 use YAML qw/LoadFile/;
 use List::Util qw/max/;
 use List::MoreUtils qw/any/;
+use Carp;
 
 has 'series' => (is => 'ro', isa => 'ArrayRef', lazy => 1, default =>
 				sub { shift->yaml->{series} } );
@@ -170,7 +171,7 @@ sub week2session {
 	while ( my ($session, $weeks) = each %sessions2weeks ) {
 		return $session if any { $_ eq $week } @$weeks;
 	}
-	die "Week $week in none of @$sessions sessions.\n";
+	croak "Week $week in none of @$sessions sessions.\n";
 }
 
 sub names2groups {
@@ -234,6 +235,14 @@ sub tardies {
 	my $card = $data->{$week};
 	+{ map { $_ => $card->{$_}->{tardies} } keys %$groups };
 }
+
+=over 1
+
+payout
+
+How much should be given out for each week in this session, so that the total score of each player over the series averages 80?
+
+=cut
 
 sub payout {
 	my $self = shift;
