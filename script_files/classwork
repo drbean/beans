@@ -269,56 +269,6 @@ format TOTAL13 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
 'Average Work Points',  @averagework{@$totalweeks},            $target
 .
-__DATA__
-
-my $finalexam = LoadFile "/home/$ENV{USER}/$league/f/gf.yaml";
-open FINAL, '>>grades.tmp' or die 'grades.tmp? $!'; 
-format FINAL_TOP = 
----
-Grades
-Final/100
----
-.
-foreach my $member ( @members ) 
-{
-	my $id = $member->{id};
-	my $final = round( $finalexam->{$id} * 5 );
-	format FINAL =
-@<<<<<<	@<<<
-$id,	$final
-.
-	write FINAL;
-}
-close FINAL;
-
-my $midterm2 = LoadFile "/home/$ENV{USER}/$league/m2/gm2.yaml";
-open COURSE, '>>grades.tmp' or die 'grades.tmp? $!'; 
-format COURSE_TOP = 
----
-Grades
-Coursework/100
----
-.
-foreach my $member ( @members ) 
-{
-	my $id = $member->{id};
-	my $name = $member->{name};
-	my $homework = min 20, $hw->{$id};
-	my $beans = min 20, $beans->{$name}/5;
-	my $exam = max 0, $midterm2->{$id};
-	my $coursework = round( ($homework + $beans + $exam) * 5 / 3 );
-	format COURSE =
-@<<<<<<	@<<<
-$id,	$coursework
-.
-	write COURSE;
-}
-
-sub round 
-{
-	my $score = shift;
-	$score - int( $score ) >= 0.5? int( $score ) + 1: int( $score );
-}
 
 __END__
 
