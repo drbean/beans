@@ -106,77 +106,77 @@ sub run {
 our (@romans, $totalweeks);
 format TOP2 =
              $class->{league} Classwork
-                    Weeks: Grade(Work Points)
+                    Weeks: Grade(Merits/Demerits)
 @<<<        @<<         @<<< @<<<       @<<<<<<<<<<<<<<
 'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
 format TOP4 =
              $class->{league} Classwork
-                    Weeks: Grade(Work Points)
+                    Weeks: Grade(Merits/Demerits)
 @<<<        @<<         @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
 'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
 format TOP5 =
              $class->{league} Classwork
-                    Weeks: Grade(Work Points)
+                    Weeks: Grade(Merits/Demerits)
 @<<<        @<<         @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
 'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
 format TOP6 =
              $class->{league} Classwork
-                    Weeks: Grade(Work Points)
+                    Weeks: Grade(Merits/Demerits)
 @<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
 'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
 format TOP7 =
              $class->{league} Classwork
-                    Weeks: Grade(Work Points)
+                    Weeks: Grade(Merits/Demerits)
 @<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
 'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
 format TOP8 =
              $class->{league} Classwork
-                    Weeks: Grade(Work Points)
+                    Weeks: Grade(Merits/Demerits)
 @<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
 'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
 format TOP9 =
              $class->{league} Classwork
-                    Weeks: Grade(Work Points)
+                    Weeks: Grade(Merits/Demerits)
 @<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
 'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
 format TOP10 =
              $class->{league} Classwork
-                    Weeks: Grade(Work Points)
+                    Weeks: Grade(Merits/Demerits)
 @<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
 'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
 format TOP11 =
              $class->{league} Classwork
-                    Weeks: Grade(Work Points)
+                    Weeks: Grade(Merits/Demerits)
 @<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
 'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
 format TOP12 =
              $class->{league} Classwork
-                    Weeks: Grade(Work Points)
+                    Weeks: Grade(Merits/Demerits)
 @<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
 'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
 format TOP13 =
              $class->{league} Classwork
-                    Weeks: Grade(Work Points)
+                    Weeks: Grade(Merits/Demerits)
 @<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
 'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
@@ -230,47 +230,47 @@ $name,  $id,	@grades, $total
 our (%averagework, $target);
 format TOTAL2 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<<      @<<<<
-'Average Work Points',  @averagework{@$totalweeks},            $target
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
 .
 format TOTAL4 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<<      @<<<<
-'Average Work Points',  @averagework{@$totalweeks},            $target
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
 .
 format TOTAL5 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<<      @<<<<
-'Average Work Points',  @averagework{@$totalweeks},            $target
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
 .
 format TOTAL6 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
-'Average Work Points',  @averagework{@$totalweeks},            $target
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
 .
 format TOTAL7 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
-'Average Work Points',  @averagework{@$totalweeks},            $target
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
 .
 format TOTAL8 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
-'Average Work Points',  @averagework{@$totalweeks},            $target
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
 .
 format TOTAL9 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
-'Average Work Points',  @averagework{@$totalweeks},            $target
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
 .
 format TOTAL10 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
-'Average Work Points',  @averagework{@$totalweeks},            $target
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
 .
 format TOTAL11 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
-'Average Work Points',  @averagework{@$totalweeks},            $target
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
 .
 format TOTAL12 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
-'Average Work Points',  @averagework{@$totalweeks},            $target
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
 .
 format TOTAL13 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
-'Average Work Points',  @averagework{@$totalweeks},            $target
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
 .
 
 __END__
