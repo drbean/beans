@@ -346,7 +346,7 @@ sub work2grades {
 	my $groups = $self->groups($session);
 	my $totalwork = sum values %$work;
 	my $payout = $self->payout($session);
-	+{ map { $_ => $totalwork == 0? 0: floor( $work->{$_}*$payout/
+	+{ map { $_ => $totalwork == 0? 0: sprintf "%.0f", ( $work->{$_}*$payout/
 						$totalwork ) } keys %$groups };
 }
 
