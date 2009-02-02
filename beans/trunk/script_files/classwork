@@ -21,49 +21,51 @@ sub run {
 	pod2usage(1) if $script->help;
 	pod2usage(-exitstatus => 0, -verbose => 2) if $script->man;
 	my $leagueId = $script->league;
-	my $league = Classwork->new( leagueId => $leagueId ) or
+	my $league = League->new( leagueId => $leagueId ) or
 		die "No $leagueId league: $!";
-	my $series = $league->series;
-	our $totalweeks = $league->allweeks;
-	my $lastweek = $league->lastweek;
+	my $classwork = Classwork->new( league => $league );
+	my $series = $classwork->series;
+	our $totalweeks = $classwork->allweeks;
+	my $lastweek = $classwork->lastweek;
 	my $leaguemembers = $league->members;
 	my (%groupscores, %indscores, %indwork, %averagescore);
 	for my $session ( @$series )
 	{
-		my $groups = $league->groups($session);
+		my $groups = $classwork->groups($session);
 		die "$session session, groups not arrayed.\n"
 			if any { ref($_) ne 'ARRAY' } values %$groups;
-		my $members2groups = $league->names2groups($session);
+		my $members2groups = $classwork->names2groups($session);
 		for my $leaguemember ( @$leaguemembers ) {
 			my $name = $leaguemember->name;
 			die "$session session, $name in no group.\n"
 				unless $members2groups->{$name};
 		}
-		my $weeks = $league->weeks($session);
-		my $payout = $league->payout($session);
+		my $weeks = $classwork->weeks($session);
+		my $payout = $classwork->payout($session);
 		our %averagework;
 		for my $week ( @$weeks )
 		{
-			my $work = $league->meritDemerit($week);
-			my $logwork = $league->logwork($week);
+			my $work = $classwork->meritDemerit($week);
+			my $logwork = $classwork->logwork($week);
 			my $totalwork = sum values %$work;
-			$groupscores{$week} = $league->work2grades($week);
+			$groupscores{$week} = $classwork->work2grades($week);
 			while ( my ($group, $names) = each %$groups ) {
 				$indscores{$week}{$_} =
 					$groupscores{$week}{$group} for @$names;
 				$indwork{$week}{$_} =
 					$work->{$group} for @$names;
 			}
-			$averagework{$week} = floor($totalwork / keys %$groups);
+			$averagework{$week} = $league->sprintround($totalwork /
+								keys %$groups);
 			$averagescore{$week} = 
 				sum( values %{$groupscores{$week}} )
-						/ keys %$groups;
+						/ keys %$groups ;
 		}
 	}
 
-	our $target = sum @averagescore{@$totalweeks};
+	our $target = $league->sprintround( sum @averagescore{@$totalweeks} );
 
-	open REP, '>class.tmp' or die 'class.tmp? $!'; 
+	open REP, ">$leagueId/class.tmp" or die 'class.tmp? $!'; 
 	our @romans = qw/'' I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII/;
 	my @format_top = qw/'' TOP1 TOP2 TOP3 TOP4 TOP5 TOP6 TOP7 TOP8 TOP9 TOP10 TOP11 TOP12 TOP13/;
 	my @formats = qw/'' WEEKS1 WEEKS2 WEEKS3 WEEKS4 WEEKS5 WEEKS6 WEEKS7 WEEKS8 WEEKS9 WEEKS10 WEEKS11 WEEKS12 WEEKS13/;
@@ -71,6 +73,7 @@ sub run {
 
 	REP->format_top_name($format_top[@$totalweeks]);
 	REP->format_name($formats[@$totalweeks]);
+	my %classworktotals;
 
 	my $id = $script->player && $league->is_member($script->player)?
 				$script->player: undef;
@@ -83,24 +86,27 @@ sub run {
 		our $id = $member->id;
 		my $lastpoints = $indwork{$lastweek}{$name};
 		my @missing;
-		our @grades = ();
+		my @grades = ();
 		for my $week ( @$totalweeks) {
 			my $score = $indscores{$week}{$name};
 			push @missing, $week if not defined $score;
 			push @grades, $score;
 		}
 		warn "${name}'s grade missing for weeks @romans[@missing]" if @missing;
-		our $total = sum @grades;
+		my $total = sum @grades;
+		$classworktotals{$id} = $total;
+		our @roundedgrades = $league->sprintround(@grades);
+		our $roundedtotal = $league->sprintround($total);
 		$grades[-1] = $grades[-1] . "(" . $lastpoints . ")";
 		write REP;
-	
 	}
-
 	print REP "\n";
 	REP->format_name($format_total[@$totalweeks]);
 	write REP;
 	close REP;
-
+	my $oldclassworktotals = $league->input("$leagueId/classwork.yaml");
+	$league->save("$leagueId/classwork.yaml.bak", $oldclassworktotals);
+	$league->save("$leagueId/classwork.yaml", \%classworktotals);
 }
 
 our (@romans, $totalweeks);
@@ -181,50 +187,50 @@ format TOP13 =
 'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
-our ($name, $id, @grades, $total);
+our ($name, $id, @roundedgrades, $roundedtotal);
 format WEEKS2 =
 @<<<<<<<<<< @<<<<<<<<<  @<<< @<<<<<   @<<
-$name,  $id,	@grades, $total
+$name,  $id,	@roundedgrades, $roundedtotal
 .
 format WEEKS4 =
 @<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<<<<   @<<
-$name,  $id,	@grades, $total
+$name,  $id,	@roundedgrades, $roundedtotal
 .
 format WEEKS5 =
 @<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<<<<   @<<
-$name,  $id,	@grades, $total
+$name,  $id,	@roundedgrades, $roundedtotal
 .
 format WEEKS6 =
 @<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
-$name,  $id,	@grades, $total
+$name,  $id,	@roundedgrades, $roundedtotal
 .
 format WEEKS7 =
 @<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
-$name,  $id,	@grades, $total
+$name,  $id,	@roundedgrades, $roundedtotal
 .
 format WEEKS8 =
 @<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
-$name,  $id,	@grades, $total
+$name,  $id,	@roundedgrades, $roundedtotal
 .
 format WEEKS9 =
 @<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
-$name,  $id,	@grades, $total
+$name,  $id,	@roundedgrades, $roundedtotal
 .
 format WEEKS10 =
 @<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
-$name,  $id,	@grades, $total
+$name,  $id,	@roundedgrades, $roundedtotal
 .
 format WEEKS11 =
 @<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
-$name,  $id,	@grades, $total
+$name,  $id,	@roundedgrades, $roundedtotal
 .
 format WEEKS12 =
 @<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
-$name,  $id,	@grades, $total
+$name,  $id,	@roundedgrades, $roundedtotal
 .
 format WEEKS13 =
 @<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
-$name,  $id,	@grades, $total
+$name,  $id,	@roundedgrades, $roundedtotal
 .
 
 our (%averagework, $target);
