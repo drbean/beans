@@ -382,17 +382,18 @@ sub work2grades {
 package Grades;
 use Moose;
 use YAML qw/LoadFile/;
-use List::Util qw/max/;
+use List::Util qw/sum/;
 use List::MoreUtils qw/all/;
 
-has 'league' => (is =>'ro', isa => 'League', handles => [ 'yaml', 'leagueId' ]);
+has 'league' => (is =>'ro', isa => 'League', handles =>
+	[ 'yaml', 'leagueId', 'input' ]);
 has 'homework' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 sub _build_homework {
 	my $self = shift;
 	my $leaguedir = $self->leagueId;
 	my $data = $self->yaml;
 	my $hwdir = $data->{hw} || "$leaguedir/homework";
-	LoadFile "$hwdir/percent.yaml";
+	$self->input( "$hwdir/percent.yaml" );
 }
 has 'classwork' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 sub _build_classwork {
@@ -400,27 +401,52 @@ sub _build_classwork {
 	my $leaguedir = $self->leagueId;
 	LoadFile "$leaguedir/classwork.yaml";
 }
-has 'examdirs' => (is => 'ro', isa => 'HashRef', lazy => 1, required => 1,
-				default => sub { shift->yaml->{exams} } );
-has 'examMax' => (is => 'ro', isa => 'HashRef', lazy => 1, required => 1,
+has 'examdirs' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
+sub _build_examdirs {
+	my $self = shift;
+	my $leagueId = $self->leagueId;
+	my $examdirs = $self->yaml->{exams};
+	[ map { "$leagueId/$_" } @$examdirs ];
+}
+has 'examMax' => (is => 'ro', isa => 'Int', lazy => 1, required => 1,
 				default => sub { shift->yaml->{examMax} } );
-has 'examGrades' => (is => 'ro', isa => 'HashRef', lazy => 1, lazy_build => 1);
-sub examGrades {
+has 'examResults' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+sub _build_examResults {
 	my $self = shift;
 	my $examdirs = $self->examdirs;
-	my @exams = ;
-	my $examMax = $self->examMax;
-	my @examGrades = map { max 0, $exams[$_]->{$id} } 0..$#exams;
-	warn "$id: " . @examGrades . " exams" unless 
-				all { defined $_ } @examGrades;
+	my @exams = map { $self->input("$_/g.yaml") } @$examdirs;
+	my %ids;
+	for my $exam ( @exams ) { $ids{$_}++ for keys %$exam; }
+	for my $id  ( keys %ids ) {
+		warn "Only $ids{$id} exam results for $id\n" unless 
+				$ids{$id} == @exams;
+	}
+	+{ map { my $id=$_; $id => [ map { $_->{$id} } @exams ] } keys %ids };
+}
+has 'examPercent' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+sub _build_examPercent {
+	my $self = shift;
+	my $scores = $self->examResults;
+	my $max = $self->examMax;
+	+{ map { my $id=$_; $id => [ map { $_*(100/$max) } @{$scores->{$_}} ] }
+		keys %$scores };
+}
+has 'examGrade' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+sub _build_examGrade {
+	my $self = shift;
+	my $grades = $self->examPercent;
+	+{ map { my $numbers=$grades->{$_}; $_ =>sum(@$numbers)/@{$numbers} }
+						keys %$grades };
+}
 has 'weights' => (is => 'ro', isa => 'HashRef', lazy_build => 1 );
 sub _build_weights {
 	my $self = shift;
 	my $weights = $self->yaml->{weights};
 	my @weights = $weights? split m/,|\s+/, $weights:
-				( $weights}->{classwork},
-				$weights}->{homework},
-				$weights}->{exams} );
+				( $weights->{classwork},
+				$weights->{homework},
+				$weights->{exams} );
+}
 
 package Player;
 use Moose;
