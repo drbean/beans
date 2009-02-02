@@ -176,6 +176,7 @@ exams:
   - exam2
   - exam3
   - exam4
+examMax: 15
 regions:
   FrontRight:
     A: DarkGreen
