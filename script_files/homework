@@ -21,13 +21,15 @@ sub run {
 	pod2usage(1) if $script->help;
 	pod2usage(-exitstatus => 0, -verbose => 2) if $script->man;
 	my $leagueId = $script->league;
-	my $league = Homework->new( leagueId => $leagueId ) or
+	my $league = League->new( leagueId => $leagueId ) or
 		die "No $leagueId league: $!";
-	my $hwMax = $league->hwMax;
-	my $rounds = $league->rounds;
+	my $homework = Homework->new( league => $league);
+	my $hwMax = $homework->hwMax;
+	my $rounds = $homework->rounds;
 	my $totalMax = @$rounds * $hwMax;
-	my $oldtotal = $league->totalScores;
-	my $oldpercent = $league->totalPercent;
+	my $hwdir = $homework->hwdir;
+	my $oldtotal = $league->input( $hwdir );
+	my $oldpercent = $league->input( $hwdir );
 	my ($newtotal, $newpercent);
 	my @formats = qw/'' WEEKS1 WEEKS2 WEEKS3 WEEKS4 WEEKS5 WEEKS6 WEEKS7
 		WEEKS8 WEEKS9 WEEKS10 WEEKS11 WEEKS12 WEEKS13/;
@@ -46,14 +48,14 @@ Name        ID  @romans[@$rounds]   Total/$totalMax Grade/100
 	my $id = $script->player && $league->is_member($script->player)?
 				$script->player: undef;
 	my $members = $id ? 
-		[ Player->new( id => $id, league => $league ) ]:
+	     [ Player->new( id => $id, league => $league ) ]:
 		$league->members;
 	foreach my $member ( @$members ) 
 	{
 		our $id = $member->id;
 		our $name = $member->name;
 		# our $indgrades = [ (2) x @$rounds ];
-		our @indgrades = @{ $member->hwgrades };
+		our @indgrades = @{ $homework->hwforid( $id ) };
 		@indgrades = map { $_ == 0.5? substr $_, 1: $_ } @indgrades;
 		die "No homework grade for $name $id" if grep {not defined} @indgrades;
 		our $grade = sum @indgrades;
@@ -65,7 +67,6 @@ Name        ID  @romans[@$rounds]   Total/$totalMax Grade/100
 	} 
 	
 	
-	my $hwdir = $league->hwdir;
 	my $log = io "$hwdir/hwtotal.log";
 	localtime() . ": $0 run to calculate homework totals at round $rounds->[-1].\n"
 										>> $log;
