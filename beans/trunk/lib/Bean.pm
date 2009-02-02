@@ -6,6 +6,8 @@ has 'man' => (is => 'ro', isa => 'Bool');
 has 'help' => (is => 'ro', isa => 'Bool');
 has 'league' => (traits => ['Getopt'], is => 'ro', isa => 'Str',
 		cmd_aliases => 'l',);
+has 'weights' => (traits => ['Getopt'], is => 'ro', isa => 'Str',
+		cmd_aliases => 'w',);
 has 'player' => (traits => ['Getopt'], is => 'ro', isa => 'Str',
 		cmd_aliases => 'p',);
 
@@ -46,17 +48,41 @@ sub is_member {
 	any { $_->{id} eq $id } @{$data->{member}};
 }
 
+sub input {
+	my $self = shift;
+	LoadFile shift();
+}
+
 sub save {
 	my $self = shift;
 	DumpFile shift(), shift();
 }
 
+sub sprintround {
+	my $self = shift;
+	my $arg = shift;
+	unless ( @_ ) { return sprintf '%.0f', $arg }
+	my @returns = ( sprintf '%.0f', $arg );
+	for my $arg ( @_ ) {
+		unless ( ref $arg ) {
+			push @returns, sprintf '%.0f', $arg;
+		}
+		if ( ref( $arg ) eq 'ARRAY' ) {
+			push @returns, +{ map { sprintf '%.0f', $_ } @$arg};
+		}
+		if ( ref( $arg ) eq 'HASH' ) {
+			push @returns, +{ map { $_=>sprintf '%.0f',
+					$arg->{$_} } keys %$arg};
+		}
+	}
+	return wantarray? @returns: \@returns;
+}
 
 package Homework;
 use Moose;
-extends 'League';
 use YAML qw/LoadFile DumpFile/;
 
+has 'league' => (is =>'ro', isa => 'League', handles => [ 'yaml', 'leagueId' ]);
 has 'hwdir' => (is => 'ro', isa => 'Str', lazy_build => 1);
 sub _build_hwdir {
 	my $self = shift;
@@ -71,8 +97,8 @@ sub _build_rounds {
 	my @hw = glob "$hwdir/*.yaml";
 	[ sort {$a<=>$b} map m/^$hwdir\/(\d+)\.yaml$/, @hw ];
 }
-has 'hw' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
-sub _build_hw {
+has 'hwbyround' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+sub _build_hwbyround {
 	my $self = shift;
 	my $hwdir = $self->hwdir;
 	my $rounds = $self->rounds;
@@ -87,28 +113,31 @@ sub _build_totalMax {
 	my $hwMax = $self->hwMax;
 	$hwMax * @$rounds;
 }
-has 'totalScores' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
-sub _build_totalScores {
+
+sub hwforid {
 	my $self = shift;
-	my $hwdir = $self->hwdir;
-	LoadFile "$hwdir/total.yaml";
-}
-has 'totalPercent' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
-sub _build_totalPercent {
-	my $self = shift;
-	my $hwdir = $self->hwdir;
-	LoadFile "$hwdir/percent.yaml";
+	my $hw = $self->hwbyround;
+	my $rounds = $self->rounds;
+	my $id = shift;
+	my @hwbyid;
+	for my $round ( @$rounds ) {
+		if ( $hw->{$round} and defined $hw->{$round}->{$id} ) {
+			push @hwbyid, $hw->{$round}->{$id};
+		}
+		else { warn "No homework result for $id in Round $round\n"; }
+	}
+	\@hwbyid;
 }
 
 package Classwork;
 use Moose;
-extends 'League';
 use YAML qw/LoadFile/;
 use List::Util qw/max sum/;
 use List::MoreUtils qw/any/;
 use Carp;
 use POSIX;
 
+has 'league' => (is =>'ro', isa => 'League', handles => [ 'yaml', 'leagueId' ]);
 has 'series' => (is => 'ro', isa => 'ArrayRef', lazy => 1, default =>
 				sub { shift->yaml->{series} } );
 has 'groupseries' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
@@ -346,16 +375,52 @@ sub work2grades {
 	my $groups = $self->groups($session);
 	my $totalwork = sum values %$work;
 	my $payout = $self->payout($session);
-	+{ map { $_ => $totalwork == 0? 0: sprintf "%.0f", ( $work->{$_}*$payout/
-						$totalwork ) } keys %$groups };
+	+{ map { $_ => $totalwork == 0? 0: ( $work->{$_}*$payout/ $totalwork )
+						} keys %$groups };
 }
 
 package Grades;
 use Moose;
-extends 'League';
+use YAML qw/LoadFile/;
+use List::Util qw/max/;
+use List::MoreUtils qw/all/;
 
-has 'weights' => (is => 'ro', isa => 'HashRef', lazy => 1, required => 1,
-				default => sub { shift->yaml->{weights} } );
+has 'league' => (is =>'ro', isa => 'League', handles => [ 'yaml', 'leagueId' ]);
+has 'homework' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+sub _build_homework {
+	my $self = shift;
+	my $leaguedir = $self->leagueId;
+	my $data = $self->yaml;
+	my $hwdir = $data->{hw} || "$leaguedir/homework";
+	LoadFile "$hwdir/percent.yaml";
+}
+has 'classwork' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+sub _build_classwork {
+	my $self = shift;
+	my $leaguedir = $self->leagueId;
+	LoadFile "$leaguedir/classwork.yaml";
+}
+has 'examdirs' => (is => 'ro', isa => 'HashRef', lazy => 1, required => 1,
+				default => sub { shift->yaml->{exams} } );
+has 'examMax' => (is => 'ro', isa => 'HashRef', lazy => 1, required => 1,
+				default => sub { shift->yaml->{examMax} } );
+has 'examGrades' => (is => 'ro', isa => 'HashRef', lazy => 1, lazy_build => 1);
+sub examGrades {
+	my $self = shift;
+	my $examdirs = $self->examdirs;
+	my @exams = ;
+	my $examMax = $self->examMax;
+	my @examGrades = map { max 0, $exams[$_]->{$id} } 0..$#exams;
+	warn "$id: " . @examGrades . " exams" unless 
+				all { defined $_ } @examGrades;
+has 'weights' => (is => 'ro', isa => 'HashRef', lazy_build => 1 );
+sub _build_weights {
+	my $self = shift;
+	my $weights = $self->yaml->{weights};
+	my @weights = $weights? split m/,|\s+/, $weights:
+				( $weights}->{classwork},
+				$weights}->{homework},
+				$weights}->{exams} );
 
 package Player;
 use Moose;
@@ -375,15 +440,6 @@ sub _build_name {
 	$member->name;
 }
 has 'Chinese' => (is => 'ro', isa => 'Str');
-has 'hwgrades' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
-sub _build_hwgrades {
-	my $self = shift;
-	my $id = $self->id;
-	my $league = $self->league;
-	my $hw = $league->hw;
-	my $rounds = $league->rounds;
-	[ map { $hw->{$_}->{$id} } @$rounds ];
-}
 has 'total' => (is => 'ro', isa => 'Int', lazy_build => 1);
 sub _build_total {
 	my $self = shift;
