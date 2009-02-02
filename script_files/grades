@@ -22,17 +22,12 @@ sub run {
 	pod2usage(1) if $script->help;
 	pod2usage(-exitstatus => 0, -verbose => 2) if $script->man;
 	my $leagueId = $script->league;
-	my $league = Grades->new( leagueId => $leagueId ) or die 
+	my $league = League->new( leagueId => $leagueId ) or die 
 		"No $leagueId league: $!";
-	my $hw = $league->hw;
-	my $examdirs = $league->{exams};
-	my @exams;
-	my $examMax = $league->{examMax};
+	my $grades = Grades->new( league => $league, script => $script );
+	my $hw = $grades->homework;
+	my $classwork = $grades->classwork;
 	my $weights = $league->weights;
-	my @weights = $weights? split m/,|\s+/, $weights:
-				( $league->{weights}->{classwork},
-				$league->{weights}->{homework},
-				$league->{weights}->{exams} );
 	my $total = sum @weights;
 	die "No weighting, classwork=>20, homework=>20, exams=>60?" unless
 							$total == 10 || $total == 100;
@@ -48,9 +43,6 @@ sub run {
 		our $name = $member->{name};
 		our $homework = min 100, $hw->{$id} || 0;
 		our $classwork = min 100, $league->{$name} || 0;
-		our @examGrades = map { max 0, $exams[$_]->{$id} } 0..$#exams;
-		warn "$id: " . @examGrades . " exams" unless 
-					all { defined $_ } @examGrades;
 		my $examGrade = sum(@examGrades) / @examGrades ;
 		our $grade = ( $classwork*$weights[0] + $homework*$weights[1] + $examGrade*(100/$examMax)*$weights[2] ) / $total;
 		warn "$id: classwork $classwork, homework $homework, exams $examGrade"
