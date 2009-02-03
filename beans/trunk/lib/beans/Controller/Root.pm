@@ -6,6 +6,7 @@ use parent 'Catalyst::Controller';
 
 use lib 'lib';
 use Bean;
+use List::Util qw/sum/;
 
 #
 # Sets the actions in this controller to be registered with no prefix
@@ -113,31 +114,33 @@ sub classwork_listing : Local {
 	my ($self, $c) = @_;
 	my $params = $c->request->params;
 	my $leagueId = $params->{league};
-	my $playerName = $params->{player};
+	my $player = $params->{player};
 	my $playerId = $params->{id};
 	my $league = League->new( leagueId => "/home/greg/beans/$leagueId" );
 	my $work = Classwork->new( league => $league );
 	if ( $league and $league->is_member($playerId) )
 	{
-		my $player = Player->new( league => $league, id => $playerId );
-		if ( $playerName eq $player->name ) {
-			my $name = $playerName;
+		my $playerobj = Player->new(league => $league, id => $playerId);
+		if ( $player eq $playerobj->name ) {
+			my $name = $player;
 			my $weeks = $work->allweeks;
-			my @allweeks;
+			my @grades;
 			for my $week ( @$weeks ) {
 				my $group = $work->name2group($week, $name);
 				my $grade = $league->sprintround($work->work2grades($week)->{$group});
-				push @allweeks, {
+				push @grades, {
 					name => $week,
 					grade => $grade};
 			}
-			my $merit = $work->meritDemerit($week)->{$group};
+			my $lastweek = $weeks->[-1];
+			my $lastgrp = $work->name2group($lastweek, $player);
+			my $merit = $work->meritDemerit($lastweek)->{$lastgrp};
 			$allweeks[-1]->{grade} .= "($merit)";
 			$c->stash->{league} = $leagueId;
 			$c->stash->{player} = $name;
 			$c->stash->{id} = $playerId;
-			$c->stash->{weeks} = \@allweeks;
-			$c->stash->{percent} = 0;
+			$c->stash->{weeks} = \@grades;
+			$c->stash->{percent} = sum(map { $_->{grade} } @grades);
 		}
 	}
 }
