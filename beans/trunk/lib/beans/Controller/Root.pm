@@ -73,20 +73,22 @@ sub homework_listing : Local {
 	my $leagueId = $params->{league};
 	my $playerName = $params->{player};
 	my $playerId = $params->{id};
-	my $league = Homework->new( leagueId => "/home/greg/beans/$leagueId" );
+	my $league = League->new( leagueId => "/home/greg/beans/$leagueId" );
+	my $work = Homework->new( league => $league );
 	if ( $league and $league->is_member($playerId) )
 	{
 		my $player = Player->new( league => $league, id => $playerId );
 		if ( $playerName eq $player->name ) {
-			my $rounds = $league->rounds;
-			my $grades = $player->hwgrades;
+			my $rounds = $work->rounds;
+			my $grades = $work->hwforid($playerId);
 			$c->stash->{league} = $leagueId;
 			$c->stash->{player} = $playerName;
 			$c->stash->{id} = $playerId;
 			$c->stash->{weeks} = [ map { { name => $rounds->[$_],
 				score => $grades->[$_] } } 0..$#$grades ];
-			$c->stash->{total} = $player->total;
-			$c->stash->{percent} = $player->percent;
+			$c->stash->{total} = $work->total($playerId);
+			$c->stash->{percent} = $league->sprintround(
+						$work->percent($playerId) );
 		}
 	}
 }
@@ -113,20 +115,29 @@ sub classwork_listing : Local {
 	my $leagueId = $params->{league};
 	my $playerName = $params->{player};
 	my $playerId = $params->{id};
-	my $league = Classwork->new( leagueId => "/home/greg/beans/$leagueId" );
+	my $league = League->new( leagueId => "/home/greg/beans/$leagueId" );
+	my $work = Classwork->new( league => $league );
 	if ( $league and $league->is_member($playerId) )
 	{
 		my $player = Player->new( league => $league, id => $playerId );
 		if ( $playerName eq $player->name ) {
-			my $rounds = $league->rounds;
-			my $grades = $player->hwgrades;
+			my $name = $playerName;
+			my $weeks = $work->allweeks;
+			my @allweeks;
+			for my $week ( @$weeks ) {
+				my $group = $work->name2group($week, $name);
+				my $grade = $league->sprintround($work->work2grades($week)->{$group});
+				push @allweeks, {
+					name => $week,
+					grade => $grade};
+			}
+			my $merit = $work->meritDemerit($week)->{$group};
+			$allweeks[-1]->{grade} .= "($merit)";
 			$c->stash->{league} = $leagueId;
-			$c->stash->{player} = $playerName;
+			$c->stash->{player} = $name;
 			$c->stash->{id} = $playerId;
-			$c->stash->{weeks} = [ map { { name => $rounds->[$_],
-				score => $grades->[$_] } } 0..$#$grades ];
-			$c->stash->{total} = $player->total;
-			$c->stash->{percent} = $player->percent;
+			$c->stash->{weeks} = \@allweeks;
+			$c->stash->{percent} = 0;
 		}
 	}
 }
