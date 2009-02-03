@@ -135,7 +135,8 @@ sub classwork_listing : Local {
 			my $lastweek = $weeks->[-1];
 			my $lastgrp = $work->name2group($lastweek, $player);
 			my $merit = $work->meritDemerit($lastweek)->{$lastgrp};
-			$allweeks[-1]->{grade} .= "($merit)";
+			$grades[-1]->{name} .= "(Merits)";
+			$grades[-1]->{grade} .= "($merit)";
 			$c->stash->{league} = $leagueId;
 			$c->stash->{player} = $name;
 			$c->stash->{id} = $playerId;
