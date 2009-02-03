@@ -61,7 +61,6 @@ sub save {
 sub sprintround {
 	my $self = shift;
 	my $arg = shift;
-	unless ( @_ ) { return sprintf '%.0f', $arg }
 	my @returns = ( sprintf '%.0f', $arg );
 	for my $arg ( @_ ) {
 		unless ( ref $arg ) {
@@ -75,12 +74,14 @@ sub sprintround {
 					$arg->{$_} } keys %$arg};
 		}
 	}
-	return wantarray? @returns: \@returns;
+	return wantarray? @returns: $returns[0] if @returns == 1;
+	return wantarray? @returns: \@returns if @returns >= 1;
 }
 
 package Homework;
 use Moose;
 use YAML qw/LoadFile DumpFile/;
+use List::Util qw/sum/;
 
 has 'league' => (is =>'ro', isa => 'League', handles => [ 'yaml', 'leagueId' ]);
 has 'hwdir' => (is => 'ro', isa => 'Str', lazy_build => 1);
@@ -104,13 +105,13 @@ sub _build_hwbyround {
 	my $rounds = $self->rounds;
 	+{ map { $_ => LoadFile "$hwdir/$_.yaml" } @$rounds };
 }
-has 'hwMax' => (is => 'ro', isa => 'Int', lazy => 1, default =>
+has 'roundMax' => (is => 'ro', isa => 'Int', lazy => 1, default =>
 				sub { shift->yaml->{hwMax} } );
 has 'totalMax' => (is => 'ro', isa => 'Int', lazy_build => 1);
 sub _build_totalMax {
 	my $self = shift;
 	my $rounds = $self->rounds;
-	my $hwMax = $self->hwMax;
+	my $hwMax = $self->roundMax;
 	$hwMax * @$rounds;
 }
 
@@ -127,6 +128,21 @@ sub hwforid {
 		else { warn "No homework result for $id in Round $round\n"; }
 	}
 	\@hwbyid;
+}
+
+sub total {
+	my $self = shift;
+	my $id = shift;
+	my $hw = $self->hwforid($id);
+	sum @$hw;
+}
+
+sub percent {
+	my $self = shift;
+	my $id = shift;
+	my $hw = $self->total($id);
+	my $totalMax = $self->totalMax;
+	$hw * ( 100/ $totalMax );
 }
 
 package Classwork;
@@ -208,7 +224,6 @@ sub week2session {
 sub names2groups {
 	my $self = shift;
 	my $session = shift;
-	my $name = shift;
 	my $groups = $self->groups($session);
 	my @names; push @names, @$_ for values %$groups;
 	my %names2groups;
@@ -224,7 +239,8 @@ sub names2groups {
 
 sub name2group {
 	my $self = shift;
-	my $session = shift;
+	my $week = shift;
+	my $session = $self->week2session($week);
 	my $name = shift;
 	my $groups = $self->groups($session);
 	my @names; push @names, @$_ for values %$groups;
