@@ -23,7 +23,6 @@ sub _build_yaml {
 		my $league = $instance->leagueId;
 		LoadFile "$league/league.yaml";
 }
-
 has 'name' => (is => 'ro', isa => 'Str', lazy_build => 1);
 sub _build_name {
 	my $self = shift;
@@ -60,14 +59,13 @@ sub save {
 
 sub sprintround {
 	my $self = shift;
-	my $arg = shift;
-	my @returns = ( sprintf '%.0f', $arg );
+	my @returns;
 	for my $arg ( @_ ) {
 		unless ( ref $arg ) {
 			push @returns, sprintf '%.0f', $arg;
 		}
 		if ( ref( $arg ) eq 'ARRAY' ) {
-			push @returns, +{ map { sprintf '%.0f', $_ } @$arg};
+			push @returns, [ map { sprintf '%.0f', $_ } @$arg ];
 		}
 		if ( ref( $arg ) eq 'HASH' ) {
 			push @returns, +{ map { $_=>sprintf '%.0f',
@@ -150,7 +148,7 @@ use Moose;
 use YAML qw/LoadFile/;
 use List::Util qw/max sum/;
 use List::MoreUtils qw/any/;
-use Carp;
+use Carp qw/croak/;
 use POSIX;
 
 has 'league' => (is =>'ro', isa => 'League', handles => [ 'yaml', 'leagueId' ]);
@@ -253,6 +251,42 @@ sub name2group {
 	shift @name2groups;
 }
 
+=head2 groupsNotInCard
+
+Test groups exist in data
+
+=cut
+
+sub groupsNotInCard {
+	my $self = shift;
+	my $groups = shift;
+	my $card = shift;
+	my $week = shift;
+	my %common; $common{$_}++ for keys %$groups, keys %$card;
+	my @notInCard = grep { $common{$_} != 2 } keys %$groups;
+	croak "@notInCard groups not in week $week data" if @notInCard;
+}
+
+=head2 groupDataOnCard
+
+Test group data exists on card
+
+=cut
+
+sub groupDataOnCard {
+	my $self = shift;
+	my $groups = shift;
+	my $card = shift;
+	my $week = shift;
+	my @noData = grep
+			{ my $group = $card->{$_};
+			not defined $group->{merits}
+			or not defined $group->{absences}
+			or not defined $group->{tardies} }
+			keys %$groups;
+	croak "@noData groups missing data in week $week" if @noData;
+}
+
 sub merits {
 	my $self = shift;
 	my $data = $self->data;
@@ -260,6 +294,8 @@ sub merits {
 	my $session = $self->week2session($week);
 	my $groups = $self->groups($session);
 	my $card = $data->{$week};
+	$self->groupsNotInCard($groups, $card, $week);
+	$self->groupDataOnCard($groups, $card, $week);
 	+{ map { $_ => $card->{$_}->{merits} } keys %$groups };
 }
 
@@ -270,6 +306,8 @@ sub absences {
 	my $session = $self->week2session($week);
 	my $groups = $self->groups($session);
 	my $card = $data->{$week};
+	$self->groupsNotInCard($groups, $card, $week);
+	$self->groupDataOnCard($groups, $card, $week);
 	+{ map { $_ => $card->{$_}->{absences} } keys %$groups };
 }
 
@@ -280,6 +318,8 @@ sub tardies {
 	my $session = $self->week2session($week);
 	my $groups = $self->groups($session);
 	my $card = $data->{$week};
+	$self->groupsNotInCard($groups, $card, $week);
+	$self->groupDataOnCard($groups, $card, $week);
 	+{ map { $_ => $card->{$_}->{tardies} } keys %$groups };
 }
 
@@ -454,14 +494,15 @@ sub _build_examGrade {
 	+{ map { my $numbers=$grades->{$_}; $_ =>sum(@$numbers)/@{$numbers} }
 						keys %$grades };
 }
-has 'weights' => (is => 'ro', isa => 'HashRef', lazy_build => 1 );
+has 'weights' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
 sub _build_weights {
 	my $self = shift;
 	my $weights = $self->yaml->{weights};
-	my @weights = $weights? split m/,|\s+/, $weights:
+	my @weights = ref $weights eq 'ARRAY' ? split m/,|\s+/, $weights:
 				( $weights->{classwork},
 				$weights->{homework},
 				$weights->{exams} );
+	\@weights;
 }
 
 package Player;
