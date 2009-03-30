@@ -35,11 +35,11 @@ sub run {
 		my $groups = $classwork->beancans($session);
 		die "$session session, groups not arrayed.\n"
 			if any { ref($_) ne 'ARRAY' } values %$groups;
-		my $members2groups = $classwork->names2groups($session);
+		my $members2groups = $classwork->names2beancans($session);
 		for my $leaguemember ( @$leaguemembers ) {
 			my $name = $leaguemember->name;
 			next if @$absentees and any { $_ eq $name } @$absentees;
-			warn "$session session, $name in no group.\n" unless
+			warn "$session session, $name in no beancan.\n" unless
 				$members2groups->{$name};
 		}
 		my $weeks = $classwork->weeks($session);
