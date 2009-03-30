@@ -24,7 +24,7 @@ sub run {
 	my $league = League->new( leagueId => $leagueId ) or
 		die "No $leagueId league: $!";
 	my $homework = Homework->new( league => $league);
-	my $hwMax = $homework->hwMax;
+	my $hwMax = $homework->roundMax;
 	my $rounds = $homework->rounds;
 	my $totalMax = @$rounds * $hwMax;
 	my $hwdir = $homework->hwdir;
