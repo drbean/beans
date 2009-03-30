@@ -126,14 +126,14 @@ sub classwork_listing : Local {
 			my $weeks = $work->allweeks;
 			my @grades;
 			for my $week ( @$weeks ) {
-				my $group = $work->name2group($week, $name);
+				my $group = $work->name2beancan($week, $name);
 				my $grade = $league->sprintround($work->work2grades($week)->{$group});
 				push @grades, {
 					name => $week,
 					grade => $grade};
 			}
 			my $lastweek = $weeks->[-1];
-			my $lastgrp = $work->name2group($lastweek, $player);
+			my $lastgrp = $work->name2beancan($lastweek, $player);
 			my $merit = $work->meritDemerit($lastweek)->{$lastgrp};
 			$grades[-1]->{name} .= "(Merits)";
 			$c->stash->{league} = $leagueId;
