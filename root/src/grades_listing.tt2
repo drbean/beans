@@ -1,0 +1,30 @@
+[% # Provide a title to root/lib/site/header -%]
+[% META title = 'Grades' -%]
+
+<table >
+<caption>Weight of Course Components</caption>
+<tr>
+  <td>Classwork<td>[% weight.0 %]
+<tr>
+  <td>Homework<td>[% weight.1 %]
+<tr>
+  <td>Exams<td>[% weight.2 %]
+</table>
+<table>
+<tr><th>Class</th><th>Name</th><th>ID</th><th>Classwork</th><th>Homework</th>
+<th>Exams:</th>[% FOREACH exam IN exams %]
+    <th>[% exam %]</th>[% END %]
+<th>Grade</th></tr>
+  <tr>
+    <td>[% league %]</td>
+    <td>[% player %]</td>
+    <td>[% id %]</td>
+    <td>[% classwork %]</td>
+    <td>[% homework %]</td>
+[% FOREACH exam IN exams -%]
+    <td>[% exam %]</td>
+[% END -%]
+    <td>[% grade %]</td>
+  </tr>
+</table>
+
