@@ -127,6 +127,7 @@ $DB::single=1;
 			my $weeks = $work->allweeks;
 			my @grades;
 			for my $week ( @$weeks ) {
+	die "Week $week? in @$weeks" unless defined $week;
 				my $group = $work->name2group($week, $name);
 				my $grade = $league->sprintround($work->work2grades($week)->{$group});
 				push @grades, {
