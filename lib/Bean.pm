@@ -166,7 +166,9 @@ sub _build_allfiles {
 	my $self = shift;
 	my $league = $self->leagueId;
 	my $series = $self->series;
-	[ map { grep m|/(\d+)\.yaml$|, glob "$league/$_/*" } @$series ];
+	my $files = [ map { grep m|/(\d+)\.yaml$|, glob "$league/$_/*" } @$series ];
+	die "@$files" unless $files;
+
 }
 has 'allweeks' => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
 sub _build_allweeks {

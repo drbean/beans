@@ -116,7 +116,6 @@ sub classwork_listing : Local {
 	my $leagueId = $params->{league};
 	my $player = $params->{player};
 	my $playerId = $params->{id};
-$DB::single=1;
 	my $league = League->new( leagueId => "/home/drbean/class/$leagueId" );
 	my $work = Classwork->new( league => $league );
 	if ( $league and $league->is_member($playerId) )
@@ -134,7 +133,6 @@ $DB::single=1;
 					grade => $grade};
 			}
 			my $lastweek = $weeks->[-1];
-	die "Week $lastweek? in @$weeks" unless defined $lastweek;
 			my $lastgrp = $work->name2group($lastweek, $player);
 			my $merit = $work->meritDemerit($lastweek)->{$lastgrp};
 			$grades[-1]->{name} .= "(Merits)";
