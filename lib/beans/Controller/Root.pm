@@ -178,12 +178,11 @@ sub grades_listing : Local {
 			my $classwork = $grades->classwork->{$playerId};
 			my $homework = $grades->homework->{$playerId};
 			my $examGrade = $grades->examGrade->{$playerId};
-			my $examMax = $grades->examMax;
 			my $weights = $grades->weights;
 			my $total = sum @$weights;
 			my $grade = ( $classwork*$weights->[0] +
 				$homework*$weights->[1] +
-				$examGrade*(100/$examMax)*$weights->[2] ) / $total;
+				$examGrade*$weights->[2] ) / $total;
 			$classwork = $league->sprintround($classwork);
 			$homework = $league->sprintround($homework);
 			$grade = $league->sprintround($grade);
