@@ -5,9 +5,16 @@
   <tr><td>League:</td><td>
   <select name="league" size="[% leagues.size %]">
 
-      [% FOR league IN leagues -%]
-      <option value="[% league.id %]">[% league.name %] [% league.field %]</option>
-      [% END -%]
+<option value="GL00003">GL00003日語文共同學制虛擬班二甲 中級英文聽說訓練</option>
+<option value="GL00022">GL00022日語文共同學制虛擬班二乙 中級英文聽說訓練</option>
+<option value="GL00031">GL00031日語文共同學制虛擬班二丙 中級英文聽說訓練</option>
+<option value="GL00038">GL00038日語文共同學制虛擬班二乙 中高級英文閱讀</option>
+<option value="GL00039">GL00039日語文共同學制虛擬班二丙 中高級英文閱讀</option>
+<option value="GL00039">GL00039日語文共同學制虛擬班二丙 中高級英文閱讀</option>
+<option value="CLA0013">日華文大學二甲 英文聽力及會話(二)</option>
+<option value="FLA0015">夜應外大學二甲 英語會話(二)</option>
+<option value="FLB0002">夜應外四技四甲 英語演說</option>
+<option value="MIA0012">日資管大學二甲 商用英文實務(二)</option>
 
   </select></td></tr>
   <tr><td>Id:</td><td><input type="text" name="id"></td></tr>
