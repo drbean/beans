@@ -238,6 +238,7 @@ sub names2groups {
 sub name2group {
 	my $self = shift;
 	my $week = shift;
+	die "Week $week?" unless defined $week;
 	my $session = $self->week2session($week);
 	my $name = shift;
 	my $groups = $self->groups($session);
