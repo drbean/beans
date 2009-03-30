@@ -146,6 +146,59 @@ sub classwork_listing : Local {
 	}
 }
 
+=head2 grades
+
+Request a listing of grades
+
+=cut 
+
+sub grades : Local {
+	my ($self, $c) = @_;
+}
+
+=head2 grades_listing
+
+Calculate grades for one player using Moose grades.
+
+=cut
+
+sub grades_listing : Local {
+	my ($self, $c) = @_;
+	my $params = $c->request->params;
+	my $leagueId = $params->{league};
+	my $player = $params->{player};
+	my $playerId = $params->{id};
+	my $league = League->new( leagueId => "/home/drbean/class/$leagueId" );
+	my $grades = Grades->new( league => $league );
+	if ( $league and $league->is_member($playerId) )
+	{
+		my $playerobj = Player->new(league => $league, id => $playerId);
+		if ( $player eq $playerobj->name ) {
+			my $name = $player;
+			my $classwork = $grades->classwork->{$playerId};
+			my $homework = $grades->homework->{$playerId};
+			my $examGrade = $grades->examGrade->{$playerId};
+			my $examMax = $grades->examMax;
+			my $weights = $grades->weights;
+			my $total = sum @$weights;
+			my $grade = ( $classwork*$weights->[0] +
+				$homework*$weights->[1] +
+				$examGrade*(100/$examMax)*$weights->[2] ) / $total;
+			$classwork = $league->sprintround($classwork);
+			$homework = $league->sprintround($homework);
+			$grade = $league->sprintround($grade);
+			$c->stash->{league} = $leagueId;
+			$c->stash->{player} = $name;
+			$c->stash->{id} = $playerId;
+			$c->stash->{weight} = $weights;
+			$c->stash->{classwork} = $classwork;
+			$c->stash->{homework} = $homework;
+			$c->stash->{exams}=$league->sprintround($grades->examResults->{$playerId});
+			$c->stash->{grade} = $grade;
+		}
+	}
+}
+
 =head1 AUTHOR
 
 Dr Bean
