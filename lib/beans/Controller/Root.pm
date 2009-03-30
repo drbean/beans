@@ -60,8 +60,6 @@ Seek listing of homework scores for one player.
 
 sub homework : Local {
 	my ($self, $c) = @_;
-	my @leagues = $c->model('DB::League')->all;
-	$c->stash->{leagues} = \@leagues;
 }
 
 =head2 homework_listing
@@ -104,8 +102,6 @@ Request a listing of classwork results
 
 sub classwork : Local {
 	my ($self, $c) = @_;
-	my @leagues = $c->model('DB::League')->all;
-	$c->stash->{leagues} = \@leagues;
 }
 
 =head2 classwork_listing
@@ -120,7 +116,8 @@ sub classwork_listing : Local {
 	my $leagueId = $params->{league};
 	my $player = $params->{player};
 	my $playerId = $params->{id};
-	my $league = League->new( leagueId => "/home/greg/beans/$leagueId" );
+$DB::single=1;
+	my $league = League->new( leagueId => "/home/drbean/class/$leagueId" );
 	my $work = Classwork->new( league => $league );
 	if ( $league and $league->is_member($playerId) )
 	{
@@ -140,12 +137,12 @@ sub classwork_listing : Local {
 			my $lastgrp = $work->name2group($lastweek, $player);
 			my $merit = $work->meritDemerit($lastweek)->{$lastgrp};
 			$grades[-1]->{name} .= "(Merits)";
-			$grades[-1]->{grade} .= "($merit)";
 			$c->stash->{league} = $leagueId;
 			$c->stash->{player} = $name;
 			$c->stash->{id} = $playerId;
-			$c->stash->{weeks} = \@grades;
 			$c->stash->{percent} = sum(map { $_->{grade} } @grades);
+			$grades[-1]->{grade} .= "($merit)";
+			$c->stash->{weeks} = \@grades;
 		}
 	}
 }
