@@ -32,7 +32,7 @@ sub run {
 	my (%groupscores, %indscores, %indwork, %averagescore);
 	for my $session ( @$series )
 	{
-		my $groups = $classwork->groups($session);
+		my $groups = $classwork->beancans($session);
 		die "$session session, groups not arrayed.\n"
 			if any { ref($_) ne 'ARRAY' } values %$groups;
 		my $members2groups = $classwork->names2groups($session);

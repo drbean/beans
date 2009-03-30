@@ -154,12 +154,12 @@ use POSIX;
 has 'league' => (is =>'ro', isa => 'League', handles => [ 'yaml', 'leagueId' ]);
 has 'series' => (is => 'ro', isa => 'ArrayRef', lazy => 1, default =>
 				sub { shift->yaml->{series} } );
-has 'groupseries' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
-sub _build_groupseries {
+has 'beancanseries' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+sub _build_beancanseries {
 	my $self = shift;
 	my $series = $self->series;
 	my $league = $self->leagueId;
-	+{ map { $_ => LoadFile "$league/$_/groups.yaml" } @$series };
+	+{ map { $_ => LoadFile "$league/$_/beancans.yaml" } @$series };
 }
 has 'allfiles'  => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
 sub _build_allfiles {
@@ -193,10 +193,18 @@ sub _build_data {
 	+{ map { $weeks->[$_] => LoadFile $files->[$_] } 0..$#$weeks };
 }
 
-sub groups {
+=head
+
+beancans
+
+Players in one beancan all get the same classwork grade for that session. The beancan members may be the same as the members of the class group, who work together in class, or may be individuals. Usually in a big class, the beancans will be the same as the groups, and in a small class they will be individuals.
+
+Rather than refactor the class to work with individuals rather than groups, and expand some methods (?) to fall back to league members if it finds them in the weekly files instead of groups, I decided to introduce another file, beancans.yaml, and change all variable and method names mentioning group to beancan.
+=cut 
+sub beancans {
 	my $self = shift;
 	my $session = shift;
-	$self->groupseries->{$session};
+	$self->beancanseries->{$session};
 }
 
 sub files {
@@ -224,73 +232,73 @@ sub week2session {
 	croak "Week $week in none of @$sessions sessions.\n";
 }
 
-sub names2groups {
+sub names2beancans {
 	my $self = shift;
 	my $session = shift;
-	my $groups = $self->groups($session);
-	my @names; push @names, @$_ for values %$groups;
-	my %names2groups;
-	while ( my ($group, $names) = each %$groups ) {
+	my $beancans = $self->beancans($session);
+	my @names; push @names, @$_ for values %$beancans;
+	my %names2beancans;
+	while ( my ($beancan, $names) = each %$beancans ) {
 		for my $name ( @$names ) {
-		die "$name in $group and other group in $session session.\n"
-				if $names2groups{$name};
-			$names2groups{$name} = $group;
+		die "$name in $beancan and other beancan in $session session.\n"
+				if $names2beancans{$name};
+			$names2beancans{$name} = $beancan;
 		}
 	}
-	\%names2groups;
+	\%names2beancans;
 }
 
-sub name2group {
+sub name2beancan {
 	my $self = shift;
 	my $week = shift;
 	die "Week $week?" unless defined $week;
 	my $session = $self->week2session($week);
 	my $name = shift;
-	my $groups = $self->groups($session);
-	my @names; push @names, @$_ for values %$groups;
-	my @name2groups;
-	while ( my ($group, $names) = each %$groups ) {
-		push @name2groups, $group for grep /^$name$/, @$names;
+	my $beancans = $self->beancans($session);
+	my @names; push @names, @$_ for values %$beancans;
+	my @name2beancans;
+	while ( my ($beancan, $names) = each %$beancans ) {
+		push @name2beancans, $beancan for grep /^$name$/, @$names;
 	}
-	die "$name not in exactly one group in $session session.\n"
-				unless @name2groups == 1;
-	shift @name2groups;
+	die "$name not in exactly one beancan in $session session.\n"
+				unless @name2beancans == 1;
+	shift @name2beancans;
 }
 
-=head2 groupsNotInCard
+=head2 beancansNotInCard
 
-Test groups exist in data
+Test beancans exist in data
 
 =cut
 
-sub groupsNotInCard {
+sub beancansNotInCard {
 	my $self = shift;
-	my $groups = shift;
+	my $beancans = shift;
 	my $card = shift;
 	my $week = shift;
-	my %common; $common{$_}++ for keys %$groups, keys %$card;
-	my @notInCard = grep { $common{$_} != 2 } keys %$groups;
-	croak "@notInCard groups not in week $week data" if @notInCard;
+	my %common; $common{$_}++ for keys %$beancans, keys %$card;
+	my @notInCard = grep { $common{$_} != 2 } keys %$beancans;
+	croak "@notInCard beancans not in week $week data" if @notInCard;
 }
 
-=head2 groupDataOnCard
+=head2 beancanDataOnCard
 
-Test group data exists on card
+Test beancan data exists on card
 
 =cut
 
-sub groupDataOnCard {
+sub beancanDataOnCard {
 	my $self = shift;
-	my $groups = shift;
+	my $beancans = shift;
 	my $card = shift;
 	my $week = shift;
 	my @noData = grep
-			{ my $group = $card->{$_};
-			not defined $group->{merits}
-			or not defined $group->{absences}
-			or not defined $group->{tardies} }
-			keys %$groups;
-	croak "@noData groups missing data in week $week" if @noData;
+			{ my $beancan = $card->{$_};
+			not defined $beancan->{merits}
+			or not defined $beancan->{absences}
+			or not defined $beancan->{tardies} }
+			keys %$beancans;
+	croak "@noData beancans missing data in week $week" if @noData;
 }
 
 sub merits {
@@ -298,11 +306,11 @@ sub merits {
 	my $data = $self->data;
 	my $week = shift;
 	my $session = $self->week2session($week);
-	my $groups = $self->groups($session);
+	my $beancans = $self->beancans($session);
 	my $card = $data->{$week};
-	$self->groupsNotInCard($groups, $card, $week);
-	$self->groupDataOnCard($groups, $card, $week);
-	+{ map { $_ => $card->{$_}->{merits} } keys %$groups };
+	$self->beancansNotInCard($beancans, $card, $week);
+	$self->beancanDataOnCard($beancans, $card, $week);
+	+{ map { $_ => $card->{$_}->{merits} } keys %$beancans };
 }
 
 sub absences {
@@ -310,11 +318,11 @@ sub absences {
 	my $data = $self->data;
 	my $week = shift;
 	my $session = $self->week2session($week);
-	my $groups = $self->groups($session);
+	my $beancans = $self->beancans($session);
 	my $card = $data->{$week};
-	$self->groupsNotInCard($groups, $card, $week);
-	$self->groupDataOnCard($groups, $card, $week);
-	+{ map { $_ => $card->{$_}->{absences} } keys %$groups };
+	$self->beancansNotInCard($beancans, $card, $week);
+	$self->beancanDataOnCard($beancans, $card, $week);
+	+{ map { $_ => $card->{$_}->{absences} } keys %$beancans };
 }
 
 sub tardies {
@@ -322,11 +330,11 @@ sub tardies {
 	my $data = $self->data;
 	my $week = shift;
 	my $session = $self->week2session($week);
-	my $groups = $self->groups($session);
+	my $beancans = $self->beancans($session);
 	my $card = $data->{$week};
-	$self->groupsNotInCard($groups, $card, $week);
-	$self->groupDataOnCard($groups, $card, $week);
-	+{ map { $_ => $card->{$_}->{tardies} } keys %$groups };
+	$self->beancansNotInCard($beancans, $card, $week);
+	$self->beancanDataOnCard($beancans, $card, $week);
+	+{ map { $_ => $card->{$_}->{tardies} } keys %$beancans };
 }
 
 =head2 payout
@@ -339,14 +347,14 @@ sub payout {
 	my $self = shift;
 	my $session = shift;
 	my $sessions = $self->series;
-	my $groups = $self->groups($session);
+	my $beancans = $self->beancans($session);
 	my $weeks = $self->weeks($session);
-	my $payout = (80/@$sessions) * (keys %$groups) / @$weeks;
+	my $payout = (80/@$sessions) * (keys %$beancans) / @$weeks;
 }
 
 =head2 demerits
 
-The demerits that week. calculated as twice the number of absences, plus the number of tardies. In a four-member group, this ranges from 0 to 8.
+The demerits that week. calculated as twice the number of absences, plus the number of tardies. In a four-member beancan, this ranges from 0 to 8.
 
 =cut
 
@@ -356,13 +364,13 @@ sub demerits {
 	my $absences = $self->absences($week);
 	my $tardies = $self->tardies($week);
 	my $session = $self->week2session($week);
-	my $groups = $self->groups($session);
-	+{map {$_ => ($absences->{$_} * 2 + $tardies->{$_} * 1)} keys %$groups};
+	my $beancans = $self->beancans($session);
+	+{map {$_ => ($absences->{$_} * 2 + $tardies->{$_} * 1)} keys %$beancans};
 }
 
 =head2 favor
 
-A score of 2 given to groups with no more than 6 demerits, to prevent groups who were all there but didn't do anything (ie had no merits and no demerits) from getting a log score of 0, and so getting a grade of 0 for that week.
+A score of 2 given to beancans with no more than 6 demerits, to prevent beancans who were all there but didn't do anything (ie had no merits and no demerits) from getting a log score of 0, and so getting a grade of 0 for that week.
 
 =cut
 
@@ -371,13 +379,13 @@ sub favor {
 	my $week = shift;
 	my $demerits = $self->demerits($week);
 	my $session = $self->week2session($week);
-	my $groups = $self->groups($session);
-	+{ map {$_ => ($demerits->{$_} < 7? 1: 0)} keys %$groups };
+	my $beancans = $self->beancans($session);
+	+{ map {$_ => ($demerits->{$_} < 7? 1: 0)} keys %$beancans };
 }
 
 =head2 maxDemerit
 
-The max demerit that week. achieved by the group with the most absences and tardies.
+The max demerit that week. achieved by the beancan with the most absences and tardies.
 
 =cut
 
@@ -390,7 +398,7 @@ sub maxDemerit {
 
 =head2 meritDemerit
 
-Let groups with no merits, and no demerits get a score greater than 1, so the log score is greater than 0. Let groups with 3 or more absences and 1 tardies not be eligible for this favor, but get at least 0. Let other groups get the number of merits - number of demerits, but also be eligible for the favor, and get a score of above 1.
+Let beancans with no merits, and no demerits get a score greater than 1, so the log score is greater than 0. Let beancans with 3 or more absences and 1 tardies not be eligible for this favor, but get at least 0. Let other beancans get the number of merits - number of demerits, but also be eligible for the favor, and get a score of above 1.
 
 =cut
 
@@ -402,14 +410,14 @@ sub meritDemerit {
 	my $maxDemerit = $self->maxDemerit($week);
 	my $favor = $self->favor($week);
 	my $session = $self->week2session($week);
-	my $groups = $self->groups($session);
+	my $beancans = $self->beancans($session);
 	+{ map {$_=> $maxDemerit+$merits->{$_}+$favor->{$_}-$demerits->{$_}}
-		keys %$groups };
+		keys %$beancans };
 }
 
 =head2 logwork
 
-The points given by the teacher are log-scaled to prevent active students from taking all the payout, and the other students getting very low grades. There may be better ways of grading to the curve than using log scaling. The log of one point is 0, which results in a grade of 0 for that week for that group.
+The points given by the teacher are log-scaled to prevent active students from taking all the payout, and the other students getting very low grades. There may be better ways of grading to the curve than using log scaling. The log of one point is 0, which results in a grade of 0 for that week for that beancan.
 
 =cut
 
@@ -418,14 +426,14 @@ sub logwork {
 	my $week = shift;
 	my $work = $self->meritDemerit($week);
 	my $session = $self->week2session($week);
-	my $groups = $self->groups($session);
+	my $beancans = $self->beancans($session);
 	+{ map { $_ => $work->{$_} == 0 ?  0 : 1 + log $work->{$_} }
-		keys %$groups };
+		keys %$beancans };
 }
 
 =head2 work2grades
 
-The work (ie merits - demerits) of the groups for the week, as a percentage of the total work, determines the payout of grades, which should average 80 over the sessions of play.
+The work (ie merits - demerits) of the beancans for the week, as a percentage of the total work, determines the payout of grades, which should average 80 over the sessions of play.
 
 =cut
 
@@ -434,11 +442,11 @@ sub work2grades {
 	my $week = shift;
 	my $work = $self->logwork($week);
 	my $session = $self->week2session($week);
-	my $groups = $self->groups($session);
+	my $beancans = $self->beancans($session);
 	my $totalwork = sum values %$work;
 	my $payout = $self->payout($session);
 	+{ map { $_ => $totalwork == 0? 0: ( $work->{$_}*$payout/ $totalwork )
-						} keys %$groups };
+						} keys %$beancans };
 }
 
 package Grades;
