@@ -168,13 +168,16 @@ sub _build_allfiles {
 	my $series = $self->series;
 	my $files = [ map { grep m|/(\d+)\.yaml$|, glob "$league/$_/*" } @$series ];
 	die "@$files" unless $files;
+	return $files;
 
 }
 has 'allweeks' => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
 sub _build_allweeks {
 	my $self = shift;
 	my $files = $self->allfiles;
-	[ map { m|/(\d+)\.yaml$|; $1 } @$files ];
+	my $weeks = [ map { m|/(\d+)\.yaml$|; $1 } @$files ];
+	die "@$weeks" unless $weeks;
+	return $weeks;
 }
 has 'lastweek' => ( is => 'ro', isa => 'Int', lazy_build => 1 );
 sub _build_lastweek {
