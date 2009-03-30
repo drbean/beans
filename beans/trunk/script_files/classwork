@@ -6,7 +6,7 @@ use warnings;
 use lib 'lib';
 use Bean;
 use List::Util qw/sum min max/;
-use List::MoreUtils qw/any/;
+use List::MoreUtils qw/none any/;
 use POSIX;
 use IO::All;
 use IO::Handle;
@@ -28,6 +28,7 @@ sub run {
 	our $totalweeks = $classwork->allweeks;
 	my $lastweek = $classwork->lastweek;
 	my $leaguemembers = $league->members;
+	my $absentees = $league->absentees;
 	my (%groupscores, %indscores, %indwork, %averagescore);
 	for my $session ( @$series )
 	{
@@ -37,8 +38,9 @@ sub run {
 		my $members2groups = $classwork->names2groups($session);
 		for my $leaguemember ( @$leaguemembers ) {
 			my $name = $leaguemember->name;
-			die "$session session, $name in no group.\n"
-				unless $members2groups->{$name};
+			next if @$absentees and any { $_ eq $name } @$absentees;
+			warn "$session session, $name in no group.\n" unless
+				$members2groups->{$name};
 		}
 		my $weeks = $classwork->weeks($session);
 		my $payout = $classwork->payout($session);
@@ -89,7 +91,8 @@ sub run {
 		my @grades = ();
 		for my $week ( @$totalweeks) {
 			my $score = $indscores{$week}{$name};
-			push @missing, $week if not defined $score;
+			push @missing, $week if not defined $score and not any
+				{ $_ eq $name } @$absentees;
 			push @grades, $score;
 		}
 		warn "${name}'s grade missing for weeks @romans[@missing]" if @missing;
@@ -97,7 +100,7 @@ sub run {
 		$classworktotals{$id} = $total;
 		our @roundedgrades = $league->sprintround(@grades);
 		our $roundedtotal = $league->sprintround($total);
-		$grades[-1] = $grades[-1] . "(" . $lastpoints . ")";
+		$grades[-1] = "$grades[-1] ($lastpoints)" if $lastpoints;
 		write REP;
 	}
 	print REP "\n";
@@ -110,10 +113,24 @@ sub run {
 }
 
 our (@romans, $totalweeks);
+format TOP1 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<<       @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
 format TOP2 =
              $class->{league} Classwork
                     Weeks: Grade(Merits/Demerits)
 @<<<        @<<         @<<< @<<<       @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP3 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<< @<<< @<<<      @<<<<<<<<<<<<<<
 'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
@@ -188,8 +205,16 @@ format TOP13 =
 -------------------------------------------------------------------------
 .
 our ($name, $id, @roundedgrades, $roundedtotal);
+format WEEKS1 =
+@<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
 format WEEKS2 =
 @<<<<<<<<<< @<<<<<<<<<  @<<< @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+format WEEKS3 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<<<<   @<<
 $name,  $id,	@roundedgrades, $roundedtotal
 .
 format WEEKS4 =
@@ -234,8 +259,16 @@ $name,  $id,	@roundedgrades, $roundedtotal
 .
 
 our (%averagework, $target);
+format TOTAL1 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
 format TOTAL2 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+format TOTAL3 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<<      @<<<<
 'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
 .
 format TOTAL4 =
@@ -321,6 +354,12 @@ Students who were absent for the whole of the session should not be included. Th
 Weekly scores are in \d+.yaml, where \d+ is the week, and are of form:
 
 Chanel: 3
-Cliff: 0
+  merits  : 1
+  absences: 0
+  tardies : 1
+Cliff:
+  merits  : 1
+  absences: 0
+  tardies : 1
 
 =cut
