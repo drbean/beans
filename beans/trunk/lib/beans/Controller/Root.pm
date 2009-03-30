@@ -185,6 +185,11 @@ sub grades_listing : Local {
 				$examGrade*$weights->[2] ) / $total;
 			$classwork = $league->sprintround($classwork);
 			$homework = $league->sprintround($homework);
+			my $exams = $grades->examResults->{$playerId};
+			my @names = qw/I II III IV/;
+			my @exams = map { {	name => $names[$_],
+						grade => $league->sprintround( $exams->[$_] )
+					} } 0..$#$exams;
 			$grade = $league->sprintround($grade);
 			$c->stash->{league} = $leagueId;
 			$c->stash->{player} = $name;
@@ -192,7 +197,7 @@ sub grades_listing : Local {
 			$c->stash->{weight} = $weights;
 			$c->stash->{classwork} = $classwork;
 			$c->stash->{homework} = $homework;
-			$c->stash->{exams}=$league->sprintround($grades->examResults->{$playerId});
+			$c->stash->{exams} = \@exams;
 			$c->stash->{grade} = $grade;
 		}
 	}
