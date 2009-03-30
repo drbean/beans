@@ -60,6 +60,8 @@ Seek listing of homework scores for one player.
 
 sub homework : Local {
 	my ($self, $c) = @_;
+	my @leagues = $c->model('DB::League')->all;
+	$c->stash->{leagues} = \@leagues;
 }
 
 =head2 homework_listing
@@ -74,7 +76,7 @@ sub homework_listing : Local {
 	my $leagueId = $params->{league};
 	my $playerName = $params->{player};
 	my $playerId = $params->{id};
-	my $league = League->new( leagueId => "/home/greg/beans/$leagueId" );
+	my $league = League->new( leagueId => "/home/drbean/class/$leagueId" );
 	my $work = Homework->new( league => $league );
 	if ( $league and $league->is_member($playerId) )
 	{
@@ -102,6 +104,8 @@ Request a listing of classwork results
 
 sub classwork : Local {
 	my ($self, $c) = @_;
+	my @leagues = $c->model('DB::League')->all;
+	$c->stash->{leagues} = \@leagues;
 }
 
 =head2 classwork_listing
