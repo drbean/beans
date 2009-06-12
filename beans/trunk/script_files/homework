@@ -32,7 +32,7 @@ sub run {
 	my $oldpercent = $league->input( $hwdir );
 	my ($newtotal, $newpercent);
 	my @formats = qw/'' WEEKS1 WEEKS2 WEEKS3 WEEKS4 WEEKS5 WEEKS6 WEEKS7
-		WEEKS8 WEEKS9 WEEKS10 WEEKS11 WEEKS12 WEEKS13/;
+		WEEKS8 WEEKS9 WEEKS10 WEEKS11 WEEKS12 WEEKS13 WEEKS14 WEEKS15 WEEKS16 WEEKS17 WEEKS18/;
 	REP->format_name($formats[@$rounds]);
 	open REP, '>-' or die 'STDOUT? $!'; 
 	my $name = $league->name;
@@ -131,6 +131,22 @@ $name,  $id,	@indgrades, $grade, $percent
 .
 format WEEKS14 =
 @<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS15 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS16 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS17 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS18 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
 $name,  $id,	@indgrades, $grade, $percent
 .
 
