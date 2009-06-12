@@ -32,7 +32,7 @@ sub run {
 	my $total = sum @$weights;
 	die "No weighting, classwork=>20, homework=>20, exams=>60?" unless
 							$total == 10 || $total == 100;
-	open REP, '>grades.tmp' or die 'grades.tmp? $!'; 
+	open REP, '>-' or die 'STDOUT? $!'; 
 	my @format_top = qw/'' TOP1 TOP2 TOP3 TOP4/;
 	my $examN = $grades->examdirs;
 	my $examMax = $grades->examMax;

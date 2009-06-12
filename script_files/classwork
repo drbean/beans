@@ -67,7 +67,7 @@ sub run {
 
 	our $target = $league->sprintround( sum @averagescore{@$totalweeks} );
 
-	open REP, ">$leagueId/class.tmp" or die 'class.tmp? $!'; 
+	open REP, '>-' or die 'STDOUT? $!'; 
 	our @romans = qw/'' I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII/;
 	my @format_top = qw/'' TOP1 TOP2 TOP3 TOP4 TOP5 TOP6 TOP7 TOP8 TOP9 TOP10 TOP11 TOP12 TOP13/;
 	my @formats = qw/'' WEEKS1 WEEKS2 WEEKS3 WEEKS4 WEEKS5 WEEKS6 WEEKS7 WEEKS8 WEEKS9 WEEKS10 WEEKS11 WEEKS12 WEEKS13/;
