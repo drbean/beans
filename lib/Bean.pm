@@ -166,7 +166,7 @@ sub _build_allfiles {
 	my $self = shift;
 	my $league = $self->leagueId;
 	my $series = $self->series;
-	my $files = [ map { grep m|/(\d+)\.yaml$|, glob "$league/$_/*" } @$series ];
+	my $files = [ map { grep m|/(\d+)\.yaml$|, glob "$league/$_/*.yaml" } @$series ];
 	die "${league}'s @$series files: @$files?" unless @$files;
 	return $files;
 
