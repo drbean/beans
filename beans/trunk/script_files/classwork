@@ -69,9 +69,9 @@ sub run {
 
 	open REP, '>-' or die 'STDOUT? $!'; 
 	our @romans = qw/'' I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII/;
-	my @format_top = qw/'' TOP1 TOP2 TOP3 TOP4 TOP5 TOP6 TOP7 TOP8 TOP9 TOP10 TOP11 TOP12 TOP13/;
-	my @formats = qw/'' WEEKS1 WEEKS2 WEEKS3 WEEKS4 WEEKS5 WEEKS6 WEEKS7 WEEKS8 WEEKS9 WEEKS10 WEEKS11 WEEKS12 WEEKS13/;
-	my @format_total = qw/'' TOTAL1 TOTAL2 TOTAL3 TOTAL4 TOTAL5 TOTAL6 TOTAL7 TOTAL8 TOTAL9 TOTAL10 TOTAL11 TOTAL12 TOTAL13/;
+	my @format_top = qw/'' TOP1 TOP2 TOP3 TOP4 TOP5 TOP6 TOP7 TOP8 TOP9 TOP10 TOP11 TOP12 TOP13 TOP14 TOP15 TOP16 TOP17 TOP18/;
+	my @formats = qw/'' WEEKS1 WEEKS2 WEEKS3 WEEKS4 WEEKS5 WEEKS6 WEEKS7 WEEKS8 WEEKS9 WEEKS10 WEEKS11 WEEKS12 WEEKS13 WEEKS14 WEEKS15 WEEKS16 WEEKS17 WEEKS 18/;
+	my @format_total = qw/'' TOTAL1 TOTAL2 TOTAL3 TOTAL4 TOTAL5 TOTAL6 TOTAL7 TOTAL8 TOTAL9 TOTAL10 TOTAL11 TOTAL12 TOTAL13 TOTAL14 TOTAL15 TOTAL16 TOTAL17 TOTAL18/;
 
 	REP->format_top_name($format_top[@$totalweeks]);
 	REP->format_name($formats[@$totalweeks]);
@@ -204,6 +204,41 @@ format TOP13 =
 'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
 -------------------------------------------------------------------------
 .
+format TOP14 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP15 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP16 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP17 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP18 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
 our ($name, $id, @roundedgrades, $roundedtotal);
 format WEEKS1 =
 @<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<
@@ -255,6 +290,26 @@ $name,  $id,	@roundedgrades, $roundedtotal
 .
 format WEEKS13 =
 @<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+format WEEKS14 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+format WEEKS15 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+format WEEKS16 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+format WEEKS17 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+format WEEKS18 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
 $name,  $id,	@roundedgrades, $roundedtotal
 .
 
@@ -309,6 +364,26 @@ format TOTAL12 =
 .
 format TOTAL13 =
 @<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+format TOTAL14 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+format TOTAL15 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+format TOTAL16 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+format TOTAL17 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+format TOTAL18 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
 'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
 .
 
