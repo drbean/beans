@@ -11,6 +11,46 @@ has 'weights' => (traits => ['Getopt'], is => 'ro', isa => 'Str',
 has 'player' => (traits => ['Getopt'], is => 'ro', isa => 'Str',
 		cmd_aliases => 'p',);
 
+=head1 NAME
+
+cumulative - Add player results in individual rounds to get a cumulative total and show present standing
+
+=head1 SYNOPSIS
+
+hwtotal [options] 
+
+Options:
+
+--help            This help message
+
+--man            A man page
+
+--league m/j	The league whose results these are
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-league>
+
+The league to which the redeemer belongs
+
+=back
+
+=head1 DESCRIPTION
+
+B<hwtotal> tallies individuals' scores in the files in the hw directory recorded in league.yaml. It stores the total in cumulative.yaml, in the same directory.
+
+=cut
+
+
+=head1 ATTRIBUTES
+
+=cut
+
+=head2 League
+=cut
+
 package League;
 use Moose;
 use YAML qw/LoadFile DumpFile/;
@@ -76,16 +116,15 @@ sub sprintround {
 	return wantarray? @returns: \@returns if @returns >= 1;
 }
 
+=head2 Homework
+=cut
+
 package Homework;
 use Moose;
 use YAML qw/LoadFile DumpFile/;
 use List::Util qw/sum/;
 
-=head1 ATTRIBUTES
-
-=cut
-
-=head2 league
+=head3 league
 
 The league (object) whose homework this is. Should be passed when homework object is created.
 
@@ -93,7 +132,7 @@ The league (object) whose homework this is. Should be passed when homework objec
 
 has 'league' => (is =>'ro', isa => 'League', handles => [ 'yaml', 'leagueId' ]);
 
-=head2 hwdir
+=head3 hwdir
 
 The directory where the homework is.
 
@@ -107,7 +146,7 @@ sub _build_hwdir {
 	my $hwdir = $data->{hw} || "$league/homework"
 }
 
-=head2 rounds
+=head3 rounds
 
 An arrayref of the files with homework grades for players in the league in round order.
 
@@ -121,7 +160,7 @@ sub _build_rounds {
 	[ sort {$a<=>$b} map m/^$hwdir\/(\d+)\.yaml$/, @hw ];
 }
 
-=head2 hwbyround 
+=head3 hwbyround 
 
 A hashref of the homework grades for players in the league for each round.
 
@@ -173,6 +212,9 @@ sub percent {
 	my $totalMax = $self->totalMax;
 	$hw * ( 100/ $totalMax );
 }
+
+=head2 Classwork
+=cut
 
 package Classwork;
 use Moose;
@@ -585,36 +627,3 @@ sub _build_percent {
 1;
 
 __END__
-
-=head1 NAME
-
-cumulative - Add player results in individual rounds to get a cumulative total and show present standing
-
-=head1 SYNOPSIS
-
-hwtotal [options] 
-
-Options:
-
---help            This help message
-
---man            A man page
-
---league m/j	The league whose results these are
-
-=head1 OPTIONS
-
-=over 8
-
-=item B<-league>
-
-The league to which the redeemer belongs
-
-=back
-
-=head1 DESCRIPTION
-
-B<hwtotal> tallies individuals' scores in the files in the hw directory recorded in league.yaml. It stores the total in cumulative.yaml, in the same directory.
-
-=cut
-
