@@ -81,7 +81,24 @@ use Moose;
 use YAML qw/LoadFile DumpFile/;
 use List::Util qw/sum/;
 
+=head1 ATTRIBUTES
+
+=cut
+
+=head2 league
+
+The league (object) whose homework this is. Should be passed when homework object is created.
+
+=cut
+
 has 'league' => (is =>'ro', isa => 'League', handles => [ 'yaml', 'leagueId' ]);
+
+=head2 hwdir
+
+The directory where the homework is.
+
+=cut
+
 has 'hwdir' => (is => 'ro', isa => 'Str', lazy_build => 1);
 sub _build_hwdir {
 	my $self = shift;
@@ -89,6 +106,13 @@ sub _build_hwdir {
 	my $data = $self->yaml;
 	my $hwdir = $data->{hw} || "$league/homework"
 }
+
+=head2 rounds
+
+An arrayref of the files with homework grades for players in the league in round order.
+
+=cut
+
 has 'rounds' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
 sub _build_rounds {
 	my $self = shift;
@@ -96,6 +120,13 @@ sub _build_rounds {
 	my @hw = glob "$hwdir/*.yaml";
 	[ sort {$a<=>$b} map m/^$hwdir\/(\d+)\.yaml$/, @hw ];
 }
+
+=head2 hwbyround 
+
+A hashref of the homework grades for players in the league for each round.
+
+=cut
+
 has 'hwbyround' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 sub _build_hwbyround {
 	my $self = shift;
@@ -193,14 +224,13 @@ sub _build_data {
 	+{ map { $weeks->[$_] => LoadFile $files->[$_] } 0..$#$weeks };
 }
 
-=head
-
-beancans
+=head2 beancans
 
 Players in one beancan all get the same classwork grade for that session. The beancan members may be the same as the members of the class group, who work together in class, or may be individuals. Usually in a big class, the beancans will be the same as the groups, and in a small class they will be individuals.
 
 Rather than refactor the class to work with individuals rather than groups, and expand some methods (?) to fall back to league members if it finds them in the weekly files instead of groups, I decided to introduce another file, beancans.yaml, and change all variable and method names mentioning group to beancan.
 =cut 
+
 sub beancans {
 	my $self = shift;
 	my $session = shift;
