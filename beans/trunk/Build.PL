@@ -13,6 +13,12 @@ my $builder = Module::Build->new(
         'Test::More' => 0,
     },
     add_to_cleanup      => [ 'Bean-Counter-*' ],
+    meta_merge => {
+      resources => {
+          bugtracker => 'http://rt.cpan.org/NoAuth/Bugs.html?Dist=Bean::Counter',
+          repository  => 'http://svn.openfoundry.org/ttb/beans/'
+		}
+	},
     script_files	=>  [qw[
     				script_files/homework
     				script_files/classwork
