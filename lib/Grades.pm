@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009  6月 10, 15時21分15秒
+#Last Edit: 2009  6月 11, 17時14分24秒
 
 use MooseX::Declare;
 
@@ -86,14 +86,7 @@ Unless called from the script or web app, it's a path to the league directory.
 	has 'members' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
 	method _build_members {
 		my $data = $self->yaml;
-		my @members = sort { $a->{id} cmp $b->{id} } @{$data->{member}};
-		[ map {
-			Player->new(
-			    league => $self,
-			    id     => $_->{id},
-			    name   => $_->{name}
-			  )
-		      } @members ];
+		$data->{member};
 	}
 	has 'absentees' => (is => 'ro', isa => 'ArrayRef', lazy => 1, default =>
 					sub { shift->yaml->{absent} } );
@@ -211,20 +204,19 @@ Running total homework scores of the league as rounded percentages of the totalM
 			carp "Missing/added players in $league round $round" if 
 				keys %totalcounted != keys %countedinround;
 		}
-		+{ map { $_ => min( 100, $self->sprintround(
-				100 * $idtotals{$_} / $totalMax ) ) || 0 }
-			keys %idtotals };
-		
+		+{ map { $_ => min( 100, 100 * $idtotals{$_} / $totalMax )
+				|| 0 } keys %idtotals };
 	}
+
 }
 
 =head2 Classwork
 =cut
 
 role Classwork {
-	use List::Util qw/max sum/;
+	use List::Util qw/max min sum/;
 	use List::MoreUtils qw/any/;
-	use Carp qw/croak/;
+	use Carp;
 	use POSIX;
 
 	has 'series' => (is => 'ro', isa => 'ArrayRef', lazy => 1, default =>
@@ -245,8 +237,7 @@ role Classwork {
 					glob "$league/$_/*.yaml" } @$series ];
 		die "${league}'s @$series files: @$files?" unless @$files;
 		return $files;
-
-}
+	}
 
 	has 'allweeks' => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
 	method _build_allweeks {
@@ -270,7 +261,7 @@ role Classwork {
 			0..$#$weeks };
 	}
 
-=head 2 card
+=head3 card
 
 Classwork beans for each beancan for the week
 
@@ -280,11 +271,14 @@ Classwork beans for each beancan for the week
 		my $cards = $self->data->{$week};
 	}
 
-=head2 beancans
+=head3 beancans
 
+A hashref of all the beancans in a session with the names of the members of each beancan. The number, composition and names of the beancans in each session of the series may change.
+	
 Players in one beancan all get the same classwork grade for that session. The beancan members may be the same as the members of the class group, who work together in class, or may be individuals. Usually in a big class, the beancans will be the same as the groups, and in a small class they will be individuals.
 
 Rather than refactor the class to work with individuals rather than groups, and expand some methods (?) to fall back to league members if it finds them in the weekly files instead of groups, I decided to introduce another file, beancans.yaml, and change all variable and method names mentioning group to beancan.
+
 =cut 
 
 	method beancans (Str $session) { $self->beancanseries->{$session}; }
@@ -299,7 +293,7 @@ Rather than refactor the class to work with individuals rather than groups, and 
 		[ map { m|(\d+)\.yaml$|; $1 } @$files ];
 	}
 
-=head2 week2session
+=head3 week2session
 
 	$classwork->week2session(15) # fourth
 
@@ -316,19 +310,24 @@ Given the name of a week, return the name of the session it is in.
 		croak "Week $week in none of @$sessions sessions.\n";
 	}
 
+=head3 names2beancans
+
+A hashref of names of members of beancans and the beancan names they are members of.
+
+=cut
+
 	method names2beancans (Str $session) {
 		my $beancans = $self->beancans($session);
-		my @names; push @names, @$_ for values %$beancans;
-		my %names2beancans;
+		my %beancansreversed;
 		while ( my ($beancan, $names) = each %$beancans ) {
 			for my $name ( @$names ) {
 			die
 	"$name in $beancan beancan and other beancan in $session session.\n"
-					if $names2beancans{$name};
-				$names2beancans{$name} = $beancan;
+					if exists $beancansreversed{$name};
+				$beancansreversed{$name} = $beancan;
 			}
 		}
-		\%names2beancans;
+		\%beancansreversed;
 	}
 
 	method name2beancan (Num $week, Str $name) {
@@ -345,7 +344,7 @@ Given the name of a week, return the name of the session it is in.
 		shift @name2beancans;
 	}
 
-=head2 beancansNotInCard
+=head3 beancansNotInCard
 
 	$classwork->beancansNotInCard( $beancans, $card, 3)
 
@@ -360,7 +359,7 @@ Test all beancans exist in the beancans listed on the card for the week.
 					@notInCard;
 	}
 
-=head2 beancanDataOnCard
+=head3 beancanDataOnCard
 
 	$classwork->beancansNotInCard( $beancans, $card, 3)
 
@@ -405,7 +404,7 @@ Test all of the beancans have all the points due them for the week.
 		+{ map { $_ => $card->{$_}->{tardies} } keys %$beancans };
 	}
 
-=head2 payout
+=head3 payout
 
 How much should be given out for each week in this session, so that the total score of each player over the series averages 80?
 
@@ -418,7 +417,7 @@ How much should be given out for each week in this session, so that the total sc
 		my $payout = (80/@$sessions) * (keys %$beancans) / @$weeks;
 	}
 
-=head2 demerits
+=head3 demerits
 
 The demerits that week. calculated as twice the number of absences, plus the number of tardies. In a four-member beancan, this ranges from 0 to 8.
 
@@ -432,7 +431,7 @@ The demerits that week. calculated as twice the number of absences, plus the num
 		+{map {$_ => ($absences->{$_} * 2 + $tardies->{$_} * 1)} keys %$beancans};
 	}
 
-=head2 favor
+=head3 favor
 
 A score of 2 given to beancans with no more than 6 demerits, to prevent beancans who were all there but didn't do anything (ie had no merits and no demerits) from getting a log score of 0, and so getting a grade of 0 for that week.
 
@@ -445,7 +444,7 @@ A score of 2 given to beancans with no more than 6 demerits, to prevent beancans
 		+{ map {$_ => ($demerits->{$_} < 7? 1: 0)} keys %$beancans };
 	}
 
-=head2 maxDemerit
+=head3 maxDemerit
 
 The max demerit that week. achieved by the beancan with the most absences and tardies.
 
@@ -456,7 +455,7 @@ The max demerit that week. achieved by the beancan with the most absences and ta
 		max( values %$demerits );
 	}
 
-=head2 meritDemerit
+=head3 meritDemerit
 
 Let beancans with no merits, and no demerits get a score greater than 1, so the log score is greater than 0. Let beancans with 3 or more absences and 1 tardies not be eligible for this favor, but get at least 0. Let other beancans get the number of merits - number of demerits, but also be eligible for the favor, and get a score of above 1.
 
@@ -473,7 +472,7 @@ Let beancans with no merits, and no demerits get a score greater than 1, so the 
 			keys %$beancans };
 	}
 
-=head2 logwork
+=head3 logwork
 
 The points given by the teacher are log-scaled to prevent active students from taking all the payout, and the other students getting very low grades. There may be better ways of grading to the curve than using log scaling. The log of one point is 0, which results in a grade of 0 for that week for that beancan.
 
@@ -487,7 +486,7 @@ The points given by the teacher are log-scaled to prevent active students from t
 			keys %$beancans };
 	}
 
-=head2 work2grades
+=head3 work2grades
 
 The work (ie merits - demerits) of the beancans for the week, as a percentage of the total work, determines the payout of grades, which should average 80 over the sessions of play.
 
@@ -503,10 +502,76 @@ The work (ie merits - demerits) of the beancans for the week, as a percentage of
 							} keys %$beancans };
 	}
 
+=head3 grades4session
+
+Totals for beancans over the session.
+
+=cut
+
+	method grades4session (Str $session) {
+		my $weeks = $self->weeks($session);
+		my $beancans = $self->beancans($session);
+		my (%sessiontotal);
+		for my $week ( @$weeks ) {
+			my $grade = $self->work2grades($week);
+			for my $can ( keys %$beancans ) {
+				carp "$can not in week $week classwork"
+					unless defined $grade->{$can};
+				$sessiontotal{$can} += $grade->{$can};
+			}
+		}
+		\%sessiontotal;
+	}
+
+=head3 classwork
+
+Running totals for individual ids out of 100, over the whole series.
+
+=cut
+
+	method classwork {
+		my $members = $self->league->members;
+		my $series = $self->series;
+		my (%grades);
+		for my $session ( @$series ) {
+			my %presentMembers;
+			my $can = $self->names2beancans($session);
+			my $grade = $self->grades4session($session);
+			for my $member ( @$members ) {
+				my $name = $member->{name};
+				my $id = $member->{id};
+				my $beancan = $can->{$member->{name}};
+				if ( defined $beancan ) {
+					my $grade = $grade->{$can->{$name}};
+					carp $member->{name} .
+						" not in $session session"
+						unless defined $grade;
+					$grades{$id} += $grade;
+				} else {
+					carp $member->{name} .
+					"'s beancan in $session session?"
+				}
+			}
+		}
+		for my $member ( @$members ) {
+			my $id = $member->{id};
+			if ( exists $grades{$id} ) {
+				$grades{$id} = min( 100, $grades{$id} );
+			}
+			else {
+				my $name = $member->{name};
+				carp "$name $id classwork?";
+				$grades{$id} = 0;
+			}
+		}
+		\%grades;
+	}
+
 }
 
 role Exams {
 	use List::Util qw/sum/;
+	use Carp;
 
 	has 'examdirs' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
 	method _build_examdirs {
@@ -525,7 +590,7 @@ role Exams {
 		my %ids;
 		for my $exam ( @exams ) { $ids{$_}++ for keys %$exam; }
 		for my $id  ( keys %ids ) {
-			warn "Only $ids{$id} exam results for $id\n" unless 
+			carp "Only $ids{$id} exam results for $id\n" unless 
 					$ids{$id} == @exams;
 		}
 		+{ map { my $id=$_; $id => [ map { $_->{$id} } @exams ] }
@@ -542,8 +607,9 @@ role Exams {
 	has 'examGrade' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 	method _build_examGrade {
 		my $grades = $self->examPercent;
-		+{ map { my $numbers=$grades->{$_}; $_ =>sum(@$numbers)/@{$numbers} }
-							keys %$grades };
+		+{ map { my $numbers=$grades->{$_};
+			$_ => sum(@$numbers)/@{$numbers} }
+					keys %$grades };
 	}
 }
 
@@ -591,12 +657,6 @@ The league (object) whose grades these are. Must be passed when league object is
 	has 'league' => (is =>'ro', isa => 'League', required => 1,
 				handles => [ 'inspect' ] );
 
-	has 'classwork' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
-	method _build_classwork {
-		my $leaguedir = $self->league->id;
-		$self->inspect( "$leaguedir/classwork.yaml" );
-	}
-
 	has 'weights' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
 	method _build_weights {
 		my $weights = $self->league->yaml->{weights};
@@ -609,6 +669,21 @@ The league (object) whose grades these are. Must be passed when league object is
 
 	method sprintround (Maybe[Num] $number) {
 		sprintf '%.0f', $number;
+	}
+
+	method grades {
+		my $members = $self->league->members;
+		my $homework = $self->homework;
+		my $classwork = $self->classwork;
+		my $exams = $self->examGrade;
+		my @ids = map { $_->{id} } @$members;
+		my $weights = $self->weights;
+		my %grades = map { $_ => $self->sprintround(
+			$classwork->{$_} * $weights->[0] /100 +
+			$homework->{$_} * $weights->[1] /100 +
+			$exams->{$_}    * $weights->[2] /100 )
+				} @ids;
+		\%grades;
 	}
 
 }
