@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009  6月 07, 20時35分47秒
+#Last Edit: 2009  6月 10, 15時21分15秒
 
 use MooseX::Declare;
 
@@ -111,23 +111,6 @@ Unless called from the script or web app, it's a path to the league directory.
 		DumpFile $file, $data;
 	}
 
-	method sprintround {
-		my @returns;
-		for my $arg ( @_ ) {
-			unless ( ref $arg ) {
-				push @returns, sprintf '%.0f', $arg;
-			}
-			if ( ref( $arg ) eq 'ARRAY' ) {
-				push @returns, [ map { sprintf '%.0f', $_ } @$arg ];
-			}
-			if ( ref( $arg ) eq 'HASH' ) {
-				push @returns, +{ map { $_=>sprintf '%.0f',
-						$arg->{$_} } keys %$arg};
-			}
-		}
-		return wantarray? @returns: $returns[0] if @returns == 1;
-		return wantarray? @returns: \@returns if @returns >= 1;
-	}
 }
 
 =head2 Homework
@@ -135,7 +118,8 @@ Unless called from the script or web app, it's a path to the league directory.
 
 role Homework {
 	use YAML qw/LoadFile DumpFile/;
-	use List::Util qw/sum/;
+	use List::Util qw/min sum/;
+	use Carp;
 
 =head3 hwdir
 
@@ -177,6 +161,12 @@ A hashref of the homework grades for players in the league for each round.
 	}
 	has 'roundMax' => (is => 'ro', isa => 'Int', lazy => 1, default =>
 					sub { shift->league->yaml->{hwMax} } );
+=head3 totalMax
+
+The total maximum points that a Player could have gotten to this point in the whole season. There may be more (or fewer) rounds played than expected, so the actual top possible score returned by totalMax may be more (or less) than the figure planned.
+
+=cut
+
 	has 'totalMax' => (is => 'ro', isa => 'Int', lazy_build => 1);
 	method _build_totalMax {
 		my $rounds = $self->rounds;
@@ -198,30 +188,33 @@ A hashref of the homework grades for players in the league for each round.
 		\@hwbyid;
 	}
 
-	method totalHomework (Str $id) {
-		my $hw = $self->hwforid($id);
-		sum @$hw;
-	}
-
-	method homeworkGrade (Str $id) {
-		my $hw = $self->totalHomework($id);
-		my $totalMax = $self->totalMax;
-		$hw * ( 100/ $totalMax );
-	}
-
 =head3 homework
 
-Stored in $hwdir/percent.yaml. But is this the right thing to do?
+Running total homework scores of the league as rounded percentages of the totalMax, with a maximum of 100.
 
 =cut
 
-	has 'homework' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
-	sub _build_homework {
-		my $self = shift;
-		my $leaguedir = $self->league->id;
-		my $data = $self->league->yaml;
-		my $hwdir = $data->{hw} || "$leaguedir/homework";
-		$self->inspect( "$hwdir/percent.yaml" );
+	method homework {
+		my $league = $self->league->id;
+		my $hw = $self->hwbyround;
+		my $totalMax = $self->totalMax;
+		my (%idtotals, %totalcounted);
+		for my $round ( keys %$hw ) {
+			my %countedinround;
+			for my $id ( keys %{ $hw->{$round} } ) {
+				$totalcounted{$id}++;
+				$countedinround{$id}++;
+				carp "$id not in round $round homework" unless
+					defined $hw->{$round}->{$id};
+				$idtotals{$id} += $hw->{$round}->{$id};
+			}
+			carp "Missing/added players in $league round $round" if 
+				keys %totalcounted != keys %countedinround;
+		}
+		+{ map { $_ => min( 100, $self->sprintround(
+				100 * $idtotals{$_} / $totalMax ) ) || 0 }
+			keys %idtotals };
+		
 	}
 }
 
@@ -587,6 +580,8 @@ class Player {
 
 class Grades with Homework with Classwork with Exams {
 
+	use Carp qw/croak/;
+
 =head3 league
 
 The league (object) whose grades these are. Must be passed when league object is created.
@@ -597,22 +592,25 @@ The league (object) whose grades these are. Must be passed when league object is
 				handles => [ 'inspect' ] );
 
 	has 'classwork' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
-	sub _build_classwork {
-		my $self = shift;
+	method _build_classwork {
 		my $leaguedir = $self->league->id;
 		$self->inspect( "$leaguedir/classwork.yaml" );
 	}
 
 	has 'weights' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
-	sub _build_weights {
-		my $self = shift;
-		my $weights = $self->yaml->{weights};
+	method _build_weights {
+		my $weights = $self->league->yaml->{weights};
 		my @weights = ref $weights eq 'ARRAY' ? split m/,|\s+/, $weights:
 					( $weights->{classwork},
 					$weights->{homework},
 					$weights->{exams} );
 		\@weights;
 	}
+
+	method sprintround (Maybe[Num] $number) {
+		sprintf '%.0f', $number;
+	}
+
 }
 
 1;
