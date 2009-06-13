@@ -26,6 +26,14 @@ sub _build_yaml {
 		my $league = $instance->league;
 		LoadFile "$league/league.yaml"
 }
+
+has 'name' => (is => 'ro', isa => 'Str', lazy_build => 1);
+sub _build_name {
+	my $self = shift;
+	my $data = $self->yaml;
+	$data->{league};
+}
+
 has 'hwdir' => (is => 'ro', isa => 'Str', lazy_build => 1);
 sub _build_hwdir {
 	my $self = shift;
@@ -45,8 +53,7 @@ sub _build_hw {
 	my $self = shift;
 	my $hwdir = $self->hwdir;
 	my $rounds = $self->rounds;
-	my %hw = map { $_ => LoadFile "$hwdir/$_.yaml" } @$rounds;
-	\%hw;
+	+{ map { $_ => LoadFile "$hwdir/$_.yaml" } @$rounds };
 }
 has 'hwMax' => (is => 'ro', isa => 'Int', lazy => 1, default =>
 				sub { shift->yaml->{hwMax} } );
@@ -304,6 +311,9 @@ format WEEKS14 =
 @<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
 $name,  $id,	@indgrades, $grade, $percent
 .
+
+1;
+
 __END__
 
 =head1 NAME
