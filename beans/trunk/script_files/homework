@@ -5,12 +5,23 @@ package main;
 use strict;
 use warnings;
 
+package Homework;
+use Moose;
+
+with 'MooseX::Getopt';
+
+has 'man' => (is => 'rw', isa => 'Bool');
+has 'help' => (is => 'rw', isa => 'Bool');
+has 'league' => (traits => ['Getopt'], is => 'rw', isa => 'Str',
+		cmd_aliases => 'l',);
+
+package main;
+
 use List::Util qw/sum/;
 use IO::All;
 use IO::Handle;
 use Cwd;
 use Pod::Usage;
-use Cwd;
 
 use lib 'lib';
 use Bean;
