@@ -1,8 +1,8 @@
 package Grades;
 
-#Last Edit: 2009  6月 13, 07時50分39秒
+#Last Edit: 2009  6月 13, 20時54分50秒
 
-our $VERSION = 0.01;
+our $VERSION = 0.04;
 
 use MooseX::Declare;
 
@@ -23,44 +23,36 @@ package Grades;
 
 =head1 NAME
 
-Grades - 
+Grades - A collocation of homework, classwork and exams
 
 =head1 SYNOPSIS
 
-hwtotal [options] 
+	use Grades;
 
-Options:
+	my $script = Script->new_with_options( league => getcwd );
+	my $league = League->new( id => $script->league );
+	my $grades = Grades->new( league => $league );
 
---help            This help message
-
---man            A man page
-
---league m/j	The league whose results these are
-
-=head1 OPTIONS
-
-=over 8
-
-=item B<-league>
-
-The league to which the redeemer belongs
-
-=back
+	my $homeworkgrades = $grades->homework;
+	my $classworkgrades = $grades->classwork;
+	my $examgrades = $grades->examGrade;
 
 =head1 DESCRIPTION
 
-Whether you use gold stars or token economies, How I stopped worrying and learned to love grading students. If you can't beat them, join them. For some reason, students enjoy competition outside the classroom, but less inside.
-The league is the class.
+An alternative to a spreadsheet for grading students, using YAML files and 
+scripts. The students are the players in a league ( class.) See the README and example emile league in t/emile in the distribution for the layout of the league directory in which homework, classwork and exam scores are recorded.
 
-Mad rush at the end of the semester to present a Excel file that will escape
-=cut
-
-
-=head1 ATTRIBUTES
+Keywords: gold stars, token economies, bean counter
 
 =cut
 
-=head2 League
+
+=head1 ATTRIBUTES & METHODS
+
+=cut
+
+=head2 LEAGUE CLASS
+
 =cut
 
 class League {
@@ -74,33 +66,80 @@ Unless called from the script or web app, it's a path to the league directory.
 =cut
 
 	has 'id' => (is => 'ro', isa => 'Str', required => 1);
+=head3 yaml
+
+The content of the league configuration file.
+
+=cut
+
 	has 'yaml' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 	method _build_yaml {
 			my ($instance) = @_;
 			my $league = $instance->id;
 			$self->inspect( "$league/league.yaml" );
 	}
+
+=head3 name
+
+The name of the league (class).
+
+=cut
+
 	has 'name' => (is => 'ro', isa => 'Str', lazy_build => 1);
 	method _build_name {
 		my $data = $self->yaml;
 		$data->{league};
 	}
+
+=head3 members
+
+Hash refs of the players (students) in the league. The module assumes each of the members in the arrayref returned by this attribute is a hash ref containing an id and name of the member.
+
+=cut
+
 	has 'members' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
 	method _build_members {
 		my $data = $self->yaml;
 		$data->{member};
 	}
+
+=head3 absentees
+
+Students who have stopped coming to class and so won't be included in classwork scoring.
+
+=cut
+
 	has 'absentees' => (is => 'ro', isa => 'ArrayRef', lazy => 1, default =>
 					sub { shift->yaml->{absent} } );
+
+
+=head3 is_member
+
+Whether the passed id is that of a member in the league (class).
+
+=cut
 
 	method is_member (Str $id) {
 		my $data = $self->yaml;
 		any { $_->{id} eq $id } @{$data->{member}};
 	}
 
+
+=head3 inspect
+
+Loads a YAML file.
+
+=cut
+
 	method inspect (Str $file) {
 		LoadFile $file;
 	}
+
+=head3 save
+
+Dumps a YAML file
+
+=cut
 
 	method save (Str $file, HashRef $data) {
 		DumpFile $file, $data;
@@ -108,7 +147,9 @@ Unless called from the script or web app, it's a path to the league directory.
 
 }
 
-=head2 Homework
+=head2	GRADES CLASS
+
+=head2 Grades' Homework Methods
 =cut
 
 role Homework {
@@ -131,7 +172,7 @@ The directory where the homework is.
 
 =head3 rounds
 
-An arrayref of the files with homework grades for players in the league in round order.
+An arrayref of the files containing the homework grades of players in the league, in round order. The names of the files are '1.yaml', '3,yaml', etc.
 
 =cut
 
@@ -168,6 +209,12 @@ The total maximum points that a Player could have gotten to this point in the wh
 		my $hwMax = $self->roundMax;
 		$hwMax * @$rounds;
 	}
+
+=head3 hwforid
+
+Given a player's id, returns an array ref of the player's hw scores.
+
+=cut
 
 	method hwforid (Str $id) {
 		my $hw = $self->hwbyround;
@@ -212,7 +259,7 @@ Running total homework scores of the league as percentages of the totalMax, with
 
 }
 
-=head2 Classwork
+=head2 Grades' Classwork Methods
 =cut
 
 role Classwork {
@@ -221,8 +268,20 @@ role Classwork {
 	use Carp;
 	use POSIX;
 
+=head3 series
+
+The sessions over the series (semester) in which there was a different grouping (beancans) of players. Everyone in the same beancan for one session gets the same number of beans (classwork score.)
+
+=cut
+
 	has 'series' => (is => 'ro', isa => 'ArrayRef', lazy => 1, default =>
 					sub { shift->league->yaml->{series} } );
+
+=head3 beancanseries
+
+The different beancans for each of the sessions in the series.
+
+=cut
 	has 'beancanseries' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 	method _build_beancanseries {
 		my $series = $self->series;
@@ -230,6 +289,14 @@ role Classwork {
 		+{ map { $_ => $self->inspect( "$league/$_/beancans.yaml" ) }
 			@$series };
 	}
+
+
+=head3 allfiles
+
+The files containing classwork points (beans) awarded to beancans. 
+
+=cut
+
 
 	has 'allfiles'  => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
 	method _build_allfiles {
@@ -241,6 +308,12 @@ role Classwork {
 		return $files;
 	}
 
+=head3 allweeks
+
+The weeks (an array ref of integers) in which beans were awarded.
+
+=cut
+
 	has 'allweeks' => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
 	method _build_allweeks {
 		my $files = $self->allfiles;
@@ -249,11 +322,23 @@ role Classwork {
 		return $weeks;
 	}
 
+=head3 lastweek
+
+The last week in which beans were awarded.
+
+=cut
+
 	has 'lastweek' => ( is => 'ro', isa => 'Int', lazy_build => 1 );
 	method _build_lastweek {
 		my $weeks = $self->allweeks;
 		max @$weeks;
 	}
+
+=head3 data
+
+The beans awarded to the beancans over the series (semester.)
+
+=cut
 
 	has 'data' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 	method _build_data {
@@ -265,7 +350,7 @@ role Classwork {
 
 =head3 card
 
-Classwork beans for each beancan for the week
+Classwork beans for each beancan for the given week
 
 =cut
 
@@ -285,10 +370,22 @@ Rather than refactor the class to work with individuals rather than groups, and 
 
 	method beancans (Str $session) { $self->beancanseries->{$session}; }
 
+=head3 files
+
+Given a session, returns the files containing beans for the session.
+
+=cut
+
 	method files (Str $session) {
 		my $allfiles = $self->allfiles;
 		[ grep m|/$session/\d+\.yaml$|, @$allfiles ];
 	}
+
+=head3 weeks
+
+Given a session, returns the weeks (an array ref of integers) in which beans were awarded in the session.
+
+=cut
 
 	method weeks (Str $session) {
 		my $files = $self->files($session);
@@ -314,7 +411,7 @@ Given the name of a week, return the name of the session it is in.
 
 =head3 names2beancans
 
-A hashref of names of members of beancans and the beancan names they are members of.
+A hashref of names of members of beancans (players) and the beancans they were members of.
 
 =cut
 
@@ -331,6 +428,12 @@ A hashref of names of members of beancans and the beancan names they are members
 		}
 		\%beancansreversed;
 	}
+
+=head3 names2beancans
+
+Given the name of a player, an arrayref of the beancans they were members of.
+
+=cut
 
 	method name2beancan (Num $week, Str $name) {
 		die "Week $week?" unless defined $week;
@@ -379,6 +482,12 @@ Test all of the beancans have all the points due them for the week.
 		croak "@noData beancans missing data in week $week" if @noData;
 	}
 
+=head3 merits
+
+The points the beancan gained for the given week.
+
+=cut
+
 	method merits (Num $week) {
 		my $session = $self->week2session($week);
 		my $beancans = $self->beancans($session);
@@ -388,6 +497,12 @@ Test all of the beancans have all the points due them for the week.
 		+{ map { $_ => $card->{$_}->{merits} } keys %$beancans };
 	}
 
+=head3 absences
+
+The number of players absent from the beancan in the given week. These are demerits.
+
+=cut
+
 	method absences (Num $week) {
 		my $session = $self->week2session($week);
 		my $beancans = $self->beancans($session);
@@ -396,6 +511,12 @@ Test all of the beancans have all the points due them for the week.
 		$self->beancanDataOnCard($beancans, $card, $week);
 		+{ map { $_ => $card->{$_}->{absences} } keys %$beancans };
 	}
+
+=head3 tardies
+
+The number of players not on time in the beancan in the given week. These are demerits.
+
+=cut
 
 	method tardies (Num $week) {
 		my $session = $self->week2session($week);
@@ -408,7 +529,7 @@ Test all of the beancans have all the points due them for the week.
 
 =head3 payout
 
-How much should be given out for each week in this session, so that the total score of each player over the series averages 80?
+How much should be given out for each beancan for each week in this session, so that the total score of each player over the series averages 80?
 
 =cut
 
@@ -490,7 +611,7 @@ The points given by the teacher are log-scaled to prevent active students from t
 
 =head3 work2grades
 
-The work (ie merits - demerits) of the beancans for the week, as a percentage of the total work, determines the payout of grades, which should average 80 over the sessions of play.
+The work (ie merits - demerits) of the individual beancans for the week, as a percentage of the total work of all the beancans, determines the payout of grades, which should average 80 over the sessions of play.
 
 =cut
 
@@ -506,7 +627,7 @@ The work (ie merits - demerits) of the beancans for the week, as a percentage of
 
 =head3 grades4session
 
-Totals for beancans over the session.
+Totals for a given beancan over the session.
 
 =cut
 
@@ -571,9 +692,18 @@ Running totals for individual ids out of 100, over the whole series.
 
 }
 
+=head2 Grades' Exams Methods
+=cut
+
 role Exams {
 	use List::Util qw/sum/;
 	use Carp;
+
+=head3 examdirs
+
+The directories in which exam results exist.
+
+=cut
 
 	has 'examdirs' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
 	method _build_examdirs {
@@ -582,12 +712,18 @@ role Exams {
 		[ map { "$leagueId/$_" } @$examdirs ];
 	}
 
+=head3 examMax
+
+The maximum score possible in each individual exam. That is, what the exam is out of.
+
+=cut
+
 	has 'examMax' => (is => 'ro', isa => 'Int', lazy => 1, required => 1,
 			default => sub { shift->league->yaml->{examMax} } );
 
 =head3 examResults
 
-A hash ref of the ids of the players and an array of their results over the exam series, ie examdirs. Die if any result is larger than examMax.
+A hash ref of the ids of the players and arrays of their results over the exam series, ie examdirs, in files named 'g.yaml'. TODO: Croak if any result is larger than examMax.
 
 =cut
 
@@ -605,6 +741,12 @@ A hash ref of the ids of the players and an array of their results over the exam
 			keys %ids };
 	}
 
+=head3 examPercent
+
+A hashref of the ids of the players and arrays of their results over the exams expressed as percentages of the maximum possible score for the exams.
+
+=cut
+
 	has 'examPercent' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 	method _build_examPercent {
 		my $scores = $self->examResults;
@@ -612,6 +754,13 @@ A hash ref of the ids of the players and an array of their results over the exam
 		+{ map { my $id=$_; $id => [ map { $_*(100/$max) } @{$scores->{$_}} ] }
 			keys %$scores };
 	}
+
+=head3 examGrade
+
+A hash ref of the ids of the players and their total exam score, expressed as a percentage of the possible exam score. This is the average of their exam scores.
+
+=cut
+
 	has 'examGrade' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 	method _build_examGrade {
 		my $grades = $self->examPercent;
@@ -652,18 +801,28 @@ class Player {
 	}
 }
 
+=head2 Grades' Core Methods
+=cut
+
 class Grades with Homework with Classwork with Exams {
 
 	use Carp qw/croak/;
 
 =head3 league
 
-The league (object) whose grades these are. Must be passed when league object is created.
+The league (object) whose grades these are.
 
 =cut
 
 	has 'league' => (is =>'ro', isa => 'League', required => 1,
 				handles => [ 'inspect' ] );
+
+
+=head3 weights
+
+An array ref of the weights (expressed as a percentage) accorded to the three components, classwork, homework, and exams, in that order, in the final grade. Could be a hash ref (YAML mapping) in 'league.yaml.'
+
+=cut
 
 	has 'weights' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
 	method _build_weights {
@@ -675,9 +834,22 @@ The league (object) whose grades these are. Must be passed when league object is
 		\@weights;
 	}
 
+
+=head3 sprintround
+
+sprintf( '%.0f', $number). sprintf warns if $number is undef.
+
+=cut
+
 	method sprintround (Maybe[Num] $number) {
 		sprintf '%.0f', $number;
 	}
+
+=head3 grades
+
+A hashref of student ids and final grades.
+
+=cut
 
 	method grades {
 		my $members = $self->league->members;
@@ -696,6 +868,57 @@ The league (object) whose grades these are. Must be passed when league object is
 
 }
 
-1;
+=head1 AUTHOR
+
+Dr Bean, C<< <drbean, followed by the at mark (@), cpan, then a dot, and finally, org> >>
+
+=head1 BUGS
+
+Please report any bugs or feature requests to
+C<bug-grades at rt.cpan.org>, or through the web interface at
+L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Grades>.
+I will be notified, and then you'll automatically be notified of progress on
+your bug as I make changes.
+
+=head1 SUPPORT
+
+You can find documentation for this module with the perldoc command.
+
+    perldoc Grades
+
+You can also look for information at:
+
+=over 4
+
+=item * AnnoCPAN: Annotated CPAN documentation
+
+L<http://annocpan.org/dist/Grades>
+
+=item * CPAN Ratings
+
+L<http://cpanratings.perl.org/d/Grades>
+
+=item * RT: CPAN's request tracker
+
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Grades>
+
+=item * Search CPAN
+
+L<http://search.cpan.org/dist/Grades>
+
+=back
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2006 Dr Bean, all rights reserved.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+=cut
+
+1;    # End of Grades
+
+# vim: set ts=8 sts=4 sw=4 noet:
 
 __END__
