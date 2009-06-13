@@ -45,7 +45,8 @@ sub _build_hw {
 	my $self = shift;
 	my $hwdir = $self->hwdir;
 	my $rounds = $self->rounds;
-	map { $_ => LoadFile "$hwdir/$_.yaml" } @$rounds;
+	my %hw = map { $_ => LoadFile "$hwdir/$_.yaml" } @$rounds;
+	\%hw;
 }
 has 'hwMax' => (is => 'ro', isa => 'Int', lazy => 1, default =>
 				sub { shift->yaml->{hwMax} } );
@@ -66,11 +67,17 @@ sub _build_members {
 	my $self = shift;
 	my $data = $self->yaml;
 	my @members = sort { $a->{id} cmp $b->{id} } @{$data->{member}};
-	# [ map { Player->new(id=>$_->{id},name=>$_->{name},grades=>$_->{grades})
-	[ map { Player->new(id=>$_->{id},name=>$_->{name})
+	[ map { Player->new(league => $self->league, id=>$_->{id},name=>$_->{name})
 			} @members ];
 	# $data->{member};
 }
+
+sub save {
+	my $self = shift;
+	DumpFile shift(), shift();
+}
+	
+
 
 package Player;
 use Moose;
@@ -79,13 +86,13 @@ extends 'League';
 has 'id' => (is => 'ro', isa => 'Str');
 has 'name' => (is => 'ro', isa => 'Str');
 has 'Chinese' => (is => 'ro', isa => 'Str');
-has 'grades' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+has 'grades' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
 sub _build_grades {
 	my $self = shift;
 	my $id = $self->id;
 	my $hw = $self->hw;
 	my $rounds = $self->rounds;
-	[ map { $_ => $hw->{$_}->{$id} } @$rounds ];
+	[ map { $hw->{$_}->{$id} } @$rounds ];
 }
 
 package main;
@@ -284,7 +291,7 @@ $name,  $id,	@indgrades, $grade, $percent
 format WEEKS11 =
 @<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
 $name,  $id,	@indgrades, $grade, $percent
-$.
+.
 format WEEKS12 =
 @<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
 $name,  $id,	@indgrades, $grade, $percent
