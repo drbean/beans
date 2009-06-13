@@ -1,4 +1,7 @@
 package Script;
+
+our $VERSION = 0.01;
+
 use Moose;
 with 'MooseX::Getopt';
 
