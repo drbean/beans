@@ -1,6 +1,8 @@
 package Grades;
 
-#Last Edit: 2009  6月 11, 17時14分24秒
+#Last Edit: 2009  6月 12, 21時08分46秒
+
+our $VERSION = 0.01;
 
 use MooseX::Declare;
 
@@ -582,6 +584,12 @@ role Exams {
 
 	has 'examMax' => (is => 'ro', isa => 'Int', lazy => 1, required => 1,
 			default => sub { shift->league->yaml->{examMax} } );
+
+=head3 examResults
+
+A hash ref of the ids of the players and an array of their results over the exam series, ie examdirs. Die if any result is larger than examMax.
+
+=cut
 
 	has 'examResults' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 	method _build_examResults {
