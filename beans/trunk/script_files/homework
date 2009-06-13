@@ -153,6 +153,63 @@ $name,  $id,	@indgrades, $grade, $percent
 
 1;
 
+our ($name, $id, @indgrades, $grade, $percent);
+format WEEKS1 =
+@<<<<<< @<<<<<<< @<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS2 =
+@<<<<<< @<<<<<<< @<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS3 =
+@<<<<<< @<<<<<<< @<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS4 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS5 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS6 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS7 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS8 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS9 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS10 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS11 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS12 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS13 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS14 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
 __END__
 
 =head1 NAME
