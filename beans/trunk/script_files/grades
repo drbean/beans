@@ -59,6 +59,14 @@ sub run {
 		warn "$id: classwork $classwork, homework $homework, exams $examGrade"
 			unless ( defined $classwork and defined $homework and 
 					defined $examGrade );
+my $examMax = $class->{examMax};
+my @weights = $weights? split m/,|\s+/, $weights:
+			( $class->{weights}->{classwork},
+			$class->{weights}->{homework},
+			$class->{weights}->{exams} );
+my $total = sum @weights;
+die "No weighting, classwork=>20, homework=>20, exams=>60?" unless
+						$total == 10 || $total == 100;
 
 		write REP;
 	}
