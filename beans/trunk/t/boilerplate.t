@@ -45,4 +45,4 @@ sub module_boilerplate_ok {
     );
 }
 
-module_boilerplate_ok('lib/Bean/Counter.pm');
+module_boilerplate_ok('lib/Bean.pm');
