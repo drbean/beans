@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009  6月 12, 21時08分46秒
+#Last Edit: 2009  6月 13, 07時50分39秒
 
 our $VERSION = 0.01;
 
@@ -185,7 +185,7 @@ The total maximum points that a Player could have gotten to this point in the wh
 
 =head3 homework
 
-Running total homework scores of the league as rounded percentages of the totalMax, with a maximum of 100.
+Running total homework scores of the league as percentages of the totalMax, with a maximum of 100.
 
 =cut
 
@@ -435,7 +435,7 @@ The demerits that week. calculated as twice the number of absences, plus the num
 
 =head3 favor
 
-A score of 2 given to beancans with no more than 6 demerits, to prevent beancans who were all there but didn't do anything (ie had no merits and no demerits) from getting a log score of 0, and so getting a grade of 0 for that week.
+A score of 1 given to beancans with no more than 6 demerits, to prevent beancans who were all there but didn't do anything (ie had no merits and no demerits) from getting a log score of 0, and so getting a grade of 0 for that week.
 
 =cut
 
