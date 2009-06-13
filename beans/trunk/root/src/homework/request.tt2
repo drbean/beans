@@ -1,0 +1,23 @@
+[% META title = 'Homework Grades Request' -%]
+
+<form method="post" action="[% c.uri_for('list') %]">
+<table>
+  <tr><td>League:</td><td>
+  <select name="league" size="[% leagues.size %]">
+
+<option value="GL00032">GL00032日語文共同學制虛擬班二 初級英文聽說訓練</option>
+<option value="GL00037">GL00037日語文共同學制虛擬班二 初級英文聽說訓練</option>
+<option value="GL00036">GL00036日語文共同學制虛擬班二 中級英文聽說訓練</option>
+<option value="GL00040">GL00040日語文共同學制虛擬班二 中級英文聽說訓練</option>
+<option value="GL00042">GL00042日語文共同學制虛擬班二 中級英文聽說訓練</option>
+<option value="CLA0035">日華文大學二甲 英文聽力及會話</option>
+<option value="FLA0005">夜應外大學三甲 跨文化溝通</option>
+<option value="FLA0018">夜應外大學二甲 英語會話(一)</option>
+<option value="access">英語自學室 Listening</option>
+
+  </select></td></tr>
+  <tr><td>Id:</td><td><input type="text" name="id"></td></tr>
+  <tr><td>Name:</td><td><input type="text" name="name"></td></tr>
+</table>
+<input type="submit" name="Submit" value="Submit">
+</form>
