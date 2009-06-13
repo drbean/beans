@@ -3,27 +3,28 @@ use warnings;
 use Module::Build;
 
 my $builder = Module::Build->new(
-    module_name         => 'Bean::Counter',
+    module_name         => 'Grades',
     license             => 'perl',
-    dist_author         => 'Dr Bean <drbean at (@] cpan dot [.) org>',
-    dist_version   => 0.01,
+    dist_author         => 'Dr Bean <drbean, followed by the at mark (@), cpan, then a dot, and finally, org>',
+    dist_version   => 0.04,
     dist_abstract => 
-	    'Ongoing grading of a league of players (ie class of students.)',
+	    'Grading of a league of players (ie class of students.)',
+    requires => {
+	    'Moose' => 0,
+	    'MooseX::Declare' => 0,
+	    'MooseX::Getopt' => 0,
+    },
     build_requires => {
         'Test::More' => 0,
     },
-    add_to_cleanup      => [ 'Bean-Counter-*' ],
+    create_makefile_pl => 'traditional',
+    add_to_cleanup      => [ 'Grades-*' ],
     meta_merge => {
       resources => {
-          bugtracker => 'http://rt.cpan.org/NoAuth/Bugs.html?Dist=Bean::Counter',
+          bugtracker => 'http://rt.cpan.org/NoAuth/Bugs.html?Dist=Grades',
           repository  => 'http://svn.openfoundry.org/ttb/beans/'
 		}
 	},
-    script_files	=>  [qw[
-    				script_files/homework
-    				script_files/classwork
-				script_files/grades]],
 );
-# script_files/deposit script_files/beans script_files/hwtotal script_files/checkbeans script_files/id2name
 
 $builder->create_build_script();
