@@ -3,7 +3,7 @@
 use Test::More tests => 1;
 
 BEGIN {
-	use_ok( 'Bean::Counter' );
+	use_ok( 'Bean' );
 }
 
-diag( "Testing Bean::Counter $Bean::Counter::VERSION, Perl $], $^X" );
+diag( "Testing Bean $Bean::VERSION, Perl $], $^X" );
