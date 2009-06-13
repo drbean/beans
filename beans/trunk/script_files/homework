@@ -7,15 +7,91 @@ use warnings;
 
 package Homework;
 use Moose;
-
 with 'MooseX::Getopt';
 
-has 'man' => (is => 'rw', isa => 'Bool');
-has 'help' => (is => 'rw', isa => 'Bool');
-has 'league' => (traits => ['Getopt'], is => 'rw', isa => 'Str',
+has 'man' => (is => 'ro', isa => 'Bool');
+has 'help' => (is => 'ro', isa => 'Bool');
+has 'league' => (traits => ['Getopt'], is => 'ro', isa => 'Str',
 		cmd_aliases => 'l',);
 
+package League;
+use Moose;
+use YAML qw/LoadFile DumpFile/;
+
+extends 'Script';
+
+has 'yaml' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+sub _build_yaml {
+		my ($instance) = @_;
+		my $league = $instance->league;
+		LoadFile "$league/league.yaml"
+}
+has 'hwdir' => (is => 'ro', isa => 'Str', lazy_build => 1);
+sub _build_hwdir {
+	my $self = shift;
+	my $league = $self->league;
+	my $data = $self->yaml;
+	my $hwdir = $data->{hw} || "$league/homework"
+}
+has 'rounds' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
+sub _build_rounds {
+	my $self = shift;
+	my $hwdir = $self->hwdir;
+	my @hw = glob "$hwdir/*.yaml";
+	[ sort {$a<=>$b} map m/^$hwdir\/(\d+)\.yaml$/, @hw ];
+}
+has 'hw' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+sub _build_hw {
+	my $self = shift;
+	my $hwdir = $self->hwdir;
+	my $rounds = $self->rounds;
+	map { $_ => LoadFile "$hwdir/$_.yaml" } @$rounds;
+}
+has 'hwMax' => (is => 'ro', isa => 'Int', lazy => 1, default =>
+				sub { shift->yaml->{hwMax} } );
+has 'totalScores' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+sub _build_totalScores {
+	my $self = shift;
+	my $hwdir = $self->hwdir;
+	LoadFile "$hwdir/total.yaml";
+}
+has 'totalPercent' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+sub _build_totalPercent {
+	my $self = shift;
+	my $hwdir = $self->hwdir;
+	LoadFile "$hwdir/percent.yaml";
+}
+has 'members' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
+sub _build_members {
+	my $self = shift;
+	my $data = $self->yaml;
+	my @members = sort { $a->{id} cmp $b->{id} } @{$data->{member}};
+	# [ map { Player->new(id=>$_->{id},name=>$_->{name},grades=>$_->{grades})
+	[ map { Player->new(id=>$_->{id},name=>$_->{name})
+			} @members ];
+	# $data->{member};
+}
+
+package Player;
+use Moose;
+extends 'League';
+
+has 'id' => (is => 'ro', isa => 'Str');
+has 'name' => (is => 'ro', isa => 'Str');
+has 'Chinese' => (is => 'ro', isa => 'Str');
+has 'grades' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+sub _build_grades {
+	my $self = shift;
+	my $id = $self->id;
+	my $hw = $self->hw;
+	my $rounds = $self->rounds;
+	[ map { $_ => $hw->{$_}->{$id} } @$rounds ];
+}
+
 package main;
+
+use strict;
+use warnings;
 
 use List::Util qw/sum/;
 use IO::All;
@@ -208,7 +284,7 @@ $name,  $id,	@indgrades, $grade, $percent
 format WEEKS11 =
 @<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
 $name,  $id,	@indgrades, $grade, $percent
-.
+$.
 format WEEKS12 =
 @<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
 $name,  $id,	@indgrades, $grade, $percent
