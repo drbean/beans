@@ -1,18 +1,14 @@
 Grades
 
-This is a collection of scripts useful for the anal-retentive teacher grading students in a very particular way.
+This is a collection of scripts useful for the micromanagement of grading students.
 
-hwtotal totals the scores in the homework directory and stores them in cumulative.yaml. However you may want to convert the scores to percentages of an ideal score. hwtotal doesn't do this.
+A configuration file, league.yaml, as in t/emile/league.yaml in the distribution, holds names and ids of members, etc.
 
-grades totals subscores for classwork, homework and exams and prints a report.
+Homework scores is a mapping of ids and scores for each round in individual files, named 3.yaml, etc in a homework subdirectory.
 
-checkbeans identifies the sources of the classwork score that a student gets by virtue of being a member of a group and getting a group score.
+Classwork scores are in individual files for each week, eg 1.yaml, 3.yaml, etc, in different subdirectories, eg, first, second, etc, for each session of the semester with a different student grouping. All the members of an individual group, called a beancan, get the same classwork score over that session.
 
-beans adds points that a group has accumulated and are being processed, for addition to the group record.
-
-classwork totals scores that students have gained either individually or as members of groups over the weeks of the course. The average score per week is 80/number of weeks, so the total average is 80.
-
-cumulative. How is this different than hwtotal?
+Exam scores are in files called g.yaml, in individual subdirs for each exam.
 
 INSTALLATION
 
