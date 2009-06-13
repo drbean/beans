@@ -14,6 +14,8 @@ my $builder = Module::Build->new(
 	    'MooseX::Declare' => 0,
 	    'MooseX::Getopt' => 0,
     },
+    dist_abstract => 
+	    'Ongoing grading of a league of players (ie class of students.)',
     build_requires => {
         'Test::More' => 0,
     },
