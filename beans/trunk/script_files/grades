@@ -40,12 +40,10 @@ sub run {
 	REP->format_top_name($format_top[@$examN]);
 	REP->format_name($formats[@$examN]);
 	my $members = $league->members;
-	my $absentees = $league->absentees;
 	foreach my $member ( @$members ) 
 	{
 		our $id = $member->{id};
 		our $name = $member->{name};
-		next if @$absentees and any { $_ eq $name } @$absentees;
 		our $homework = min 100, $league->sprintround($hw->{$id}) || 0;
 		our $classwork = min 100,
 				$league->sprintround($classwork->{$id}) || 0;
