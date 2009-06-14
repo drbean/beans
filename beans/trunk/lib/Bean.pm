@@ -216,25 +216,31 @@ sub percent {
 	my $totalMax = $self->totalMax;
 	$hw * ( 100/ $totalMax );
 }
-has 'files'  => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
-sub _build_files {
+has 'allfiles'  => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
+sub _build_allfiles {
 	my $self = shift;
 	my $league = $self->leagueId;
 	my $series = $self->series;
 	[ map { grep m|/(\d+)\.yaml$|, glob "$league/$_/*" } @$series ];
 }
-has 'weeks' => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
-sub _build_weeks {
+has 'allweeks' => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
+sub _build_allweeks {
 	my $self = shift;
-	my $files = $self->files;
-	[ map s/^.*\/(\d+)\.yaml$/$1/, @$files ];
+	my $files = $self->allfiles;
+	[ map { m|/(\d+)\.yaml$|; $1 } @$files ];
+}
+has 'lastweek' => ( is => 'ro', isa => 'Int', lazy_build => 1 );
+sub _build_lastweek {
+	my $self = shift;
+	my $weeks = $self->allweeks;
+	max @$weeks;
 }
 has 'data' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 sub _build_data {
 	my $self = shift;
-	my $files = $self->files;
-	my $weeks = $self->weeks;
-	+{ map { $_=> LoadFile $files->{$_} } @$weeks };
+	my $files = $self->allfiles;
+	my $weeks = $self->allweeks;
+	+{ map { $weeks->[$_] => LoadFile $files->[$_] } 0..$#$weeks };
 }
 
 =head2 Classwork
@@ -441,7 +447,9 @@ How much should be given out for each week in this session, so that the total sc
 
 sub payout {
 	my $self = shift;
-	my $session = shift;
+	my $week = shift;
+	my $demerits = $self->demerits($week);
+	my $session = $self->week2session($week);
 	my $sessions = $self->series;
 	my $beancans = $self->beancans($session);
 	my $weeks = $self->weeks($session);
