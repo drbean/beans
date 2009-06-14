@@ -272,6 +272,7 @@ sub _build_allfiles {
 	my $files = [ map { grep m|/(\d+)\.yaml$|, glob "$league/$_/*.yaml" } @$series ];
 	die "${league}'s @$series files: @$files?" unless @$files;
 	return $files;
+	return $files;
 
 }
 has 'allweeks' => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
