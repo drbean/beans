@@ -60,6 +60,8 @@ Seek listing of homework scores for one player.
 
 sub homework : Local {
 	my ($self, $c) = @_;
+	my @leagues = $c->model('DB::League')->all;
+	$c->stash->{leagues} = \@leagues;
 }
 
 =head2 homework_listing
@@ -102,6 +104,8 @@ Request a listing of classwork results
 
 sub classwork : Local {
 	my ($self, $c) = @_;
+	my @leagues = $c->model('DB::League')->all;
+	$c->stash->{leagues} = \@leagues;
 }
 
 =head2 classwork_listing
