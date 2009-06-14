@@ -1,12 +1,12 @@
 package Grades;
 
-#Last Edit: 2009  6月 13, 20時54分50秒
+#Last Edit: 2009  6月 14, 10時46分53秒
 
 our $VERSION = 0.04;
 
 use MooseX::Declare;
 
-package Script;
+package Grades::Script;
 use Moose;
 use MooseX::Getopt;
 
@@ -29,7 +29,7 @@ Grades - A collocation of homework, classwork and exams
 
 	use Grades;
 
-	my $script = Script->new_with_options( league => getcwd );
+	my $script = Grades::Script->new_with_options( league => getcwd );
 	my $league = League->new( id => $script->league );
 	my $grades = Grades->new( league => $league );
 
