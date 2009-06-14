@@ -6,7 +6,7 @@ my $builder = Module::Build->new(
     module_name         => 'Grades',
     license             => 'perl',
     dist_author         => 'Dr Bean <drbean, followed by the at mark (@), cpan, then a dot, and finally, org>',
-    dist_version   => 0.04,
+    dist_version   => 0.05,
     dist_abstract => 
 	    'Grading of a league of players (ie class of students.)',
     requires => {
