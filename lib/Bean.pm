@@ -216,6 +216,26 @@ sub percent {
 	my $totalMax = $self->totalMax;
 	$hw * ( 100/ $totalMax );
 }
+has 'files'  => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
+sub _build_files {
+	my $self = shift;
+	my $league = $self->leagueId;
+	my $series = $self->series;
+	[ map { grep m|/(\d+)\.yaml$|, glob "$league/$_/*" } @$series ];
+}
+has 'weeks' => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
+sub _build_weeks {
+	my $self = shift;
+	my $files = $self->files;
+	[ map s/^.*\/(\d+)\.yaml$/$1/, @$files ];
+}
+has 'data' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+sub _build_data {
+	my $self = shift;
+	my $files = $self->files;
+	my $weeks = $self->weeks;
+	+{ map { $_=> LoadFile $files->{$_} } @$weeks };
+}
 
 =head2 Classwork
 =cut
