@@ -1,0 +1,32 @@
+---
+name: Grades
+version: 0.06
+author:
+  - 'Dr Bean <drbean, followed by the at mark (@), cpan, then a dot, and finally, org>'
+abstract: Grading of a league of players (ie class of students.)
+license: perl
+resources:
+  bugtracker: http://rt.cpan.org/NoAuth/Bugs.html?Dist=Grades
+  license: ~
+  repository: http://svn.openfoundry.org/ttb/beans/
+requires:
+  Carp: 0
+  List::MoreUtils: 0
+  List::Util: 0
+  Moose: 0
+  MooseX::Declare: 0
+  MooseX::Getopt: 0
+  POSIX: 0
+  YAML: 0
+build_requires:
+  Test::More: 0
+provides:
+  Grades:
+    file: lib/Grades.pm
+    version: 0.06
+  Grades::Script:
+    file: lib/Grades.pm
+generated_by: Module::Build version 0.32
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.2.html
+  version: 1.2
