@@ -3,7 +3,7 @@
 use Test::More tests => 1;
 
 BEGIN {
-	use_ok( 'Bean' );
+	use_ok( 'Grades' );
 }
 
-diag( "Testing Bean $Bean::VERSION, Perl $], $^X" );
+diag( "Testing Grades $Grades::VERSION, Perl $], $^X" );
