@@ -41,4 +41,5 @@ t/emile/homework/14.yaml
 t/emile/homework/16.yaml
 t/emile/homework/17.yaml
 lib/Grades.pm
+lib/Grades/Types.pm
 Makefile.PL

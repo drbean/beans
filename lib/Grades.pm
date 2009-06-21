@@ -1,8 +1,8 @@
 package Grades;
 
-#Last Edit: 2009  6月 21, 08時37分23秒
+#Last Edit: 2009  6月 21, 08時54分56秒
 
-our $VERSION = 0.06;
+our $VERSION = 0.07;
 
 use MooseX::Declare;
 
