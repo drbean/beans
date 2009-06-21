@@ -6,8 +6,6 @@ member:
     name: Sophie
   - id: 34113
     name: Emile
-absent:
-  - None
 series:
   - first
   - second
