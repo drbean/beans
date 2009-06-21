@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009  6月 16, 21時28分40秒
+#Last Edit: 2009  6月 19, 12時10分36秒
 
 our $VERSION = 0.06;
 
@@ -46,6 +46,11 @@ Keywords: gold stars, token economies, bean counter
 
 =cut
 
+=head1 TYPES
+
+=cut
+
+
 
 =head1 ATTRIBUTES & METHODS
 
@@ -58,6 +63,7 @@ Keywords: gold stars, token economies, bean counter
 class League {
 	use YAML qw/LoadFile DumpFile/;
 	use List::MoreUtils qw/any/;
+	use Grades::Types qw/Members/;
 
 =head3 id
 
@@ -66,6 +72,7 @@ Unless called from the script or web app, it's a path to the league directory.
 =cut
 
 	has 'id' => (is => 'ro', isa => 'Str', required => 1);
+
 =head3 yaml
 
 The content of the league configuration file.
@@ -97,7 +104,7 @@ Hash refs of the players (students) in the league. The module assumes each of th
 
 =cut
 
-	has 'members' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
+	has 'members', is => 'ro', isa => Members, lazy_build => 1;
 	method _build_members {
 		my $data = $self->yaml;
 		$data->{member};
@@ -868,6 +875,12 @@ A hashref of student ids and final grades.
 
 }
 
+no Moose;
+
+__PACKAGE__->meta->make_immutable;
+
+1;    # End of Grades
+
 =head1 AUTHOR
 
 Dr Bean, C<< <drbean, followed by the at mark (@), cpan, then a dot, and finally, org> >>
@@ -916,8 +929,6 @@ This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
 
 =cut
-
-1;    # End of Grades
 
 # vim: set ts=8 sts=4 sw=4 noet:
 
