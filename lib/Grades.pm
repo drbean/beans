@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009  6月 21, 08時54分56秒
+#Last Edit: 2009  6月 21, 10時20分12秒
 
 our $VERSION = 0.07;
 
@@ -39,18 +39,11 @@ Grades - A collocation of homework, classwork and exams
 
 =head1 DESCRIPTION
 
-An alternative to a spreadsheet for grading students, using YAML files and 
-scripts. The students are the players in a league ( class.) See the README and example emile league in t/emile in the distribution for the layout of the league directory in which homework, classwork and exam scores are recorded.
+An alternative to a spreadsheet for grading students, using YAML files and scripts. The students are the players in a league ( class.) See the README and example emile league in t/emile in the distribution for the layout of the league directory in which homework, classwork and exam scores are recorded.
 
 Keywords: gold stars, token economies, bean counter
 
 =cut
-
-=head1 TYPES
-
-=cut
-
-
 
 =head1 ATTRIBUTES & METHODS
 
@@ -890,7 +883,7 @@ no Moose;
 
 __PACKAGE__->meta->make_immutable;
 
-1;    # End of Grades
+1;    # End of Grades::Types
 
 =head1 AUTHOR
 
