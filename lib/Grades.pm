@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009  6月 19, 18時41分54秒
+#Last Edit: 2009  6月 19, 21時57分39秒
 
 our $VERSION = 0.06;
 
@@ -163,7 +163,7 @@ role Homework {
 	use YAML qw/LoadFile DumpFile/;
 	use List::Util qw/min sum/;
 	use Carp;
-    use Grades::Types qw/HomeworkRounds HomeworkResults/;
+    use Grades::Types qw/PlayerId HomeworkResults/;
 =head3 hwdir
 
 The directory where the homework is.
@@ -183,7 +183,7 @@ An arrayref of the rounds for which there are homework grades for players in the
 
 =cut
 
-	has 'rounds', (is => 'ro', isa => HomeworkRounds, lazy_build => 1);
+	has 'rounds', (is => 'ro', isa => 'ArrayRef[Int]', lazy_build => 1);
 	method _build_rounds {
 		my $hwdir = $self->hwdir;
 		my @hw = glob "$hwdir/*.yaml";
@@ -231,7 +231,7 @@ Given a player's id, returns an array ref of the player's hw scores.
 
 =cut
 
-	method hwforid (Str $id) {
+	method hwforid (PlayerId  $id) {
 		my $hw = $self->hwbyround;
 		my $rounds = $self->rounds;
 		my @hwbyid;
@@ -282,6 +282,7 @@ role Classwork {
 	use List::MoreUtils qw/any/;
 	use Carp;
 	use POSIX;
+	use Grades::Types qw/Beancans/;
 
 =head3 series
 
@@ -289,15 +290,15 @@ The sessions over the series (semester) in which there was a different grouping 
 
 =cut
 
-	has 'series' => (is => 'ro', isa => 'ArrayRef', lazy => 1, default =>
-					sub { shift->league->yaml->{series} } );
+	has 'series' => (is => 'ro', isa => 'ArrayRef[Str]',
+	    lazy => 1, default => sub { shift->league->yaml->{series} } );
 
 =head3 beancanseries
 
-The different beancans for each of the sessions in the series.
+The different beancans for each of the sessions in the series. In the directory for each session of the series, there is a file called beancans.yaml, containing mappings of a beancan name to a sequence of PlayerNames, the members of the beancan.
 
 =cut
-	has 'beancanseries' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+	has 'beancanseries' => (is => 'ro', isa => Beancans, lazy_build => 1);
 	method _build_beancanseries {
 		my $series = $self->series;
 		my $league = $self->league->id;
