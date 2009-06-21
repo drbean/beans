@@ -19,8 +19,6 @@ my $builder = Module::Build->new(
 	    'Carp' => 0,
 	    'POSIX' => 0,
     },
-    dist_abstract => 
-	    'Ongoing grading of a league of players (ie class of students.)',
     build_requires => {
         'Test::More' => 0,
 	'Pod::Coverage::Moose' => 0,
