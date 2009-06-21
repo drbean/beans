@@ -23,6 +23,7 @@ my $builder = Module::Build->new(
 	    'Ongoing grading of a league of players (ie class of students.)',
     build_requires => {
         'Test::More' => 0,
+	'Pod::Coverage::Moose' => 0,
     },
     create_makefile_pl => 'traditional',
     add_to_cleanup      => [ 'Grades-*' ],
