@@ -1,3 +1,7 @@
+0.07 日  6月 14 11:06:11 CST 2009
+  - Extensive use of MooseX::Types type checking.
+0.06 日  6月 14 11:06:11 CST 2009
+  - Left Beans names in t/00-load.t, etc. Left out dependencies in classes.
 0.05 日  6月 14 11:06:11 CST 2009
   - MAKAROW has Script package/module.
 0.04 五  6月 12 21:33:48 CST 2009
