@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009  6月 19, 12時10分36秒
+#Last Edit: 2009  6月 19, 18時35分58秒
 
 our $VERSION = 0.06;
 
@@ -63,7 +63,7 @@ Keywords: gold stars, token economies, bean counter
 class League {
 	use YAML qw/LoadFile DumpFile/;
 	use List::MoreUtils qw/any/;
-	use Grades::Types qw/Members/;
+	use Grades::Types qw/PlayerName PlayerNames Members/;
 
 =head3 id
 
@@ -116,8 +116,8 @@ Students who have stopped coming to class and so won't be included in classwork 
 
 =cut
 
-	has 'absentees' => (is => 'ro', isa => 'ArrayRef', lazy => 1, default =>
-					sub { shift->yaml->{absent} } );
+	has 'absentees', (is => 'ro', isa => PlayerNames,
+	    lazy => 1, default => sub { shift->yaml->{absent} } );
 
 
 =head3 is_member
@@ -163,7 +163,7 @@ role Homework {
 	use YAML qw/LoadFile DumpFile/;
 	use List::Util qw/min sum/;
 	use Carp;
-
+    use Grades::Types qw/HomeworkRounds HomeworkResults/;
 =head3 hwdir
 
 The directory where the homework is.
@@ -179,11 +179,11 @@ The directory where the homework is.
 
 =head3 rounds
 
-An arrayref of the files containing the homework grades of players in the league, in round order. The names of the files are '1.yaml', '3,yaml', etc.
+An arrayref of the rounds for which there are homework grades for players in the league, in round order, of the form, [1, 3 .. 7, 9 ..].
 
 =cut
 
-	has 'rounds' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
+	has 'rounds', (is => 'ro', isa => 'ArrayRef[Int]', lazy_build => 1);
 	method _build_rounds {
 		my $hwdir = $self->hwdir;
 		my @hw = glob "$hwdir/*.yaml";
@@ -196,14 +196,22 @@ A hashref of the homework grades for players in the league for each round.
 
 =cut
 
-	has 'hwbyround' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+	has 'hwbyround', (is => 'ro', isa => HomeworkResults, lazy_build => 1);
 	method _build_hwbyround {
 		my $hwdir = $self->hwdir;
 		my $rounds = $self->rounds;
 		+{ map { $_ => $self->inspect( "$hwdir/$_.yaml" ) } @$rounds };
 	}
+
+=head3 roundMax
+
+The highest possible score in the homework
+
+=cut
+
 	has 'roundMax' => (is => 'ro', isa => 'Int', lazy => 1, default =>
 					sub { shift->league->yaml->{hwMax} } );
+
 =head3 totalMax
 
 The total maximum points that a Player could have gotten to this point in the whole season. There may be more (or fewer) rounds played than expected, so the actual top possible score returned by totalMax may be more (or less) than the figure planned.
