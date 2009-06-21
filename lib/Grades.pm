@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009  6月 19, 21時57分39秒
+#Last Edit: 2009  6月 21, 08時37分23秒
 
 our $VERSION = 0.06;
 
@@ -282,7 +282,7 @@ role Classwork {
 	use List::MoreUtils qw/any/;
 	use Carp;
 	use POSIX;
-	use Grades::Types qw/Beancans/;
+	use Grades::Types qw/Beancans Card/;
 
 =head3 series
 
@@ -320,7 +320,7 @@ The files containing classwork points (beans) awarded to beancans.
 		my $series = $self->series;
 		my $files = [ map { grep m|/(\d+)\.yaml$|,
 					glob "$league/$_/*.yaml" } @$series ];
-		die "${league}'s @$series files: @$files?" unless @$files;
+		croak "${league}'s @$series files: @$files?" unless @$files;
 		return $files;
 	}
 
@@ -334,7 +334,7 @@ The weeks (an array ref of integers) in which beans were awarded.
 	method _build_allweeks {
 		my $files = $self->allfiles;
 		my $weeks = [ map { m|/(\d+)\.yaml$|; $1 } @$files ];
-		die "@$weeks" unless @$weeks;
+		croak "No classwork weeks: @$weeks" unless @$weeks;
 		return $weeks;
 	}
 
@@ -352,7 +352,7 @@ The last week in which beans were awarded.
 
 =head3 data
 
-The beans awarded to the beancans over the series (semester.)
+The beans awarded to the beancans in the individual cards over the weeks of the series (semester.)
 
 =cut
 
@@ -371,7 +371,10 @@ Classwork beans for each beancan for the given week
 =cut
 
 	method card (Num $week) {
-		my $cards = $self->data->{$week};
+		my $card = $self->data->{$week};
+		croak "Week $week card probably has undefined or non-numeric Merit, Absence, Tardy scores, or possibly illegal beancan."
+		    unless is_Card( $card );
+		return $card;
 	}
 
 =head3 beancans
@@ -436,7 +439,7 @@ A hashref of names of members of beancans (players) and the beancans they were m
 		my %beancansreversed;
 		while ( my ($beancan, $names) = each %$beancans ) {
 			for my $name ( @$names ) {
-			die
+			croak
 	"$name in $beancan beancan and other beancan in $session session.\n"
 					if exists $beancansreversed{$name};
 				$beancansreversed{$name} = $beancan;
@@ -447,12 +450,12 @@ A hashref of names of members of beancans (players) and the beancans they were m
 
 =head3 names2beancans
 
-Given the name of a player, an arrayref of the beancans they were members of.
+Given the name of a player, the name of the beancan they were a member of in the given week.
 
 =cut
 
 	method name2beancan (Num $week, Str $name) {
-		die "Week $week?" unless defined $week;
+		croak "Week $week?" unless defined $week;
 		my $session = $self->week2session($week);
 		my $beancans = $self->beancans($session);
 		my @names; push @names, @$_ for values %$beancans;
@@ -460,7 +463,7 @@ Given the name of a player, an arrayref of the beancans they were members of.
 		while ( my ($beancan, $names) = each %$beancans ) {
 			push @name2beancans, $beancan for grep /^$name$/, @$names;
 		}
-		die "$name not in exactly one beancan in $session session.\n"
+		croak "$name not in exactly one beancan in $session session.\n"
 					unless @name2beancans == 1;
 		shift @name2beancans;
 	}
@@ -484,7 +487,7 @@ Test all beancans exist in the beancans listed on the card for the week.
 
 	$classwork->beancansNotInCard( $beancans, $card, 3)
 
-Test all of the beancans have all the points due them for the week.
+Test all of the beancans have all the points due them for the week. Duplicates the check done by the Card type.
 
 =cut
 
@@ -714,6 +717,7 @@ Running totals for individual ids out of 100, over the whole series.
 role Exams {
 	use List::Util qw/sum/;
 	use Carp;
+	use Grades::Types qw/Exam/;
 
 =head3 examdirs
 
@@ -748,7 +752,11 @@ A hash ref of the ids of the players and arrays of their results over the exam s
 		my $examdirs = $self->examdirs;
 		my @exams = map { $self->inspect("$_/g.yaml") } @$examdirs;
 		my %ids;
-		for my $exam ( @exams ) { $ids{$_}++ for keys %$exam; }
+		for my $n ( 0 .. $#exams ) {
+		    croak "Exam " . ++$n . " probably has undefined or non-numeric Exam scores, or possibly illegal PlayerIds."
+			    unless is_Exam( $exams[$n] );
+		    $ids{$_}++ for keys %{$exams[$n]};
+		}
 		for my $id  ( keys %ids ) {
 			carp "Only $ids{$id} exam results for $id\n" unless 
 					$ids{$id} == @exams;
@@ -822,7 +830,8 @@ class Player {
 
 class Grades with Homework with Classwork with Exams {
 
-	use Carp qw/croak/;
+	use Carp;
+	use Grades::Types qw/Weights/;
 
 =head3 league
 
@@ -836,19 +845,12 @@ The league (object) whose grades these are.
 
 =head3 weights
 
-An array ref of the weights (expressed as a percentage) accorded to the three components, classwork, homework, and exams, in that order, in the final grade. Could be a hash ref (YAML mapping) in 'league.yaml.'
+An hash ref of the weights (expressed as a percentage) accorded to the three components, classwork, homework, and exams in the final grade.
 
 =cut
 
-	has 'weights' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
-	method _build_weights {
-		my $weights = $self->league->yaml->{weights};
-		my @weights = ref $weights eq 'ARRAY' ? split m/,|\s+/, $weights:
-					( $weights->{classwork},
-					$weights->{homework},
-					$weights->{exams} );
-		\@weights;
-	}
+	has 'weights' => (is => 'ro', isa => Weights, lazy_build => 1 );
+	method _build_weights { my $weights = $self->league->yaml->{weights}; }
 
 
 =head3 sprintround
@@ -875,9 +877,9 @@ A hashref of student ids and final grades.
 		my @ids = map { $_->{id} } @$members;
 		my $weights = $self->weights;
 		my %grades = map { $_ => $self->sprintround(
-			$classwork->{$_} * $weights->[0] /100 +
-			$homework->{$_} * $weights->[1] /100 +
-			$exams->{$_}    * $weights->[2] /100 )
+			$classwork->{$_} * $weights->{classwork} /100 +
+			$homework->{$_} * $weights->{homework} /100 +
+			$exams->{$_}    * $weights->{exams} /100 )
 				} @ids;
 		\%grades;
 	}
