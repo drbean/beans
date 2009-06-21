@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009  6月 19, 18時35分58秒
+#Last Edit: 2009  6月 19, 18時41分54秒
 
 our $VERSION = 0.06;
 
@@ -183,7 +183,7 @@ An arrayref of the rounds for which there are homework grades for players in the
 
 =cut
 
-	has 'rounds', (is => 'ro', isa => 'ArrayRef[Int]', lazy_build => 1);
+	has 'rounds', (is => 'ro', isa => HomeworkRounds, lazy_build => 1);
 	method _build_rounds {
 		my $hwdir = $self->hwdir;
 		my @hw = glob "$hwdir/*.yaml";
