@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 11月 01, 12時07分05秒
+#Last Edit: 2009 11月 02, 11時42分06秒
 
 our $VERSION = 0.07;
 
@@ -1020,10 +1020,10 @@ A hashref of student ids and final grades.
 
 =cut
 
-	method grades {
+	method grades (Str $classcomponent ){
 		my $members = $self->league->members;
 		my $homework = $self->homework;
-		my $classwork = $self->compwork;
+		my $classwork = $self->$classcomponent;
 		my $exams = $self->examGrade;
 		my @ids = map { $_->{id} } @$members;
 		my $weights = $self->weights;
