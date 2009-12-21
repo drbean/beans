@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 11月 30, 22時30分14秒
+#Last Edit: 2009 12月 05, 21時15分00秒
 
 our $VERSION = 0.07;
 
@@ -14,6 +14,8 @@ has 'man' => (is => 'ro', isa => 'Bool');
 has 'help' => (is => 'ro', isa => 'Bool');
 has 'league' => (metaclass => 'Getopt', is => 'ro', isa => 'Str',
 		cmd_flag => 'l',);
+has 'exam' => ( metaclass => 'Getopt', is => 'ro', isa => 'Str',
+		cmd_flag => 'e',);
 has 'weights' => (metaclass => 'Getopt', is => 'ro', isa => 'Str',
 		cmd_flag => 'w',);
 has 'player' => (metaclass => 'Getopt', is => 'ro', isa => 'Str',
