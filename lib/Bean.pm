@@ -274,6 +274,7 @@ sub _build_allfiles {
 	die "${league}'s @$series files: @$files?" unless @$files;
 	return $files;
 	return $files;
+	return $files;
 
 }
 has 'allweeks' => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
