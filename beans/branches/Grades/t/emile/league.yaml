@@ -6,6 +6,10 @@ member:
     name: Sophie
   - id: 34113
     name: Emile
+  - id: 1
+    name: Rousseau
+  - id: 222
+    name: Therese
 series:
   - first
   - second
