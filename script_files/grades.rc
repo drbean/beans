@@ -1,5 +1,5 @@
 $_REPL->load_plugin('DumpHistory');
 use YAML qw/LoadFile DumpFile/;
 use Grades;
-my $l = League->new( id => 't/emile' );
+my $l = League->new( id => '../GL00029' );
 my $g = Grades->new( league => $l );
