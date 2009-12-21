@@ -34,5 +34,6 @@ my $builder = Module::Build->new(
 		}
 	},
 );
+# script_files/deposit
 
 $builder->create_build_script();
