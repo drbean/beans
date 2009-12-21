@@ -72,69 +72,6 @@ sub classwork : Local {
 	my ($self, $c) = @_;
 }
 
-=head2 classwork_listing
-
-Calculate classwork score for one player using Moose classwork script.
-
-=cut
-
-sub classwork_listing : Local {
-	my ($self, $c) = @_;
-	my $params = $c->request->params;
-	my $leagueId = $params->{league} || $c->request->args->[0];
-	my $playerId = $params->{id} || $c->request->args->[1];
-	my $player = $params->{player} || $c->request->args->[2];
-	my $league = League->new( id => "/home/drbean/class/$leagueId" );
-	my $work = Grades->new( league => $league );
-	if ( $league and $league->is_member($playerId) )
-	{
-		my $playerobj = Player->new(league => $league, id => $playerId);
-		if ( $player eq $playerobj->name ) {
-			$c->stash->{league} = $leagueId;
-			$c->stash->{player} = $player;
-			$c->stash->{id} = $playerId;
-			my ($weeks, @grades, %raw, $classwork);
-			if ( $leagueId =~ m/^GL000/ or $leagueId eq 'FLA0016' )
-			{
-				$weeks = $work->conversations;
-				@grades = map { {
-					name=> $_,
-					grade => $work->sprintround(
-						$work->points($_)->{$playerId})
-						} } @$weeks;
-				my $lastweek = $weeks->[-1];
-				my $correct = $work->correct($lastweek)
-								->{$playerId};
-				%raw = ( name => 'Correct', score => $correct );
-				$classwork = $work->compwork->{$playerId};
-			}
-			else {
-				$weeks = $work->allweeks;
-	                        for my $week ( @$weeks ) {
-					my $group = $work->name2beancan(
-								$week, $player);
-					my $grade = $work->sprintround($work
-						->work2grades($week)->{$group});
-					push @grades,
-						{ name=>$week, grade=>$grade};
-				}
-				my $lastweek = $weeks->[-1];
-				my $lastgrp = $work->name2beancan(
-							$lastweek, $player);
-				my $merit = $work->meritDemerit($lastweek)->
-							{$lastgrp};
-				%raw = ( name => "Merits", score => $merit );
-				$classwork = $work->classwork->{$playerId};
-                        }
-			$grades[-1]->{name} .= "($raw{name})";
-			$classwork = $work->sprintround($classwork);
-			$c->stash->{percent} = $classwork;
-			$grades[-1]->{grade} .= "($raw{score})";
-			$c->stash->{weeks} = \@grades;
-		}
-	}
-}
-
 =head2 exams_listing
 
 Calculate exams score for one player using Moose exams script.
