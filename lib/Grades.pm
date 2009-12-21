@@ -1,8 +1,6 @@
 package Grades;
 
-use lib '../class/Shop/lib/Shop/Controller';
-
-#Last Edit: 2009  9月 13, 21時45分09秒
+#Last Edit: 2009  9月 13, 21時57分39秒
 
 our $VERSION = 0.07;
 
