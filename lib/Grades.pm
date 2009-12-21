@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 12月 12, 19時33分46秒
+#Last Edit: 2009 12月 14, 22時47分12秒
 
 our $VERSION = 0.07;
 
@@ -440,6 +440,7 @@ The jigsaw is a cooperative learning activity where all the players in a group g
 =cut
 
 role Jigsaw {
+    use List::MoreUtils qw/any all/;
 
 =head3 quizfile
 
@@ -481,7 +482,7 @@ The quiz questions (as an anon array) in the given jigsaw for the given group.
 
     method quiz ( Str $exam, Str $group ) {
 	my $file = $self->jigsawConfig($exam)->{file};
-	my $activity = $self->inspect( $file );
+	my $activity = $self->inspect( $file ) or die "$file file problem";
 	my $topic = $self->topic( $exam, $group );
 	my $form = $self->form( $exam, $group );
 	my $quiz = $activity->{$topic}->{jigsaw}->{$form}->{quiz};
@@ -525,7 +526,7 @@ The responses of the members of the given group in the given jigsaw (as an anon 
 
 
     method responses ( Str $exam, Str $group ) {
-	my $examdir = $self->jigsawdir( $exam );
+	my $examdir = $self->examdir( $exam );
 	my $responses = $self->inspect( "$examdir/response.yaml" );
 	return $responses->{$group};
     }
@@ -629,7 +630,7 @@ An array ref of the group(s) to which the given name belonged in the given jigsa
 
 =head3 rawJigsawScores
 
-TODO
+The individual scores on the quiz of each member of the group, keyed on their roles, no, ids, from the file called 'scores.yaml' in the jigsaw dir. If the scores in that file have a key which is a role, handle that, but, yes, the keys of the hashref returned here are the players' ids.
 
 =cut
 
@@ -639,9 +640,18 @@ TODO
 		my $data = $self->inspect( "$examdir/scores.yaml" );
 		my $groupdata = $data->{letters}->{$group};
 		my $ids = $self->idsbyRole( $examId, $group );
-		my @roles = grep { my $id = $_; any { $_ eq $id } @$ids } keys %$groupdata;
+		my $roles = $self->roles;
+		my @keys;
+		if ( any { my $key = $_;
+			any { $_ eq $key } @$roles } keys %$groupdata ) {
+		    @keys = @$roles;
+		}
+		else {
+		    @keys = grep { my $id = $_;
+				    any { $_ eq $id } @$ids } keys %$groupdata;
+		}
 		my %scores;
-		@scores{@roles} = @{$groupdata}{@roles};
+		@scores{@keys} = @{$groupdata}{@keys};
 		return \%scores;
 	}
 
@@ -1265,7 +1275,7 @@ Running totals for individual ids out of 100, over the whole series.
 
 role Exams {
 	use List::Util qw/max sum/;
-	use List::MoreUtils qw/any/;
+	use List::MoreUtils qw/any all/;
 	use Carp;
 	use Grades::Types qw/Exam/;
 
@@ -1301,8 +1311,25 @@ The directories in which exam results exist, returned as an array ref.
 	has 'examdirs' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
 	method _build_examdirs {
 		my $leagueId = $self->league->id;
-		my $exams = $self->league->yaml->{exams};
-		[ map { $self->examdir($_) } @$exams ];
+		my $exams = $self->examids;
+		if ( ref $exams eq 'ARRAY' ) {
+		    return [ map { $self->examdir($_) } @$exams ];
+		}
+		elsif ( ref $exams eq 'HASH' ) {
+		    my  @dirs;
+		    for my $id ( keys %$exams ) {
+			my $rounds = $exams->{$id};
+			if ( not defined $rounds ) {
+			    push @dirs, $self->examdir($id);
+			}
+			else {
+			    my @rounds = map { $self->examdir($_) } @$rounds;
+			    push @dirs, \@rounds;
+			}
+		    }
+		    return \@dirs;
+		}
+		else { return };
 	}
 
 =head3 examsubdirs
@@ -1337,32 +1364,35 @@ The maximum score possible in each individual exam. That is, what the exam is ou
 
 =head3 examResults
 
-A hash ref of the ids of the players and arrays of their results over the exam series, ie examdirs, in files named 'g.yaml'. Croak if any result is larger than examMax.
+A hash ref of the ids of the players and arrays of their results over the exam series, ie examdirs, in files named 'g.yaml', if such a file exists in all examdirs. Otherwise, calculate from raw 'response.yaml' files. Croak if any result is larger than examMax.
 
 =cut
 
-	has 'examResults' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
-	method _build_examResults {
-		my $examdirs = $self->examdirs;
-		my @exams = map { $self->inspect("$_/g.yaml") } @$examdirs;
-		my $max = $self->examMax;
-		my %ids;
-		for my $n ( 0 .. $#exams ) {
-		    croak "Exam " . ++$n . " probably has undefined or non-numeric Exam scores, or possibly illegal PlayerIds."
-			    unless is_Exam( $exams[$n] );
-		    $ids{$_}++ for keys %{$exams[$n]};
-		}
-		my %results;
-		for my $id  ( keys %ids ) {
-			carp "Only $ids{$id} exam results for $id\n" unless 
-					$ids{$id} == @exams;
-			$results{$id} = [ map { $_->{$id} } @exams ];
-			my $personalMax = max( @{ $results{$id} } );
-			croak "${id}'s $personalMax greater than exam max, $max"
-				if $personalMax > $max;
-		}
-		return \%results;
+    has 'examResults' => ( is => 'ro', isa => 'HashRef', lazy_build => 1 );
+    method _build_examResults {
+        my $examdirs = $self->examdirs;
+	my @gfiles = map { "$_/g.yaml" } @$examdirs;
+	if ( all { -e $_ } @gfiles ) {
+	    my @exams    = map { $self->inspect("$_/g.yaml") } @$examdirs;
+	    my $max      = $self->examMax;
+	    my %ids;
+	    for my $n ( 0 .. $#exams ) {
+		croak "Exam " . ++$n . " probably has undefined or non-numeric Exam scores, or possibly illegal PlayerIds."
+		    unless is_Exam( $exams[$n] );
+		$ids{$_}++ for keys %{ $exams[$n] };
+	    }
+	    my %results;
+	    for my $id ( keys %ids ) {
+		carp "Only $ids{$id} exam results for $id\n"
+		  unless $ids{$id} == @exams;
+		$results{$id} = [ map { $_->{$id} } @exams ];
+		my $personalMax = max( @{ $results{$id} } );
+		croak "${id}'s $personalMax greater than exam max, $max"
+		  if $personalMax > $max;
+	    }
+	    return \%results;
 	}
+    }
 
 =head3 examResultHash
 
