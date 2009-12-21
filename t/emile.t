@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use Test::More;
 
-plan tests => 27;
+plan tests => 28;
 plan skip_all => 'unset env var NO_TEST to enable this test' if $ENV{NO_TEST};
 
 use lib 'lib';
@@ -65,4 +65,5 @@ is_deeply( $g->hwbyround, {
 is($g->roundMax, 2, 'max hw score per round');
 is($g->totalMax, 22, 'maximum possible homework score');
 is_deeply($g->hwforid(34113), [ (0) x 11 ], 'no hw score for Emile');
-is_deeply($g->homework, { 34113 => 0, S09413 => 50 }, "Emile 0%, Sophie 50%");
+is_deeply($g->homework, { 34113 => 0, S09413 => 11 }, "Emile 0, Sophie 11");
+is_deeply($g->homeworkPercent, { 34113 => 0, S09413 => 50 }, "Emile 0%, Sophie 50%");
