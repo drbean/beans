@@ -1,6 +1,6 @@
 [% META title = 'Grades Request' -%]
 
-<form method="post" action="[% c.uri_for('grades_listing') %]">
+<form method="post" action="[% c.uri_for('listing') %]">
 <table>
   <tr><td>League:</td><td>
   <select name="league" size="[% leagues.size %]">
