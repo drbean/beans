@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 11月 08, 21時42分41秒
+#Last Edit: 2009 11月 09, 14時48分31秒
 
 our $VERSION = 0.07;
 
@@ -426,7 +426,7 @@ The topics of the conversations in order.
 
 =head3 opponents
 
-The opponents of the players in the round.
+The opponents of the players in the given conversation.
 
 =cut
 
@@ -439,7 +439,7 @@ The opponents of the players in the round.
 
 =head3 correct
 
-The number of questions correct in the round.
+The number of questions correct in the given conversation.
 
 =cut
 
@@ -452,7 +452,7 @@ The number of questions correct in the round.
 
 =head3 points
 
-The points of the players in the round.
+The points of the players in the given conversation.
 
 =cut
 
