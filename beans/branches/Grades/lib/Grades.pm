@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 12月 19, 19時08分19秒
+#Last Edit: 2009 12月 19, 21時13分16秒
 
 our $VERSION = 0.07;
 
@@ -1303,7 +1303,7 @@ role Exams {
 	use List::Util qw/max sum/;
 	use List::MoreUtils qw/any all/;
 	use Carp;
-	use Grades::Types qw/Exam/;
+	use Grades::Types qw/ExamIds Exam/;
 
 =head3 examids
 
@@ -1311,7 +1311,7 @@ The ids of the exams, as specified as a sequence (or mapping) in 'league.yaml'. 
 
 =cut
 
-	has 'examids' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
+	has 'examids' => (is => 'ro', isa => ExamIds, lazy_build => 1);
 	method _build_examids {
 		my $leagueId = $self->league->id;
 		my $examids = $self->league->yaml->{exams};
