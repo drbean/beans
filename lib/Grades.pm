@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 11月 02, 11時42分06秒
+#Last Edit: 2009 11月 08, 12時09分29秒
 
 our $VERSION = 0.07;
 
@@ -221,6 +221,20 @@ An arrayref of the rounds for which there are homework grades for players in the
 		[ sort {$a<=>$b} map m/^$hwdir\/(\d+)\.yaml$/, @hw ];
 	}
 
+=head3 roundfiles
+
+An hashref of the files with data for the rounds for which there are homework grades for players in the league, keyed on rounds.
+
+=cut
+
+	has 'roundfiles', (is => 'ro', isa => 'HashRef[ArrayRef]', lazy_build => 1);
+	method _build_roundfiles {
+		my $hwdir = $self->hwdir;
+		my @hw = glob "$hwdir/*.yaml";
+		my @rounds = map m/^$hwdir\/(\d+)\.yaml$/, @hw;
+		+{ map { $_ => [ glob "$hwdir/${_}*.yaml" ] } @rounds }
+	}
+
 =head3 hwbyround 
 
 A hashref of the homework grades for players in the league for each round.
@@ -254,6 +268,20 @@ The total maximum points that a Player could have gotten to this point in the wh
 		my $rounds = $self->rounds;
 		my $hwMax = $self->roundMax;
 		$hwMax * @$rounds;
+	}
+
+=head3 rawscoresinRound
+
+Given a round, returns a hashref of the raw scores for that round, keyed on the names of the exercises. These are in files in the hwdir with names of the form ^\d+[_.]\w+\.yaml$
+
+=cut
+
+	method rawscoresinRound (Int $round) {
+		my $hwdir = $self->hwdir;
+		my @files = $self->roundfiles->{$round};
+		my @ex = map m/^$hwdir\/\d+([_.]\w+)\.yaml$/, @files;
+		+{ map { substr($_,1) =>
+			$self->inspect( "$hwdir/$round$_.yaml" ) } @ex };
 	}
 
 =head3 hwforid
@@ -946,14 +974,14 @@ A hash ref of the ids of the players and arrays of their results over the exam s
 			keys %ids };
 	}
 
-=head3 examPercent
+=head3 examResultsasPercent
 
 A hashref of the ids of the players and arrays of their results over the exams expressed as percentages of the maximum possible score for the exams.
 
 =cut
 
-	has 'examPercent' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
-	method _build_examPercent {
+	has 'examResultsasPercent' => (is=>'ro', isa=>'HashRef', lazy_build=>1);
+	method _build_examResultsasPercent {
 		my $scores = $self->examResults;
 		my $max = $self->examMax;
 		+{ map { my $id=$_; $id => [ map { $_*(100/$max) } @{$scores->{$_}} ] }
@@ -962,13 +990,27 @@ A hashref of the ids of the players and arrays of their results over the exams e
 
 =head3 examGrade
 
-A hash ref of the ids of the players and their total exam score, expressed as a percentage of the possible exam score. This is the average of their exam scores.
+A hash ref of the ids of the players and their total scores on exams.
 
 =cut
 
 	has 'examGrade' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 	method _build_examGrade {
-		my $grades = $self->examPercent;
+		my $grades = $self->examResults;
+		+{ map { my $numbers=$grades->{$_};
+			$_ => sum(@$numbers) }
+					keys %$grades };
+	}
+
+=head3 examPercent
+
+A hash ref of the ids of the players and their total score on exams, expressed as a percentage of the possible exam score. This is the average of their exam scores.
+
+=cut
+
+	has 'examPercent' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+	method _build_examPercent {
+		my $grades = $self->examResultsasPercent;
 		+{ map { my $numbers=$grades->{$_};
 			$_ => sum(@$numbers)/@{$numbers} }
 					keys %$grades };
@@ -1090,8 +1132,9 @@ Copyright 2006 Dr Bean, all rights reserved.
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
 
+# vim: set ts=8 sts=4 sw=4 noet:
+
 =cut
 
-# vim: set ts=8 sts=4 sw=4 noet:
 
 __END__
