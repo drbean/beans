@@ -13,10 +13,12 @@ my $exam = $answers->exam;
 my $league = League->new( id => $id );
 my $grades = Grades->new( league => $league );
 
-my $groups = $grades->examGroups( $exam );
+$DB::single=1;
+my $groups = $grades->jigsawGroups( $exam );
 
 my $response;
 for my $group ( keys %$groups ) {
+	$response->{Chinese}->{$group} = 0;
 	my $quiz = $grades->quiz( $exam, $group );
 	my $topic = $grades->topic($exam, $group);
 	my $form = $grades->form($exam, $group);
@@ -48,11 +50,12 @@ for my $group ( keys %$groups ) {
 			}
 			$score++ if $myanswer == $theanswer;
 		}
-		$response->{$group}->{$id} = $score;
-		$response->{$group}->{story} = $grades->topic( $exam, $group ) .
+		$response->{letters}->{$group}->{$id} = $score;
+		$response->{letters}->{$group}->{story} =
+				$grades->topic( $exam, $group ) .
 				$grades->form( $exam, $group );
 	}
-	Bless( $response->{$group} )->keys([ @$idsbyRole, 'story' ]);
+	Bless( $response->{letters}->{$group} )->keys([ @$idsbyRole, 'story' ]);
 }
 
 print Dump $response;
