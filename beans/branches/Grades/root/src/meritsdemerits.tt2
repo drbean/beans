@@ -1,5 +1,5 @@
 [% # Provide a title to root/lib/site/header -%]
-[% META title = 'Raw classwork scores' -%]
+[% META title = 'Absences and Tardies (Lateness)' -%]
 
 <h2>[% league %] League</h2>
 [% IF approach == 'compwork' %]
@@ -19,11 +19,10 @@
 <h4>Group: [% exercise.beancan %] </h4>
 <h4>Members: [% FOREACH member IN exercise.members %][% member %] [% END %]
 <table>
-<tr align=center><th>Merits <th>Demerits
+<tr align=center><th>Absences <th>Tardies
   <tr align=center>
-    <td>[% exercise.merits %]
-    <td><a href=
-"[% c.uri_for('demerits/') _ league _ '/' _ id _ '/' _ player _ '/' _ round %]">[% exercise.demerits %]</a>
+    <td>[% exercise.absences %]
+    <td>[% exercise.tardies %]
 [% END -%]
   </tr>
 </table>
