@@ -104,7 +104,8 @@ sub _build_name {
 	my $league = $self->league;
 	my $id = $self->id;
 	my $members = $league->members;
-	my $name = firstval { $_->id eq $id and $_->name } @$members;
+	my $member = firstval { $_->id eq $id } @$members;
+	$member->name;
 }
 has 'Chinese' => (is => 'ro', isa => 'Str');
 has 'grades' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
