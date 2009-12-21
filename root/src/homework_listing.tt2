@@ -13,7 +13,7 @@
     <td></td>
 [% FOREACH week IN weeks -%]
     <td><a href=
-"[% c.uri_for('rawhomework/') _ league _ '/' _ id _ '/' _ player _ '/' _ week.name %]">[% week.score %]</a>
+"[% c.uri_for('raw/') _ league _ '/' _ id _ '/' _ player _ '/' _ week.name %]">[% week.score %]</a>
 [% END -%]
     <td>[% total %]</td>
     <td>[% percent %]</td>
