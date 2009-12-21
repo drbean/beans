@@ -87,21 +87,20 @@ sub raw : Local {
             $c->stash->{id}     = $playerId;
             $c->stash->{examId} = $exam;
             my $group = $work->name2examGroup( $exam, $playerName )->[0];
-            my $quiz = $group->quiz( $exam, $group );
-            my $responses = $group->responses( $exam, $group );
+            my $quiz = $work->quiz( $exam, $group );
+            my $responses = $work->responses( $exam, $group );
             my $member = $work->examGroupMembers( $exam, $group );
-            my $rawscores = $work->rawExamscores( $exam, $group );
+            my $rawscores = $work->rawExamScores( $exam, $group );
             my $role = $work->id2examGroupRole( $exam, $group );
-            my @scores = map {
-                {
-                    role  => $role->{$_},
-                    name  => $member->{$_},
-                    score => $rawscores->{$_}
-                }
-              } sort { $role->{$a} cmp $role->{$b} }
-              keys %$rawscores;
+            my @scores = map { $rawscores->{$_} }
+		sort { $role->{$a} cmp $role->{$b} } keys %$rawscores;
+            $c->stash->{ids} = $work->idsbyRole( $exam, $group );
+            $c->stash->{topic} = $work->topic( $exam, $group );
+            $c->stash->{form} = $work->form( $exam, $group );
+            $c->stash->{quiz} = $quiz;
+            $c->stash->{responses} = $responses;
             $c->stash->{scores} = \@scores;
-            my $total = sum( map { $_->{score} } @scores );
+            my $total = sum( @scores );
             $c->stash->{total} = $total;
             my $grade = $work->examResultHash->{$playerId}->{$exam};
             $c->stash->{grade}    = $grade;
