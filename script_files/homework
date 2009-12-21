@@ -163,7 +163,7 @@ use Bean;
 run() unless caller;
 
 sub run {
-	my $script = Script->new_with_options( league => getcwd );
+	my $script = Script->new_with_options( leagueId => getcwd );
 	pod2usage(1) if $script->help;
 	pod2usage(-exitstatus => 0, -verbose => 2) if $script->man;
 	my $leagueId = $script->league;
