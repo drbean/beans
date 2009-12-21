@@ -1,6 +1,8 @@
 package Grades;
 
-#Last Edit: 2009  6月 21, 10時20分12秒
+use lib '../class/Shop/lib/Shop/Controller';
+
+#Last Edit: 2009  9月 13, 21時45分09秒
 
 our $VERSION = 0.07;
 
@@ -161,6 +163,7 @@ role Homework {
 	use List::Util qw/min sum/;
 	use Carp;
     use Grades::Types qw/PlayerId HomeworkResults/;
+
 =head3 hwdir
 
 The directory where the homework is.
@@ -262,7 +265,8 @@ Running total homework scores of the league as percentages of the totalMax, with
 					defined $hw->{$round}->{$id};
 				$idtotals{$id} += $hw->{$round}->{$id};
 			}
-			carp "Missing/added players in $league round $round" if 
+			carp
+		    "Missing/added players in $league round $round homework" if 
 				keys %totalcounted != keys %countedinround;
 		}
 		+{ map { $_ => min( 100, 100 * $idtotals{$_} / $totalMax )
@@ -627,12 +631,13 @@ The points given by the teacher are log-scaled to prevent active students from t
 
 =head3 work2grades
 
-The work (ie merits - demerits) of the individual beancans for the week, as a percentage of the total work of all the beancans, determines the payout of grades, which should average 80 over the sessions of play.
+The work (ie merits - demerits) of the individual beancans for the week, as a percentage of the total work of all the beancans, determines the payout of grades, which should average 80 over the sessions of play. I was logscaling grades. I am now not doing that.
 
 =cut
 
 	method work2grades (Num $week) {
-		my $work = $self->logwork($week);
+		# my $work = $self->logwork($week);
+		my $work = $self->meritDemerit($week);
 		my $session = $self->week2session($week);
 		my $beancans = $self->beancans($session);
 		my $totalwork = sum values %$work;
