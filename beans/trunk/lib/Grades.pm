@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 10月 09, 17時48分41秒
+#Last Edit: 2009 10月 28, 19時55分25秒
 
 our $VERSION = 0.07;
 
@@ -272,6 +272,136 @@ Running total homework scores of the league as percentages of the totalMax, with
 	}
 
 }
+
+
+=head2 Grades' CompComp Methods
+
+The comprehension question competition is a Swiss tournament regulated 2-partner conversation competition where players try to understand more of their opponent's information than their partners understand of theirs.
+
+=cut
+
+role CompComp {
+
+=head3 conversations
+
+The topics of the conversations in order.
+
+=cut
+
+    has 'conversations' => ( is => 'ro', isa => 'ArrayRef[Str]',
+	lazy => 1, default => sub { shift->league->yaml->{conversations} } );
+
+=head3 opponents
+
+The opponents of the players in the round.
+
+=cut
+
+    method opponents ( Str $round ) {
+	my $league = $self->league->id;
+	my $file = "$league/$round/opponent.yaml";
+	my $opponents = $self->inspect( $file );
+}
+
+
+=head3 correct
+
+The number of questions correct in the round.
+
+=cut
+
+    method correct ( Str $round ) {
+	my $league = $self->league->id;
+	my $file = "$league/$round/correct.yaml";
+	my $correct = $self->inspect( $file );
+}
+
+
+=head3 points
+
+The points of the players in the round.
+
+=cut
+
+    method points ( Str $round ) {
+	my $opponents = $self->opponents( $round );
+	my $correct = $self->correct( $round );
+	my $points;
+	for my $player ( keys %$opponents ) {
+	    if ( $player eq 'bye' ) {
+		my $byer = $opponents->{$player};
+		$points->{$byer} = 5;
+		next;
+	    }
+	    if ( $player eq 'unpaired' ) {
+		my $unpaired = $opponents->{$player};
+		for my $unpaired ( @$unpaired ) {
+		    $points->{$unpaired} = 0;
+		}
+		next;
+	    }
+	    my $opponent = $opponents->{$player};
+	    my $opponentopponent = $opponents->{$opponent};
+	    die "${player}'s opponent is $opponent, but
+		${opponent}'s opponent is $opponentopponent" unless
+		$opponent and $opponentopponent and $player eq $opponentopponent;
+	    die "No $player quiz card?" unless exists $correct->{$player};
+	    my $ourcorrect = $correct->{$player};
+	    die "No $opponent card against $player?" unless
+		exists $correct->{$opponent};
+	    my $theircorrect = $correct->{$opponent};
+	    if ( not defined $ourcorrect ) {
+		$points->{$player} = 0;
+		next;
+	    }
+	    if ( not defined $theircorrect ) {
+		$points->{$player} = 5;
+		next;
+	    }
+	    $points->{$player} = $ourcorrect > $theircorrect? 5:
+				$ourcorrect < $theircorrect? 3: 4
+	}
+	return $points;
+    }
+
+
+=head3 totalcomp
+
+The total over the conversations over the series.
+
+=cut
+
+    method totalcomp {
+	my $rounds = $self->conversations;
+	my $members = $self->league->members;
+	my @ids = map { $_->{id} } @$members;
+	my $totals;
+	@$totals{ @ids } = (0) x @ids;
+	for my $round ( @$rounds ) {
+	    my $points = $self->points( $round );
+	    for my $id ( @ids ) {
+		$totals->{$id} += $points->{$id};
+	    }
+	}
+	return $totals;
+    }
+
+
+=head3 compwork
+
+The total over the conversations over the series expressed as a percentage of the possible score. The average should be 80 percent if every player participates in every comp.
+
+=cut
+
+    method compwork {
+	my $rounds = $self->conversations;
+	my $n = @$rounds;
+	my $totals = $self->totalcomp;
+	my %percentages = map { $_ => $totals->{$_} * 100 / (5*$n) } keys %$totals;
+	return \%percentages;
+    }
+}
+
 
 =head2 Grades' Classwork Methods
 =cut
@@ -828,7 +958,7 @@ class Player {
 =head2 Grades' Core Methods
 =cut
 
-class Grades with Homework with Classwork with Exams {
+class Grades with Homework with CompComp with Classwork with Exams {
 
 	use Carp;
 	use Grades::Types qw/Weights/;
@@ -872,7 +1002,7 @@ A hashref of student ids and final grades.
 	method grades {
 		my $members = $self->league->members;
 		my $homework = $self->homework;
-		my $classwork = $self->classwork;
+		my $classwork = $self->compwork;
 		my $exams = $self->examGrade;
 		my @ids = map { $_->{id} } @$members;
 		my $weights = $self->weights;
