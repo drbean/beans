@@ -24,6 +24,12 @@ my $builder = Module::Build->new(
 	'Pod::Coverage::Moose' => 0,
     },
     create_makefile_pl => 'traditional',
+    script_files        => [qw(
+                            script_files/grades
+                            script_files/classwork
+                            script_files/homework
+                                )],
+
     add_to_cleanup      => [ 'Grades-*' ],
     meta_merge => {
       resources => {
