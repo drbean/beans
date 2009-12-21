@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 12月 09, 14時52分40秒
+#Last Edit: 2009 12月 09, 15時00分05秒
 
 our $VERSION = 0.07;
 
@@ -204,18 +204,6 @@ The name of the player.
 	}
 
 	has 'Chinese' => (is => 'ro', isa => 'Str');
-	has 'total' => (is => 'ro', isa => 'Int', lazy_build => 1);
-	method _build_total {
-		my $hwgrades = $self->total;
-		sum @$hwgrades;
-	}
-	has 'percent' => (is => 'ro', isa => 'Int', lazy_build => 1);
-	method _build_percent {
-		my $grade = $self->total;
-		my $league = $self->league;
-		my $totalMax = $league->totalMax;
-		floor (100 * $grade / $totalMax);
-	}
 }
 
 
