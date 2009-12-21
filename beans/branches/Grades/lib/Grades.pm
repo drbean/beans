@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 12月 06, 11時58分04秒
+#Last Edit: 2009 12月 06, 15時14分12秒
 
 our $VERSION = 0.07;
 
@@ -376,6 +376,7 @@ Given a player's id, returns an hashref of the player's hw grades, keyed on the 
 =head3 homework
 
 Running total homework scores of the league.
+
 =cut
 
 	method homework {
@@ -437,7 +438,7 @@ The jigsaw is a cooperative learning activity where all the players in a group g
 
 role Jigsaw {
 
-=head3 questionN
+=head3 qn
 
 The number of questions in the given quiz.
 
@@ -1296,7 +1297,7 @@ TODO
 =head2 Grades' Core Methods
 =cut
 
-class Grades with Homework with CompComp with Classwork with Exams {
+class Grades with Homework with CompComp with Classwork with Exams with Jigsaw {
 
 	use Carp;
 	use Grades::Types qw/Weights/;
