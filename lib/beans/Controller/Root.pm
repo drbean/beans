@@ -208,8 +208,6 @@ sub grades_listing : Local {
 			my $homework = $grades->homework->{$playerId};
 			my $examGrade = $grades->examGrade->{$playerId};
 			my $grade = $grades->grades->{$playerId};
-			my $weights = $grades->weights;
-			my $total = sum values %$weights;
 			$classwork = $grades->sprintround($classwork);
 			$homework = $grades->sprintround($homework);
 			$grade = $grades->sprintround($grade);
@@ -223,7 +221,9 @@ sub grades_listing : Local {
 			$c->stash->{league} = $leagueId;
 			$c->stash->{player} = $name;
 			$c->stash->{id} = $playerId;
-			$c->stash->{weight} = $grades->weights;
+			my $weights = $grades->weights;
+			my $total = sum values %$weights;
+			$c->stash->{weight} = $weights;
 			$c->stash->{total} = $total;
 			$c->stash->{classwork} = $classwork;
 			$c->stash->{homework} = $homework;
