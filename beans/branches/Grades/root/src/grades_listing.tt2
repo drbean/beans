@@ -22,10 +22,8 @@
     <td>[% player %]</td>
     <td>[% id %]</td>
     <td><a href="[% c.uri_for('classwork_listing/') _ league _ '/' _ id _ '/' _ player %]">[% classwork %]</a>
-    <td><a href="[% c.uri_for('homework_listing/') _ league _ '/' _ id _ '/' _ player %]">[% classwork %]</a>
-[% FOREACH exam IN exams -%]
-    <td>[% exam.grade %]</td>
-[% END -%]
+    <td><a href="[% c.uri_for('homework_listing/') _ league _ '/' _ id _ '/' _ player %]">[% homework %]</a>
+    <td><a href="[% c.uri_for('exams_listing/') _ league _ '/' _ id _ '/' _ player %]">[% exams %]</a>
     <td>[% grade %]</td>
   </tr>
 </table>
