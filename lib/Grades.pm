@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 12月 09, 15時00分05秒
+#Last Edit: 2009 12月 09, 16時10分46秒
 
 our $VERSION = 0.07;
 
@@ -139,6 +139,21 @@ Whether the passed id is that of a member in the league (class).
 		any { $_->{id} eq $id } @{$data->{member}};
 	}
 
+
+=head3 ided
+
+The id of the member with the given player name.
+
+=cut
+
+    method ided( Str $player) {
+        my $members = $self->members;
+	my @ids = map { $_->{id} }
+	    grep { $_->{name} =~ m/^$player$/i } @$members;
+	warn @ids . " players named '$player' with ids: @ids," unless @ids==1;
+	if ( @ids == 1 ) { return $ids[0] }
+	else { return \@ids; }
+      }
 
 =head3 inspect
 
@@ -1351,6 +1366,19 @@ An hash ref of the roles of the members of the given group in the given exam, ke
 		my $members = $self->examGroupMembers( $examId, $group );
 		my %roles = reverse %$members;
 		return \%roles;
+	}
+
+=head3 id2examGroupRole
+
+An hash ref of the roles of the members of the given group in the given exam, keyed on the id of the player.
+
+=cut
+
+	method id2examGroupRole (Str $examId, Str $group) {
+		my $member = $self->examGroupMembers( $examId, $group );
+		my %idedroles = map { $self->league->ided($member->{$_}) => $_ }
+						keys %$member;
+		return \%idedroles;
 	}
 
 =head3 name2examGroup
