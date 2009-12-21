@@ -564,7 +564,7 @@ sub _build_examResults {
 	for my $exam ( @exams ) { $ids{$_}++ for keys %$exam; }
 	for my $id  ( keys %ids ) {
 		warn "Only $ids{$id} exam results for $id\n" unless 
-				$ids{$id} == @exams;
+				$ids{$id} and $ids{$id} == @exams;
 	}
 	+{ map { my $id=$_; $id => [ map { $_->{$id} } @exams ] } keys %ids };
 }
