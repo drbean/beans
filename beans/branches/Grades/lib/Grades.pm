@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 11月 08, 12時09分29秒
+#Last Edit: 2009 11月 08, 14時13分10秒
 
 our $VERSION = 0.07;
 
@@ -221,6 +221,21 @@ An arrayref of the rounds for which there are homework grades for players in the
 		[ sort {$a<=>$b} map m/^$hwdir\/(\d+)\.yaml$/, @hw ];
 	}
 
+=head3 roundIndex
+
+Given a round name (ie number), returns the ordinal position in which this round was played, with the first round numbered 0. Returns undef if the round was not played.
+
+=cut
+
+	method roundIndex (Int $round) {
+		my $rounds = $self->rounds;
+		my $n = 0;
+		for ( @$rounds ) {
+			return $n if $_ eq $round;
+			$n++;
+		}
+	}
+
 =head3 roundfiles
 
 An hashref of the files with data for the rounds for which there are homework grades for players in the league, keyed on rounds.
@@ -278,8 +293,8 @@ Given a round, returns a hashref of the raw scores for that round, keyed on the 
 
 	method rawscoresinRound (Int $round) {
 		my $hwdir = $self->hwdir;
-		my @files = $self->roundfiles->{$round};
-		my @ex = map m/^$hwdir\/\d+([_.]\w+)\.yaml$/, @files;
+		my $files = $self->roundfiles->{$round};
+		my @ex = map m/^$hwdir\/\d+([_.]\w+)\.yaml$/, @$files;
 		+{ map { substr($_,1) =>
 			$self->inspect( "$hwdir/$round$_.yaml" ) } @ex };
 	}
@@ -304,13 +319,57 @@ Given a player's id, returns an array ref of the player's hw scores.
 		\@hwbyid;
 	}
 
+=head3 hwforidasHash
+
+Given a player's id, returns an hashref of the player's hw grades, keyed on the rounds.
+
+=cut
+
+	method hwforidasHash (PlayerId  $id) {
+		my $hw = $self->hwforid( $id );
+		my $rounds = $self->rounds;
+		my %hwbyid;
+		for my $i ( 0 .. $#$rounds ) {
+			my $round = $rounds->[$i];
+			$hwbyid{$round} = $hw->[$i];
+			if ( not defined $hw->[$i] ) { warn
+				"No homework result for $id in Round $round\n";}
+		}
+		\%hwbyid;
+	}
+
 =head3 homework
+
+Running total homework scores of the league.
+=cut
+
+	method homework {
+		my $league = $self->league->id;
+		my $hw = $self->hwbyround;
+		my (%idtotals, %totalcounted);
+		for my $round ( keys %$hw ) {
+			my %countedinround;
+			for my $id ( keys %{ $hw->{$round} } ) {
+				$totalcounted{$id}++;
+				$countedinround{$id}++;
+				carp "$id not in round $round homework" unless
+					defined $hw->{$round}->{$id};
+				$idtotals{$id} += $hw->{$round}->{$id};
+			}
+			carp
+		    "Missing/added players in $league round $round homework" if 
+				keys %totalcounted != keys %countedinround;
+		}
+		+{ map { $_ => $idtotals{$_} || 0 } keys %idtotals };
+	}
+
+=head3 homeworkPercent
 
 Running total homework scores of the league as percentages of the totalMax, with a maximum of 100.
 
 =cut
 
-	method homework {
+	method homeworkPercent {
 		my $league = $self->league->id;
 		my $hw = $self->hwbyround;
 		my $totalMax = $self->totalMax;
