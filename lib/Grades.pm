@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 11月 09, 14時48分31秒
+#Last Edit: 2009 11月 09, 18時00分02秒
 
 our $VERSION = 0.07;
 
@@ -170,8 +170,28 @@ class Player {
 	use List::Util qw/sum/;
 	use POSIX;
 
+=head3 league
+
+The league the player is in. This is required.
+
+=cut
+
 	has 'league' => (is => 'ro', isa => 'League', required => 1);
+
+=head3 id
+
+The id of the player. This is required.
+
+=cut
+
 	has 'id' => (is => 'ro', isa => 'Str', required => 1);
+
+=head3 id
+
+The name of the player.
+
+=cut
+
 	has 'name' => (is => 'ro', isa => 'Str', lazy_build => 1);
 	method _build_name {
 		my $league = $self->league;
@@ -783,7 +803,7 @@ Test all of the beancans have all the points due them for the week. Duplicates t
 
 =head3 merits
 
-The points the beancan gained for the given week.
+The points the beancans gained for the given week.
 
 =cut
 
@@ -798,7 +818,7 @@ The points the beancan gained for the given week.
 
 =head3 absences
 
-The number of players absent from the beancan in the given week. These are demerits.
+The number of players absent from the beancans in the given week. These are demerits.
 
 =cut
 
@@ -813,7 +833,7 @@ The number of players absent from the beancan in the given week. These are demer
 
 =head3 tardies
 
-The number of players not on time in the beancan in the given week. These are demerits.
+The number of players not on time in the beancans in the given week. These are demerits.
 
 =cut
 
