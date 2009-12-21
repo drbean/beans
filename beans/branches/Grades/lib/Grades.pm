@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 12月 12, 18時50分51秒
+#Last Edit: 2009 12月 12, 19時09分11秒
 
 our $VERSION = 0.07;
 
@@ -443,44 +443,44 @@ role Jigsaw {
 
 =head3 quizfile
 
-The file system location of the file of the given exam with the quiz questions and answers.
+The file system location of the file of the given jigsaw with the quiz questions and answers.
 
 =cut
 
-    method quizfile ( Str $exam ) { $self->examConfig($exam)->{file}; }
+    method quizfile ( Str $exam ) { $self->jigsawConfig($exam)->{file}; }
 
 =head3 topic
 
-The topic of the quiz in the given exam for the given group.
+The topic of the quiz in the given jigsaw for the given group.
 
 =cut
 
     method topic ( Str $exam, Str $group ) {
-	my $config = $self->examConfig($exam);
+	my $config = $self->jigsawConfig($exam);
 	my $activity = $config->{activity}->{$group};
 	my $topic = $activity->{topic};
 }
 
 =head3 form
 
-The form of the quiz in the given exam for the given group.
+The form of the quiz in the given jigsaw for the given group.
 
 =cut
 
     method form ( Str $exam, Str $group ) {
-	my $config = $self->examConfig($exam);
+	my $config = $self->jigsawConfig($exam);
 	my $activity = $config->{activity}->{$group};
 	my $form = $activity->{form};
 }
 
 =head3 quiz
 
-The quiz questions (as an anon array) in the given exam for the given group.
+The quiz questions (as an anon array) in the given jigsaw for the given group.
 
 =cut
 
     method quiz ( Str $exam, Str $group ) {
-	my $file = $self->examConfig($exam)->{file};
+	my $file = $self->jigsawConfig($exam)->{file};
 	my $activity = $self->inspect( $file );
 	my $topic = $self->topic( $exam, $group );
 	my $form = $self->form( $exam, $group );
@@ -489,7 +489,7 @@ The quiz questions (as an anon array) in the given exam for the given group.
 
 =head3 qn
 
-The number of questions in the given exam for the given group.
+The number of questions in the given jigsaw for the given group.
 
 =cut
 
@@ -508,7 +508,7 @@ Ids in array, in A-D role order
     method idsbyRole ( Str $exam, Str $group ) {
 	my $members = $self->league->members;
 	my %namedMembers = map { $_->{name} => $_ } @$members;
-	my $namesbyRole = $self->examGroupMembers( $exam, $group );
+	my $namesbyRole = $self->jigsawGroupMembers( $exam, $group );
 	my @idsbyRole;
 	for my $role ( sort keys %$namesbyRole ) {
 		my $id = $namedMembers{ $namesbyRole->{$role} }->{id};
@@ -519,37 +519,37 @@ Ids in array, in A-D role order
 
 =head3 responses
 
-The responses of the members of the given group in the given exam (as an anon hash keyed on the ids of the members). In a file in the exam directory called 'response.yaml'.
+The responses of the members of the given group in the given jigsaw (as an anon hash keyed on the ids of the members). In a file in the jigsaw directory called 'response.yaml'.
 
 =cut
 
 
     method responses ( Str $exam, Str $group ) {
-	my $examdir = $self->examdir( $exam );
+	my $examdir = $self->jigsawdir( $exam );
 	my $responses = $self->inspect( "$examdir/response.yaml" );
 	return $responses->{$group};
     }
 
-=head3 examConfig
+=head3 jigsawConfig
 
-The round.yaml file with data about the given (sub)exam.
+The round.yaml file with data about the given (sub)jigsaw.
 
 =cut
 
-	method examConfig (Str $examId) {
+	method jigsawConfig (Str $examId) {
 		my $leagueId = $self->league->id;
-		my $examdir = "$leagueId/$examId";
-		my $round = $self->inspect( "$examdir/round.yaml" );
+		my $jigsawdir = "$leagueId/$examId";
+		my $round = $self->inspect( "$jigsawdir/round.yaml" );
 	}
 
-=head3 examGroups
+=head3 jigsawGroups
 
-A hash ref of all the groups in the exam and the names of members of the groups, keyed on groupnames. There may be duplicated names if one player did the exam twice as an 'assistant' for a group with not enough players, and missing names if a player did not do the exam.
+A hash ref of all the groups in the jigsaw and the names of members of the groups, keyed on groupnames. There may be duplicated names if one player did the activity twice as an 'assistant' for a group with not enough players, and missing names if a player did not do the quiz.
 
 =cut
 
-	method examGroups (Str $examId) {
-		my $round = $self->examConfig( $examId );
+	method jigsawGroups (Str $examId) {
+		my $round = $self->jigsawConfig( $examId );
 		$round->{group};
 	}
 
@@ -565,59 +565,59 @@ At the moment, just A .. D.
 
 =head3 assistants
 
-A array ref of all the players in the (sub)exam who did it twice to 'assist' groups with not enough (or absent) players, or individuals with no groups, or to do exams with people who arrived late.
+A array ref of all the players in the (sub)jigsaw who did the the activity twice to 'assist' groups with not enough (or absent) players, or individuals with no groups, or people who arrived late.
 
 =cut
 
 	method assistants (Str $examId) {
-		my $round = $self->examConfig( $examId );
+		my $round = $self->jigsawConfig( $examId );
 		$round->{assistants};
 	}
 
-=head3 examGroupMembers
+=head3 jigsawGroupMembers
 
-An hash ref of the names of the members of the given group in the given exam, keyed on the roles, A..D.
+An hash ref of the names of the members of the given group in the given jigsaw, keyed on the roles, A..D.
 
 =cut
 
-	method examGroupMembers (Str $examId, Str $group) {
-		my $groups = $self->examGroups( $examId );
+	method jigsawGroupMembers (Str $examId, Str $group) {
+		my $groups = $self->jigsawGroups( $examId );
 		my $members = $groups->{$group};
 	}
 
-=head3 examGroupRole
+=head3 jigsawGroupRole
 
-An hash ref of the roles of the members of the given group in the given exam, keyed on the name of the player.
+An hash ref of the roles of the members of the given group in the given jigsaw, keyed on the name of the player.
 
 =cut
 
-	method examGroupRole (Str $examId, Str $group) {
-		my $members = $self->examGroupMembers( $examId, $group );
+	method jigsawGroupRole (Str $examId, Str $group) {
+		my $members = $self->jigsawGroupMembers( $examId, $group );
 		my %roles = reverse %$members;
 		return \%roles;
 	}
 
-=head3 id2examGroupRole
+=head3 id2jigsawGroupRole
 
-An hash ref of the roles of the members of the given group in the given exam, keyed on the id of the player.
+An hash ref of the roles of the members of the given group in the given jigsaw, keyed on the id of the player.
 
 =cut
 
-	method id2examGroupRole (Str $examId, Str $group) {
-		my $member = $self->examGroupMembers( $examId, $group );
+	method id2jigsawGroupRole (Str $examId, Str $group) {
+		my $member = $self->jigsawGroupMembers( $examId, $group );
 		my %idedroles = map { $self->league->ided($member->{$_}) => $_ }
 						keys %$member;
 		return \%idedroles;
 	}
 
-=head3 name2examGroup
+=head3 name2jigsawGroup
 
-An array ref of the group(s) to which the given name belonged in the given exam. Normally, the array ref has only one element. But if the player was an assistant an array ref of more than one group is returned. If the player did not do the exam, no groups are returned.
+An array ref of the group(s) to which the given name belonged in the given jigsaw. Normally, the array ref has only one element. But if the player was an assistant an array ref of more than one group is returned. If the player did not do the jigsaw, no groups are returned.
 
 =cut
 
-	method name2examGroup (Str $examId, Str $name) {
-		my $groups = $self->examGroups( $examId );
+	method name2jigsawGroup (Str $examId, Str $name) {
+		my $groups = $self->jigsawGroups( $examId );
 		my @memberships;
 		for my $id ( keys %$groups ) {
 			my $group = $groups->{$id};
@@ -627,13 +627,13 @@ An array ref of the group(s) to which the given name belonged in the given exam.
 		return \@memberships;
 	}
 
-=head3 rawExamScores
+=head3 rawJigsawScores
 
 TODO
 
 =cut
 
-	method rawExamScores (Str $examId, Str $group) {
+	method rawJigsawScores (Str $examId, Str $group) {
 		my $leagueId = $self->league->id;
 		my $examdir = "$leagueId/$examId";
 		my $data = $self->inspect( "$examdir/scores.yaml" );
