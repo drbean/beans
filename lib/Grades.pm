@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 12月 05, 21時15分00秒
+#Last Edit: 2009 12月 06, 11時58分04秒
 
 our $VERSION = 0.07;
 
@@ -428,6 +428,24 @@ Running total homework scores of the league as percentages of the totalMax, with
 
 }
 
+
+=head2 Grades' Jigsaw Methods
+
+The jigsaw is a cooperative learning activity where all the players in a group get different information that together produces the 'big picture', and where they are each held responsible for the understanding of each of the other individual members of this picture.
+
+=cut
+
+role Jigsaw {
+
+=head3 questionN
+
+The number of questions in the given quiz.
+
+=cut
+
+    method qn ( Str $exam ) { $self->examConfig($exam)->{questions}->[0]; }
+
+}
 
 =head2 Grades' CompComp Methods
 
