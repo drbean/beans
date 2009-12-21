@@ -16,7 +16,7 @@ my $grades = Grades->new( league => $league );
 my $members = $league->members;
 
 my %members = map { $_->{name} => $_ } @$members;
-my $groups = $grades->examGroups( $exam );
+my $groups = $grades->jigsawGroups( $exam );
 
 
 my $response;
@@ -25,7 +25,7 @@ for my $group ( keys %$groups ) {
 	my $qn = $grades->qn( $exam, $group );
 	for my $id ( @$idsbyRole ) {
 		$response->{$group}->{$id} = { map { $_ => 0 } 1 .. $qn };
-		Bless( $response->{$group}->{$id} )->keys( [1..10] );
+		Bless( $response->{$group}->{$id} )->keys( [1..$qn] );
 	}
 	Bless( $response->{$group} )->keys( $idsbyRole );
 }
