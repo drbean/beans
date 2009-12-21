@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 11月 11, 11時52分46秒
+#Last Edit: 2009 11月 12, 11時41分03秒
 
 our $VERSION = 0.07;
 
@@ -1017,6 +1017,7 @@ Running totals for individual ids out of 100, over the whole series.
 
 role Exams {
 	use List::Util qw/max sum/;
+	use List::MoreUtils qw/any/;
 	use Carp;
 	use Grades::Types qw/Exam/;
 
@@ -1100,9 +1101,28 @@ A hash ref of the ids of the players and arrays of their results over the exam s
 			my $personalMax = max( @{ $results{$id} } );
 			croak "${id}'s $personalMax greater than exam max, $max"
 				if $personalMax > $max;
-
 		}
 		return \%results;
+	}
+
+=head3 examResultHash
+
+A hash ref of the ids of the players and hashrefs of their results for each exam. Croak if any result is larger than examMax.
+
+=cut
+
+	has 'examResultHash' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+	method _build_examResultHash {
+		my $examids = $self->examids;
+		my $examResults = $self->examResults;
+		my %examResults;
+		for my $id ( keys %$examResults ) {
+			my $results = $examResults->{$id};
+			my %results;
+			@results{@$examids} = @$results;
+			$examResults{$id} = \%results;
+		}
+		return \%examResults;
 	}
 
 =head3 examResultsasPercent
@@ -1153,19 +1173,74 @@ The round.yaml file with data about the given (sub)exam.
 
 =cut
 
-	method examConfig (Str $dir) {
-		my $round = $self->inspect( "$dir/round.yaml" );
+	method examConfig (Str $examId) {
+		my $leagueId = $self->league->id;
+		my $examdir = "$leagueId/$examId";
+		my $round = $self->inspect( "$examdir/round.yaml" );
 	}
 
 =head3 examGroups
 
-A hash ref of all the groups in the exam and the names of members of that group. There may be duplicated names if one player did the exam twice as an 'assistant' for a group with not enough players.
+A hash ref of all the groups in the exam and the names of members of the groups, keyed on groupnames. There may be duplicated names if one player did the exam twice as an 'assistant' for a group with not enough players, and missing names if a player did not do the exam.
 
 =cut
 
-	method groups (Str $dir) {
-		my $round = $self->examConfig( $dir );
+	method examGroups (Str $examId) {
+		my $round = $self->examConfig( $examId );
 		$round->{group};
+	}
+
+=head3 assistants
+
+A array ref of all the players in the (sub)exam who did it twice to 'assist' groups with not enough (or absent) players, or individuals with no groups, or to do exams with people who arrived late.
+
+=cut
+
+	method assistants (Str $examId) {
+		my $round = $self->examConfig( $examId );
+		$round->{assistants};
+	}
+
+=head3 examGroupMembers
+
+An hash ref of the members of the given group in the given exam, keyed on the roles, A..D.
+
+=cut
+
+	method examGroupMembers (Str $examId, Str $group) {
+		my $groups = $self->examGroups( $examId );
+		my $members = $groups->{$group};
+	}
+
+=head3 name2examGroup
+
+An array ref of the group(s) to which the given name belonged in the given exam. Normally, the array ref has only one element. But if the player was an assistant an array ref of more than one group is returned. If the player did not do the exam, no groups are returned.
+
+=cut
+
+	method name2examGroup (Str $examId, Str $name) {
+		my $groups = $self->examGroups( $examId );
+		my @memberships;
+		for my $id ( keys %$groups ) {
+			my $group = $groups->{$id};
+			my @members = values %$group;
+			push @memberships, $id if any { $_ eq $name } @members;
+		}
+		return \@memberships;
+	}
+
+=head3 rawExamscores
+
+TODO
+
+=cut
+
+
+	method rawExamscores (Str $examId, Str $group) {
+		my $leagueId = $self->league->id;
+		my $examdir = "$leagueId/$examId";
+		my $scores = $self->inspect( "$examdir/scores.yaml" );
+		return $scores->{letters}->{$group};
 	}
 
 }
