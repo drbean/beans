@@ -53,7 +53,8 @@ A string, where the first letter is upper case, there are some letters or spaces
 
 =cut
 
-subtype PlayerName, as Str, where { $_ =~ m/^[A-Z][A-Za-z -]+\d?$/ };
+subtype PlayerName, as Str, where { $_ =~ m/^[[:alpha:]'-]+\d?$/ };
+# subtype PlayerName, as Str;
 
 =head2 PlayerNames
 
@@ -62,7 +63,7 @@ An array ref of PlayerName.
 =cut
 
 subtype PlayerNames, as ArrayRef[ PlayerName ], message
-{ 'PlayerNames are A CAPITAL letter, followed by little letters, and an optional digit to disambiguate students with same name,' };
+{ 'PlayerNames are letters, and apostrophes and dashes, and an optional digit to disambiguate students with same name,' };
 
 =head2 AbsenteeNames
 
