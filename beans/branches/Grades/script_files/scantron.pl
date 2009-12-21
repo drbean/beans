@@ -3,34 +3,29 @@
 use strict;
 use warnings;
 
-use YAML qw/LoadFile DumpFile Bless/;
+use YAML qw/Bless Dump/;
 use Grades;
 
 my $scantron = Grades::Script->new_with_options;
 my $id = $scantron->league;
 my $exam = $scantron->exam;
 
-my $l = League->new( id => $id );
-my $g = Grades->new( league => $l );
+my $league = League->new( id => $id );
+my $grades = Grades->new( league => $league );
 
-die "$id/$exam/response.yaml already exists: $!\n" if
-				-e "$id/$exam/response.yaml";
-my $m = $l->members;
-my %m = map { $_->{name} => $_ } @$m;
-my $gps = $g->examGroups('exam3');
+my $members = $league->members;
 
-my $qn = $g->examConfig($exam)->{questions}->[0];
+my %members = map { $_->{name} => $_ } @$members;
+my $groups = $grades->examGroups( $exam );
 
-my $responses = { map { $_ => 0 } 1..$qn };
-my $r;
-for my $gp ( keys %$gps ) {
-	my @idsbyRole;
-	my $namesbyRole = $g->examGroupMembers( $exam, $gp );
-	for my $role ( sort keys %$namesbyRole ) {
-		my $id = $m{ $namesbyRole->{$role} }->{id};
-		$r->{$gp}->{$id} = { map { $_ => 0 } 1 .. $qn };
-		push @idsbyRole, $id;
+
+my $response;
+for my $group ( keys %$groups ) {
+	my $idsbyRole = $grades->idsbyRole( $exam, $group);
+	my $qn = $grades->qn( $exam, $group );
+	for my $id ( @$idsbyRole ) {
+		$response->{$group}->{$id} = { map { $_ => 0 } 1 .. $qn };
 	}
-	Bless( $r->{$gp} )->keys( \@idsbyRole );
+	Bless( $response->{$group} )->keys( $idsbyRole );
 }
-DumpFile "$id/$exam/response.yaml", $r;
+print Dump $response;
