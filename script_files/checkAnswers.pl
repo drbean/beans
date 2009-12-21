@@ -13,7 +13,6 @@ my $exam = $answers->exam;
 my $league = League->new( id => $id );
 my $grades = Grades->new( league => $league );
 
-$DB::single=1;
 my $groups = $grades->jigsawGroups( $exam );
 
 my $response;
