@@ -26,17 +26,6 @@ Only 3 actions are possible for the user with this Controller, homework, classwo
 
 =cut
 
-=head2 index
-
-=cut
-
-sub index :Path :Args(0) {
-    my ( $self, $c ) = @_;
-
-    # Hello World
-    $c->response->body( $c->welcome_message );
-}
-
 sub default :Path {
     my ( $self, $c ) = @_;
     $c->response->body( 'Page not found' );
@@ -79,7 +68,7 @@ Request a listing of grades
 
 =cut 
 
-sub grades : Local {
+sub grades :Path :Args(0) {
 	my ($self, $c) = @_;
 }
 
