@@ -71,9 +71,9 @@ Calculate homework score for one player using Moose homework script.
 sub homework_listing : Local {
 	my ($self, $c) = @_;
 	my $params = $c->request->params;
-	my $leagueId = $params->{league};
-	my $playerName = $params->{player};
-	my $playerId = $params->{id};
+	my $leagueId = $params->{league} || $c->request->args->[0];
+	my $playerId = $params->{id} || $c->request->args->[1];
+	my $playerName = $params->{player} || $c->request->args->[2];
 	my $league = League->new( id => "/home/drbean/class/$leagueId" );
 	my $work = Grades->new( league => $league );
 	if ( $league and $league->is_member($playerId) )
@@ -116,9 +116,9 @@ Calculate classwork score for one player using Moose classwork script.
 sub classwork_listing : Local {
 	my ($self, $c) = @_;
 	my $params = $c->request->params;
-	my $leagueId = $params->{league};
-	my $player = $params->{player};
-	my $playerId = $params->{id};
+	my $leagueId = $params->{league} || $c->request->args->[0];
+	my $playerId = $params->{id} || $c->request->args->[1];
+	my $player = $params->{player} || $c->request->args->[2];
 	my $league = League->new( id => "/home/drbean/class/$leagueId" );
 	my $work = Grades->new( league => $league );
 	if ( $league and $league->is_member($playerId) )
@@ -220,8 +220,8 @@ sub grades_listing : Local {
 							$exams->[$_]) . "/$max"
 					} } 0..$#$exams;
 			$c->stash->{league} = $leagueId;
-			$c->stash->{player} = $name;
 			$c->stash->{id} = $playerId;
+			$c->stash->{player} = $name;
 			my $weights = $grades->weights;
 			my $total = sum values %$weights;
 			$c->stash->{weight} = $weights;
