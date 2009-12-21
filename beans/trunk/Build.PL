@@ -36,6 +36,5 @@ my $builder = Module::Build->new(
 		}
 	},
 );
-# script_files/deposit script_files/beans script_files/hwtotal script_files/checkbeans script_files/id2name
 
 $builder->create_build_script();
