@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 11月 15, 10時08分47秒
+#Last Edit: 2009 11月 15, 11時46分50秒
 
 our $VERSION = 0.07;
 
@@ -691,6 +691,19 @@ Rather than refactor the class to work with individuals rather than groups, and 
 
 	method beancans (Str $session) { $self->beancanseries->{$session}; }
 
+=head3 active
+
+Given a session, returns the active beancans, ie all but the 'Absent' beancan.
+
+=cut
+
+	method active (Str $session) {
+		my $beancans = $self->beancans($session);
+		my %active = %$beancans;
+		delete $active{Absent};
+		return \%active;
+	}
+
 =head3 files
 
 Given a session, returns the files containing beans for the session of form, $session/\d+\.yaml$
@@ -790,7 +803,7 @@ Test all beancans, except Absent, exist in the beancans listed on the card for t
 
 =head3 beancanDataOnCard
 
-	$classwork->beancanDataOnCard( $beancans, $card, 3)
+	$classwork->beancansNotInCard( $beancans, $card, 3)
 
 Test all of the beancans, except Absent, have all the points due them for the week. Duplicates the check done by the Card type.
 
@@ -814,7 +827,7 @@ The points the beancans gained for the given week.
 
 	method merits (Num $week) {
 		my $session = $self->week2session($week);
-		my $beancans = $self->beancans($session);
+		my $beancans = $self->active($session);
 		my $card = $self->card($week);
 		$self->beancansNotInCard($beancans, $card, $week);
 		$self->beancanDataOnCard($beancans, $card, $week);
@@ -829,7 +842,7 @@ The numbers of players absent from the beancans in the given week. These are dem
 
 	method absences (Num $week) {
 		my $session = $self->week2session($week);
-		my $beancans = $self->beancans($session);
+		my $beancans = $self->active($session);
 		my $card = $self->card($week);
 		$self->beancansNotInCard($beancans, $card, $week);
 		$self->beancanDataOnCard($beancans, $card, $week);
@@ -844,7 +857,7 @@ The numbers of players not on time in the beancans in the given week. These are 
 
 	method tardies (Num $week) {
 		my $session = $self->week2session($week);
-		my $beancans = $self->beancans($session);
+		my $beancans = $self->active($session);
 		my $card = $self->card($week);
 		$self->beancansNotInCard($beancans, $card, $week);
 		$self->beancanDataOnCard($beancans, $card, $week);
@@ -859,9 +872,9 @@ How much should be given out for each beancan (except the 'Absent' beancan) for 
 
 	method payout (Str $session) {
 		my $sessions = $self->series;
-		my $beancans = $self->beancans($session);
+		my $beancans = $self->active($session);
 		my $weeks = $self->weeks($session);
-		my $payout = (80/@$sessions) * (keys(%$beancans) - 1) / @$weeks;
+		my $payout = (80/@$sessions) * (keys %$beancans ) / @$weeks;
 	}
 
 =head3 demerits
@@ -874,13 +887,8 @@ The demerits that week. calculated as twice the number of absences, plus the num
 		my $absences = $self->absences($week);
 		my $tardies = $self->tardies($week);
 		my $session = $self->week2session($week);
-		my $beancans = $self->beancans($session);
-		my %demerit;
-		for my $can ( keys %$beancans ) {
-			next if $can eq 'Absent';
-			$demerit{$can} = $absences->{$can}*2 + $tardies->{$can};
-		}
-		return \%demerit;
+		my $beancans = $self->active($session);
+		+{map {$_ => ($absences->{$_} * 2 + $tardies->{$_} * 1)} keys %$beancans};
 	}
 
 =head3 favor
@@ -892,14 +900,8 @@ A score of 1 given to beancans with no more than 6 demerits, to prevent beancans
 	method favor (Num $week) {
 		my $demerits = $self->demerits($week);
 		my $session = $self->week2session($week);
-		my $beancans = $self->beancans($session);
-		+{ map {} keys %$beancans };
-		my %favor;
-		for my $can ( keys %$beancans ) {
-			next if $can eq 'Absent';
-			$favor{$can} = ($demerits->{$can} < 7? 1: 0);
-		}
-		return \%favor;
+		my $beancans = $self->active($session);
+		+{ map {$_ => ($demerits->{$_} < 7? 1: 0)} keys %$beancans };
 	}
 
 =head3 maxDemerit
@@ -925,14 +927,10 @@ Let beancans with no merits, and no demerits get a score greater than 1, so the 
 		my $maxDemerit = $self->maxDemerit($week);
 		my $favor = $self->favor($week);
 		my $session = $self->week2session($week);
-		my $beancans = $self->beancans($session);
-		my %meritDemerit;
-		for my $can ( keys %$beancans ) {
-			next if $can eq 'Absent';
-			$meritDemerit{$can} = $maxDemerit + $merits->{$can} +
-				$favor->{$can} - $demerits->{$can};
-		}
-		return \%meritDemerit;
+		my $beancans = $self->active($session);
+		+{ map {$_=> $merits->{$_} + $favor->{$_} +
+				$maxDemerit - $demerits->{$_}}
+			keys %$beancans };
 	}
 
 =head3 logwork
@@ -944,7 +942,7 @@ The points given by the teacher are log-scaled to prevent active students from t
 	method logwork (Num $week) {
 		my $work = $self->meritDemerit($week);
 		my $session = $self->week2session($week);
-		my $beancans = $self->beancans($session);
+		my $beancans = $self->active($session);
 		+{ map { $_ => $work->{$_} == 0 ?  0 : 1 + log $work->{$_} }
 			keys %$beancans };
 	}
@@ -959,16 +957,19 @@ The work (ie merits - demerits) of the individual beancans for the week, as a pe
 		# my $work = $self->logwork($week);
 		my $work = $self->meritDemerit($week);
 		my $session = $self->week2session($week);
-		my $beancans = $self->beancans($session);
+		my $beancans = $self->active($session);
 		my $totalwork = sum values %$work;
 		my $payout = $self->payout($session);
-		+{ map { $_ => $totalwork == 0? 0: ( $work->{$_}*$payout/ $totalwork )
-							} keys %$beancans };
+		my %grades = map { $_ => $totalwork == 0? 0:
+					( $work->{$_}*$payout/ $totalwork )
+							} keys %$beancans;
+		$grades{Absent} = 0;
+		return \%grades;
 	}
 
 =head3 grades4session
 
-Totals for a given beancan over the session.
+Totals for the beancans over the given session. TODO Why '+=' in sessiontotal?
 
 =cut
 
@@ -979,6 +980,10 @@ Totals for a given beancan over the session.
 		for my $week ( @$weeks ) {
 			my $grade = $self->work2grades($week);
 			for my $can ( keys %$beancans ) {
+				if ( $can eq 'Active' ) {
+					$sessiontotal{$can} = 0;
+					next;
+				}
 				carp "$can not in week $week classwork"
 					unless defined $grade->{$can};
 				$sessiontotal{$can} += $grade->{$can};
