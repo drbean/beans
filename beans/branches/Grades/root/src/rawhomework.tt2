@@ -1,0 +1,22 @@
+[% # Provide a title to root/lib/site/header -%]
+[% META title = 'Raw homework scores' -%]
+
+<h2>Round [% round %]</h2>
+<table>
+<tr><th>Class</th><th>Name</th><th>ID</th>
+<th>Exercise:</th>[% FOREACH exercise IN exercises %]
+    <th>[% exercise.name %]</th>[% END %]
+[% IF exercises.size > 1 %]<th>Total Score</th>[% END %]<th>Grade</th></tr>
+  <tr>
+    <td>[% league %]</td>
+    <td>[% player %]</td>
+    <td>[% id %]</td>
+    <td></td>
+[% FOREACH exercise IN exercises -%]
+    <td>[% exercise.score %]</a>
+[% END -%]
+    [% IF exercises.size > 1 %]<td>[% total %]</td>[% END %]
+    <td>[% grade %]</td>
+  </tr>
+</table>
+
