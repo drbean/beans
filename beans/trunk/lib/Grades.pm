@@ -180,7 +180,7 @@ An arrayref of the rounds for which there are homework grades for players in the
 
 =cut
 
-	has 'rounds', (is => 'ro', isa => HomeworkRounds, lazy_build => 1);
+	has 'rounds', (is => 'ro', isa => 'ArrayRef[Int]', lazy_build => 1);
 	method _build_rounds {
 		my $hwdir = $self->hwdir;
 		my @hw = glob "$hwdir/*.yaml";
