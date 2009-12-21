@@ -167,7 +167,7 @@ sub run {
 	pod2usage(1) if $script->help;
 	pod2usage(-exitstatus => 0, -verbose => 2) if $script->man;
 	my $leagueId = $script->league;
-	my $league = Homework->new( leagueId => $leagueId ) or
+	my $league = League->new( leagueId => $leagueId ) or
 		die "No $leagueId league: $!";
 	my $homework = Homework->new( league => $league);
 	my $hwMax = $homework->roundMax;
