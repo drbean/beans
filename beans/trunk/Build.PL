@@ -21,6 +21,8 @@ my $builder = Module::Build->new(
     },
     dist_abstract => 
 	    'Ongoing grading of a league of players (ie class of students.)',
+    dist_abstract => 
+	    'Ongoing grading of a league of players (ie class of students.)',
     build_requires => {
         'Test::More' => 0,
 	'Pod::Coverage::Moose' => 0,
@@ -34,6 +36,6 @@ my $builder = Module::Build->new(
 		}
 	},
 );
-# script_files/deposit
+# script_files/deposit script_files/beans script_files/hwtotal script_files/checkbeans script_files/id2name
 
 $builder->create_build_script();
