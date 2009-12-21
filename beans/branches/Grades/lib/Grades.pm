@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 11月 11, 09時47分05秒
+#Last Edit: 2009 11月 11, 11時52分46秒
 
 our $VERSION = 0.07;
 
@@ -94,7 +94,7 @@ The name of the league (class).
 
 =head3 approach
 
-The style of classwork competition, eg compwork, or classwork (ie groupwork). This is a name of a method in the appropriate role that returns the final grades for classwork.
+The style of classwork competition, eg compwork, or classwork (ie groupwork). This is a name of a method in the appropriate role that returns the final grades for classwork. TODO This is the name of the class to which 'classwork' and '' methods are delegated.
 
 =cut
 
@@ -1020,6 +1020,18 @@ role Exams {
 	use Carp;
 	use Grades::Types qw/Exam/;
 
+=head3 examids
+
+The ids of the exams, as specified as a sequence in 'league.yaml'.
+
+=cut
+
+	has 'examids' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
+	method _build_examids {
+		my $leagueId = $self->league->id;
+		my $examids = $self->league->yaml->{exams};
+	}
+
 =head3 examdirs
 
 The directories in which exam results exist, returned as an array ref.
@@ -1031,6 +1043,27 @@ The directories in which exam results exist, returned as an array ref.
 		my $leagueId = $self->league->id;
 		my $examdirs = $self->league->yaml->{exams};
 		[ map { "$leagueId/$_" } @$examdirs ];
+	}
+
+=head3 examsubdirs
+
+The directories in which exam results exist in subdirs of those directories, returned as an array ref of array refs.
+
+=cut
+
+	has 'examsubdirs' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
+	method _build_examsubdirs {
+		my $leagueId = $self->league->id;
+		my $examdirs = $self->league->yaml->{exams};
+		my @dirs;
+		for my $dir ( @$examdirs ) {
+			if ( ref $dir eq 'ARRAY' ) {
+				my @subdirs = map { "leagueId/$dir/$_" } @$dir;
+				push @dirs, \@subdirs;
+			}
+			else { push @dirs, "$leagueId/$_"; }
+		}
+		return \@dirs;
 	}
 
 =head3 examMax
@@ -1113,6 +1146,28 @@ A hash ref of the ids of the players and their total score on exams, expressed a
 			$_ => sum(@$numbers)/@{$numbers} }
 					keys %$grades };
 	}
+
+=head3 examConfig
+
+The round.yaml file with data about the given (sub)exam.
+
+=cut
+
+	method examConfig (Str $dir) {
+		my $round = $self->inspect( "$dir/round.yaml" );
+	}
+
+=head3 examGroups
+
+A hash ref of all the groups in the exam and the names of members of that group. There may be duplicated names if one player did the exam twice as an 'assistant' for a group with not enough players.
+
+=cut
+
+	method groups (Str $dir) {
+		my $round = $self->examConfig( $dir );
+		$round->{group};
+	}
+
 }
 
 
