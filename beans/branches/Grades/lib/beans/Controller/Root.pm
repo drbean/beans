@@ -207,13 +207,12 @@ sub grades_listing : Local {
 			else { $classwork = $grades->classwork->{$playerId}; }
 			my $homework = $grades->homework->{$playerId};
 			my $examGrade = $grades->examGrade->{$playerId};
+			my $grade = $grades->grades->{$playerId};
 			my $weights = $grades->weights;
 			my $total = sum values %$weights;
-			my $grade = ( $classwork*$weights->{classwork} +
-				$homework*$weights->{homework} +
-				$examGrade*$weights->{exams} ) / $total;
 			$classwork = $grades->sprintround($classwork);
 			$homework = $grades->sprintround($homework);
+			$grade = $grades->sprintround($grade);
 			my $exams = $grades->examResults->{$playerId};
 			my @names = qw/I II III IV/;
 			my $max = $grades->examMax;
@@ -221,11 +220,10 @@ sub grades_listing : Local {
 						grade => $grades->sprintround(
 							$exams->[$_]) . "/$max"
 					} } 0..$#$exams;
-			$grade = $grades->sprintround($grade);
 			$c->stash->{league} = $leagueId;
 			$c->stash->{player} = $name;
 			$c->stash->{id} = $playerId;
-			$c->stash->{weight} = $weights;
+			$c->stash->{weight} = $grades->weights;
 			$c->stash->{total} = $total;
 			$c->stash->{classwork} = $classwork;
 			$c->stash->{homework} = $homework;
