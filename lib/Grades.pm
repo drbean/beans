@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 12月 14, 22時47分12秒
+#Last Edit: 2009 12月 17, 09時34分49秒
 
 our $VERSION = 0.07;
 
@@ -16,6 +16,15 @@ has 'league' => (metaclass => 'Getopt', is => 'ro', isa => 'Str',
 		cmd_flag => 'l',);
 has 'exam' => ( metaclass => 'Getopt', is => 'ro', isa => 'Str',
 		cmd_flag => 'e',);
+
+# letters2score.pl
+has 'exercise' => ( metaclass => 'Getopt', is => 'ro', isa => 'Str',
+		cmd_flag => 'x',);
+has 'one' => ( metaclass => 'Getopt', is => 'ro', isa => 'Str',
+		cmd_flag => 'o',);
+has 'two' => ( metaclass => 'Getopt', is => 'ro', isa => 'Str',
+		cmd_flag => 't',);
+
 has 'weights' => (metaclass => 'Getopt', is => 'ro', isa => 'Str',
 		cmd_flag => 'w',);
 has 'player' => (metaclass => 'Getopt', is => 'ro', isa => 'Str',
@@ -741,12 +750,11 @@ The points of the players in the given conversation.
 	    }
 	    my $opponent = $opponents->{$player};
 	    my $opponentopponent = $opponents->{$opponent};
-	my $test = $opponent and $opponentopponent and $player eq $opponentopponent
-		    or $opponent =~ m/unpaired/ and not $opponentopponent;
+	    my $test = $opponent and $opponentopponent and
+		$player eq $opponentopponent or $opponent =~
+		m/unpaired|bye|late|transfer/i;
 	    die "$test test: ${player}'s opponent is $opponent, but
-		${opponent}'s opponent is $opponentopponent" unless
-		$opponent and $opponentopponent and $player eq $opponentopponent
-		    or $opponent eq 'Unpaired' and not $opponentopponent;
+		${opponent}'s opponent is $opponentopponent" unless $test;
 	    die "No $player quiz card?" unless exists $correct->{$player};
 	    my $ourcorrect = $correct->{$player};
 	    die "No $opponent card against $player?" unless
