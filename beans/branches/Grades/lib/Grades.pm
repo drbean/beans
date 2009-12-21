@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 12月 07, 21時00分17秒
+#Last Edit: 2009 12月 09, 14時52分40秒
 
 our $VERSION = 0.07;
 
@@ -1344,13 +1344,25 @@ A array ref of all the players in the (sub)exam who did it twice to 'assist' gro
 
 =head3 examGroupMembers
 
-An hash ref of the members of the given group in the given exam, keyed on the roles, A..D.
+An hash ref of the names of the members of the given group in the given exam, keyed on the roles, A..D.
 
 =cut
 
 	method examGroupMembers (Str $examId, Str $group) {
 		my $groups = $self->examGroups( $examId );
 		my $members = $groups->{$group};
+	}
+
+=head3 examGroupRole
+
+An hash ref of the roles of the members of the given group in the given exam, keyed on the name of the player.
+
+=cut
+
+	method examGroupRole (Str $examId, Str $group) {
+		my $members = $self->examGroupMembers( $examId, $group );
+		my %roles = reverse %$members;
+		return \%roles;
 	}
 
 =head3 name2examGroup
