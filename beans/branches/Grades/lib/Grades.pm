@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 12月 17, 09時34分49秒
+#Last Edit: 2009 12月 17, 16時31分22秒
 
 our $VERSION = 0.07;
 
@@ -137,6 +137,18 @@ Students who have stopped coming to class and so won't be included in classwork 
 	    lazy => 1, default => sub { shift->yaml->{absent} } );
 
 
+=head3 transfer
+
+    $oldleague = $newleague->transfer->{93}
+
+Players who have transferred to this league from some other league at some point and the leagues they transferred from.
+
+=cut
+
+	has 'transfer', (is => 'ro', isa => 'HashRef',
+	    lazy => 1, default => sub { shift->yaml->{transfer} } );
+
+
 =head3 is_member
 
 Whether the passed id is that of a member in the league (class).
@@ -231,6 +243,21 @@ The name of the player.
 }
 
 
+=head2 NONENTITY CLASS
+
+=cut 
+
+class Nonentity extends Player {
+
+=head3 name
+
+The name is 'Bye'. The id is too, as a matter of fact.
+
+=cut
+
+    has 'name' => (is => 'ro', isa => 'Str', required => 1 );
+
+}
 =head2	GRADES CLASS
 
 =head2 Grades' Homework Methods
@@ -686,7 +713,7 @@ The topics of the conversations in order.
 
 =head3 opponents
 
-The opponents of the players in the given conversation.
+The ids of opponents of the players in the given conversation.
 
 =cut
 
@@ -721,41 +748,33 @@ The points of the players in the given conversation.
 	my $correct = $self->correct( $round );
 	my $points;
 	for my $player ( keys %$opponents ) {
-	    if ( $player =~ m/bye/i ) {
-		my $byer = $opponents->{$player};
-		$points->{$byer} = 5;
+	    if ( $opponents->{$player} =~ m/bye/i ) {
+		$points->{$player} = 5;
 		next;
 	    }
-	    if ( $player =~ m/late/i ) {
-		my $unpaired = $opponents->{$player};
-		for my $unpaired ( @$unpaired ) {
-		    $points->{$unpaired} = 1;
-		}
+	    if ( $opponents->{$player} =~ m/late/i ) {
+		$points->{$player} = 1;
 		next;
 	    }
 	    if ( $opponents->{$player} =~ m/unpaired/i ) {
 		$points->{$player} = 0;
 		next;
 	    }
-	    if ( $player =~ m/transfer/i ) {
-		my $transfer = $opponents->{$player};
-		for my $transfer ( @$transfer ) {
-		    my $leagueId = $transfer->{league};
-		    my $player = $transfer->{player};
-		    my $oldleague = League->new( id => $leagueId );
-		    my $oldgrades = Grades->new( league => $oldleague );
-		    $points->{$player} = $oldgrades->points($round)->{$player};
-		}
+	    if ( $opponents->{$player} =~ m/transfer/i ) {
+		my $oldleagueId = $self->league->transfer->{$player};
+		my $oldleague = League->new( id => $oldleagueId );
+		my $oldgrades = Grades->new( league => $oldleague );
+		$points->{$player} = $oldgrades->points($round)->{$player};
 		next;
 	    }
 	    my $opponent = $opponents->{$player};
 	    my $opponentopponent = $opponents->{$opponent};
 	    my $test = $opponent and $opponentopponent and
-		$player eq $opponentopponent or $opponent =~
-		m/unpaired|bye|late|transfer/i;
+		$player eq $opponentopponent;
 	    die "$test test: ${player}'s opponent is $opponent, but
 		${opponent}'s opponent is $opponentopponent" unless $test;
-	    die "No $player quiz card?" unless exists $correct->{$player};
+	    die "No $player quiz card in round $round?" unless exists
+		$correct->{$player};
 	    my $ourcorrect = $correct->{$player};
 	    die "No $opponent card against $player?" unless
 		exists $correct->{$opponent};
