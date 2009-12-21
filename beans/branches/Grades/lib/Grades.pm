@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 11月 08, 14時13分10秒
+#Last Edit: 2009 11月 08, 21時42分41秒
 
 our $VERSION = 0.07;
 
@@ -89,6 +89,19 @@ The name of the league (class).
 	method _build_name {
 		my $data = $self->yaml;
 		$data->{league};
+	}
+
+
+=head3 approach
+
+The style of classwork competition, eg compwork, or classwork (ie groupwork). This is a name of a method in the appropriate role that returns the final grades for classwork.
+
+=cut
+
+	has 'approach' => (is => 'ro', isa => 'Str', lazy_build => 1);
+	method _build_approach {
+		my $data = $self->yaml;
+		$data->{approach};
 	}
 
 =head3 members
@@ -933,13 +946,13 @@ Totals for a given beancan over the session.
 		\%sessiontotal;
 	}
 
-=head3 classwork
+=head3 groupwork
 
 Running totals for individual ids out of 100, over the whole series.
 
 =cut
 
-	method classwork {
+	method groupwork {
 		my $members = $self->league->members;
 		my $series = $self->series;
 		my (%grades);
@@ -1121,9 +1134,11 @@ A hashref of student ids and final grades.
 
 =cut
 
-	method grades (Str $classcomponent ){
-		my $members = $self->league->members;
+	method grades {
+		my $league = $self->league;
+		my $members = $league->members;
 		my $homework = $self->homework;
+		my $classcomponent = $league->approach;
 		my $classwork = $self->$classcomponent;
 		my $exams = $self->examGrade;
 		my @ids = map { $_->{id} } @$members;
