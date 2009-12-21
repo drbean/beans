@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 12月 06, 15時14分12秒
+#Last Edit: 2009 12月 07, 21時00分17秒
 
 our $VERSION = 0.07;
 
@@ -432,21 +432,103 @@ Running total homework scores of the league as percentages of the totalMax, with
 
 =head2 Grades' Jigsaw Methods
 
-The jigsaw is a cooperative learning activity where all the players in a group get different information that together produces the 'big picture', and where they are each held responsible for the understanding of each of the other individual members of this picture.
+The jigsaw is a cooperative learning activity where all the players in a group get different information that together produces the 'big picture', and where they are each held responsible for the understanding of each of the other individual members of this big picture.
 
 =cut
 
 role Jigsaw {
 
-=head3 qn
+=head3 quizfile
 
-The number of questions in the given quiz.
+The file system location of the file of the given exam with the quiz questions and answers.
 
 =cut
 
-    method qn ( Str $exam ) { $self->examConfig($exam)->{questions}->[0]; }
+    method quizfile ( Str $exam ) { $self->examConfig($exam)->{file}; }
+
+=head3 topic
+
+The topic of the quiz in the given exam for the given group.
+
+=cut
+
+    method topic ( Str $exam, Str $group ) {
+	my $config = $self->examConfig($exam);
+	my $activity = $config->{activity}->{$group};
+	my $topic = $activity->{topic};
+}
+
+=head3 form
+
+The form of the quiz in the given exam for the given group.
+
+=cut
+
+    method form ( Str $exam, Str $group ) {
+	my $config = $self->examConfig($exam);
+	my $activity = $config->{activity}->{$group};
+	my $form = $activity->{form};
+}
+
+=head3 quiz
+
+The quiz questions (as an anon array) in the given exam for the given group.
+
+=cut
+
+    method quiz ( Str $exam, Str $group ) {
+	my $file = $self->examConfig($exam)->{file};
+	my $activity = $self->inspect( $file );
+	my $topic = $self->topic( $exam, $group );
+	my $form = $self->form( $exam, $group );
+	my $quiz = $activity->{$topic}->{$form}->{quiz};
+    }
+
+=head3 qn
+
+The number of questions in the given exam for the given group.
+
+=cut
+
+    method qn ( Str $exam, Str $group ) {
+	my $quiz = $self->quiz( $exam, $group );
+	return scalar @$quiz;
+    }
+
+=head3 idsbyRole
+
+Ids in array, in A-D role order
+
+=cut
+
+
+    method idsbyRole ( Str $exam, Str $group ) {
+	my $members = $self->league->members;
+	my %namedMembers = map { $_->{name} => $_ } @$members;
+	my $namesbyRole = $self->examGroupMembers( $exam, $group );
+	my @idsbyRole;
+	for my $role ( sort keys %$namesbyRole ) {
+		my $id = $namedMembers{ $namesbyRole->{$role} }->{id};
+		push @idsbyRole, $id;
+	}
+	return \@idsbyRole;
+    }
+
+=head3 responses
+
+The responses of the members of the given group in the given exam (as an anon hash keyed on the ids of the members). In a file in the exam directory called 'response.yaml'.
+
+=cut
+
+
+    method responses ( Str $exam, Str $group ) {
+	my $examdir = $self->examdir( $exam );
+	my $responses = $self->inspect( "$examdir/response.yaml" );
+	return $responses->{$group};
+    }
 
 }
+
 
 =head2 Grades' CompComp Methods
 
@@ -1081,6 +1163,17 @@ The ids of the exams, as specified as a sequence in 'league.yaml'.
 		my $examids = $self->league->yaml->{exams};
 	}
 
+=head3 examdir
+
+The directory in which results for the given exam exist.
+
+=cut
+
+	method examdir ( Str $exam ) {
+		my $leagueId = $self->league->id;
+		return "$leagueId/$exam";
+	}
+
 =head3 examdirs
 
 The directories in which exam results exist, returned as an array ref.
@@ -1090,8 +1183,8 @@ The directories in which exam results exist, returned as an array ref.
 	has 'examdirs' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
 	method _build_examdirs {
 		my $leagueId = $self->league->id;
-		my $examdirs = $self->league->yaml->{exams};
-		[ map { "$leagueId/$_" } @$examdirs ];
+		my $exams = $self->league->yaml->{exams};
+		[ map { $self->examdir($_) } @$exams ];
 	}
 
 =head3 examsubdirs
@@ -1107,7 +1200,7 @@ The directories in which exam results exist in subdirs of those directories, ret
 		my @dirs;
 		for my $dir ( @$examdirs ) {
 			if ( ref $dir eq 'ARRAY' ) {
-				my @subdirs = map { "leagueId/$dir/$_" } @$dir;
+				my @subdirs = map { "$leagueId/$dir/$_" } @$dir;
 				push @dirs, \@subdirs;
 			}
 			else { push @dirs, "$leagueId/$_"; }
