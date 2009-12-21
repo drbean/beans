@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 10月 31, 21時54分54秒
+#Last Edit: 2009 11月 01, 12時07分05秒
 
 our $VERSION = 0.07;
 
@@ -377,6 +377,17 @@ The points of the players in the round.
 		my $unpaired = $opponents->{$player};
 		for my $unpaired ( @$unpaired ) {
 		    $points->{$unpaired} = 0;
+		}
+		next;
+	    }
+	    if ( $player eq 'transfer' ) {
+		my $transfer = $opponents->{$player};
+		for my $transfer ( @$transfer ) {
+		    my $leagueId = $transfer->{league};
+		    my $player = $transfer->{player};
+		    my $oldleague = League->new( id => $leagueId );
+		    my $oldgrades = Grades->new( league => $oldleague );
+		    $points->{$player} = $oldgrades->points($round)->{$player};
 		}
 		next;
 	    }
