@@ -1,0 +1,188 @@
+#!/usr/bin/perl
+
+package main;
+
+use strict;
+use warnings;
+
+use List::Util qw/sum/;
+use IO::All;
+use IO::Handle;
+use Cwd;
+use Pod::Usage;
+
+use lib 'lib';
+use Bean;
+
+run() unless caller;
+
+sub run {
+	my $script = Script->new_with_options( league => getcwd );
+	pod2usage(1) if $script->help;
+	pod2usage(-exitstatus => 0, -verbose => 2) if $script->man;
+	my $leagueId = $script->league;
+	my $league = League->new( leagueId => $leagueId ) or
+		die "No $leagueId league: $!";
+	my $homework = Homework->new( league => $league);
+	my $hwMax = $homework->roundMax;
+	my $rounds = $homework->rounds;
+	my $totalMax = @$rounds * $hwMax;
+	my $hwdir = $homework->hwdir;
+	my $oldtotal = $league->input( $hwdir );
+	my $oldpercent = $league->input( $hwdir );
+	my ($newtotal, $newpercent);
+	my @formats = qw/'' WEEKS1 WEEKS2 WEEKS3 WEEKS4 WEEKS5 WEEKS6 WEEKS7
+		WEEKS8 WEEKS9 WEEKS10 WEEKS11 WEEKS12 WEEKS13 WEEKS14 WEEKS15 WEEKS16 WEEKS17 WEEKS18/;
+	REP->format_name($formats[@$rounds]);
+	open REP, '>-' or die 'STDOUT? $!'; 
+	my $name = $league->name;
+	my @romans = qw/'' 01 02 03 04 05 06 07 08 09
+			   10 11 12 13 14 15 16 17 18/;
+	local $,=', ';
+	print REP
+"             $name Homework
+		    Weeks: Grade(0-$hwMax)/$hwMax
+Name        ID  @romans[@$rounds]   Total/$totalMax Grade/100
+-------------------------------------------------------------------------
+";
+	my $id = $script->player && $league->is_member($script->player)?
+				$script->player: undef;
+	my $members = $id ? 
+	     [ Player->new( id => $id, league => $league ) ]:
+		$league->members;
+	foreach my $member ( @$members ) 
+	{
+		our $id = $member->id;
+		our $name = $member->name;
+		# our $indgrades = [ (2) x @$rounds ];
+		our @indgrades = @{ $homework->hwforid( $id ) };
+		@indgrades = map { $_ == 0.5? substr $_, 1: $_ } @indgrades;
+		die "No homework grade for $name $id" if grep {not defined} @indgrades;
+		our $grade = sum @indgrades;
+		our $percent = 100 * $grade / $totalMax;
+		$newtotal->{$id} = $grade;
+		$newpercent->{$id} = $percent;
+		write REP;
+		# $grades->{$partner} = $newGrade;
+	} 
+	
+	
+	my $log = io "$hwdir/hwtotal.log";
+	localtime() . ": $0 run to calculate homework totals at round $rounds->[-1].\n"
+										>> $log;
+	$league->save("$hwdir/total.yaml.bak", $oldtotal);
+	$league->save("$hwdir/total.yaml", $newtotal);
+	$league->save("$hwdir/percent.yaml.bak", $oldpercent);
+	$league->save("$hwdir/percent.yaml", $newpercent);
+}
+
+our ($name, $id, @indgrades, $grade, $percent);
+format WEEKS1 =
+@<<<<<< @<<<<<<< @<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS2 =
+@<<<<<< @<<<<<<< @<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS3 =
+@<<<<<< @<<<<<<< @<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS4 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS5 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS6 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS7 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS8 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS9 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS10 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS11 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS12 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS13 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS14 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS15 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS16 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS17 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+format WEEKS18 =
+@<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
+$name,  $id,	@indgrades, $grade, $percent
+.
+
+1;
+
+__END__
+
+=head1 NAME
+
+cumulative - Add player results in individual rounds to get a cumulative total and show present standing
+
+=head1 SYNOPSIS
+
+hwtotal [options] 
+
+Options:
+
+--help            This help message
+
+--man            A man page
+
+--league m/j	The league whose results these are
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-league>
+
+The league to which the redeemer belongs
+
+=back
+
+=head1 DESCRIPTION
+
+B<hwtotal> tallies individuals' scores in the files in the hw directory recorded in league.yaml. It stores the total in cumulative.yaml, in the same directory.
+
+=cut
+

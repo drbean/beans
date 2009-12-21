@@ -1,0 +1,24 @@
+---
+league: Rousseau Cram School
+hw: t/emile/homework
+member:
+  - id: S09413
+    name: Sophie
+  - id: 34113
+    name: Emile
+series:
+  - first
+  - second
+  - third
+  - fourth
+exams:
+  - exam1
+  - exam2
+  - exam3
+  - exam4
+examMax: 15
+hwMax: 2
+weights:
+  classwork: 20
+  homework : 20
+  exams    : 60
