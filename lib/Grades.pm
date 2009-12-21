@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 11月 12, 11時41分03秒
+#Last Edit: 2009 11月 15, 10時08分47秒
 
 our $VERSION = 0.07;
 
@@ -679,9 +679,11 @@ Classwork beans for each beancan for the given week
 
 =head3 beancans
 
-A hashref of all the beancans in a session with the names of the members of each beancan. The number, composition and names of the beancans in each session of the series may change.
+A hashref of all the beancans in a given session with the names of the members of each beancan. The number, composition and names of the beancans may change from one session of the series to the next.
 	
 Players in one beancan all get the same classwork grade for that session. The beancan members may be the same as the members of the class group, who work together in class, or may be individuals. Usually in a big class, the beancans will be the same as the groups, and in a small class they will be individuals.
+
+Players in the 'Absent' beancan all get a grade of 0 for the session.
 
 Rather than refactor the class to work with individuals rather than groups, and expand some methods (?) to fall back to league members if it finds them in the weekly files instead of groups, I decided to introduce another file, beancans.yaml, and change all variable and method names mentioning group to beancan.
 
@@ -691,7 +693,7 @@ Rather than refactor the class to work with individuals rather than groups, and 
 
 =head3 files
 
-Given a session, returns the files containing beans for the session.
+Given a session, returns the files containing beans for the session of form, $session/\d+\.yaml$
 
 =cut
 
@@ -730,7 +732,7 @@ Given the name of a week, return the name of the session it is in.
 
 =head3 names2beancans
 
-A hashref of names of members of beancans (players) and the beancans they were members of.
+A hashref of names of members of beancans (players) and the beancans they were members of in a given session.
 
 =cut
 
@@ -749,6 +751,8 @@ A hashref of names of members of beancans (players) and the beancans they were m
 	}
 
 =head3 name2beancan
+
+	$classwork->name2beancan( $week, $playername )
 
 Given the name of a player, the name of the beancan they were a member of in the given week.
 
@@ -772,31 +776,32 @@ Given the name of a player, the name of the beancan they were a member of in the
 
 	$classwork->beancansNotInCard( $beancans, $card, 3)
 
-Test all beancans exist in the beancans listed on the card for the week.
+Test all beancans, except Absent, exist in the beancans listed on the card for the week.
 
 =cut
 
 	method beancansNotInCard (HashRef $beancans, HashRef $card, Num $week) {
 		my %common; $common{$_}++ for keys %$beancans, keys %$card;
-		my @notInCard = grep { $common{$_} != 2 } keys %$beancans;
+		my @notInCard = grep { $common{$_} != 2 and $_ ne 'Absent' }
+						keys %$beancans;
 		croak "@notInCard beancans not in week $week data" if
 					@notInCard;
 	}
 
 =head3 beancanDataOnCard
 
-	$classwork->beancansNotInCard( $beancans, $card, 3)
+	$classwork->beancanDataOnCard( $beancans, $card, 3)
 
-Test all of the beancans have all the points due them for the week. Duplicates the check done by the Card type.
+Test all of the beancans, except Absent, have all the points due them for the week. Duplicates the check done by the Card type.
 
 =cut
 
 	method beancanDataOnCard (HashRef $beancans, HashRef $card, Num $week) {
-		my @noData = grep
-				{ my $beancan = $card->{$_};
-				not defined $beancan->{merits}
-				or not defined $beancan->{absences}
-				or not defined $beancan->{tardies} }
+		my @noData = grep { my $beancan = $card->{$_};
+				$_ ne 'Absent' and ( 
+					not defined $beancan->{merits}
+					or not defined $beancan->{absences}
+					or not defined $beancan->{tardies}  ) }
 				keys %$beancans;
 		croak "@noData beancans missing data in week $week" if @noData;
 	}
@@ -818,7 +823,7 @@ The points the beancans gained for the given week.
 
 =head3 absences
 
-The number of players absent from the beancans in the given week. These are demerits.
+The numbers of players absent from the beancans in the given week. These are demerits.
 
 =cut
 
@@ -833,7 +838,7 @@ The number of players absent from the beancans in the given week. These are deme
 
 =head3 tardies
 
-The number of players not on time in the beancans in the given week. These are demerits.
+The numbers of players not on time in the beancans in the given week. These are demerits.
 
 =cut
 
@@ -848,7 +853,7 @@ The number of players not on time in the beancans in the given week. These are d
 
 =head3 payout
 
-How much should be given out for each beancan for each week in this session, so that the total score of each player over the series averages 80?
+How much should be given out for each beancan (except the 'Absent' beancan) for each week in this session, so that the total score of each player over the session averages 80?
 
 =cut
 
@@ -856,7 +861,7 @@ How much should be given out for each beancan for each week in this session, so 
 		my $sessions = $self->series;
 		my $beancans = $self->beancans($session);
 		my $weeks = $self->weeks($session);
-		my $payout = (80/@$sessions) * (keys %$beancans) / @$weeks;
+		my $payout = (80/@$sessions) * (keys(%$beancans) - 1) / @$weeks;
 	}
 
 =head3 demerits
@@ -870,7 +875,12 @@ The demerits that week. calculated as twice the number of absences, plus the num
 		my $tardies = $self->tardies($week);
 		my $session = $self->week2session($week);
 		my $beancans = $self->beancans($session);
-		+{map {$_ => ($absences->{$_} * 2 + $tardies->{$_} * 1)} keys %$beancans};
+		my %demerit;
+		for my $can ( keys %$beancans ) {
+			next if $can eq 'Absent';
+			$demerit{$can} = $absences->{$can}*2 + $tardies->{$can};
+		}
+		return \%demerit;
 	}
 
 =head3 favor
@@ -883,7 +893,13 @@ A score of 1 given to beancans with no more than 6 demerits, to prevent beancans
 		my $demerits = $self->demerits($week);
 		my $session = $self->week2session($week);
 		my $beancans = $self->beancans($session);
-		+{ map {$_ => ($demerits->{$_} < 7? 1: 0)} keys %$beancans };
+		+{ map {} keys %$beancans };
+		my %favor;
+		for my $can ( keys %$beancans ) {
+			next if $can eq 'Absent';
+			$favor{$can} = ($demerits->{$can} < 7? 1: 0);
+		}
+		return \%favor;
 	}
 
 =head3 maxDemerit
@@ -910,8 +926,13 @@ Let beancans with no merits, and no demerits get a score greater than 1, so the 
 		my $favor = $self->favor($week);
 		my $session = $self->week2session($week);
 		my $beancans = $self->beancans($session);
-		+{ map {$_=> $maxDemerit+$merits->{$_}+$favor->{$_}-$demerits->{$_}}
-			keys %$beancans };
+		my %meritDemerit;
+		for my $can ( keys %$beancans ) {
+			next if $can eq 'Absent';
+			$meritDemerit{$can} = $maxDemerit + $merits->{$can} +
+				$favor->{$can} - $demerits->{$can};
+		}
+		return \%meritDemerit;
 	}
 
 =head3 logwork
