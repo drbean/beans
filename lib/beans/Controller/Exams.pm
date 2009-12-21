@@ -48,9 +48,9 @@ sub listing : Local {
 			$examGrade = $work->sprintround($examGrade);
 			my $examPercent = $work->examPercent->{$playerId};
 			$examPercent = $work->sprintround($examPercent);
-			my @names = qw/I II III IV/;
 			my $max = $work->examMax;
-			my @exams = map { {	name => $names[$_],
+			my $names = $work->examids;
+			my @exams = map { {	name => $names->[$_],
 						grade => $work->sprintround(
 							$exams->[$_]) . "/$max"
 					} } 0..$#$exams;
@@ -59,6 +59,47 @@ sub listing : Local {
 			$c->stash->{percent} = $examPercent;
 			$c->stash->{weeks} = \@grades;
 			$c->stash->{template} = 'exams_listing.tt2';
+		}
+	}
+}
+
+
+=head2 raw
+
+Show exam tallies that allowed allocation of exam grade.
+
+=cut
+
+sub raw : Local {
+	my ($self, $c) = @_;
+	my $params = $c->request->params;
+	my $leagueId = $params->{league} || $c->request->args->[0];
+	my $playerId = $params->{id} || $c->request->args->[1];
+	my $playerName = $params->{player} || $c->request->args->[2];
+	my $exam =                      $c->request->args->[3];
+	my $league = League->new( id => "/home/drbean/class/$leagueId" );
+	my $work = Grades->new( league => $league );
+	if ( $league and $league->is_member($playerId) )
+	{
+		my $player = Player->new( league => $league, id => $playerId );
+		if ( $playerName eq $player->name ) {
+			$c->stash->{league} = $leagueId;
+			$c->stash->{player} = $playerName;
+			$c->stash->{id} = $playerId;
+			$c->stash->{examId} = $exam;
+			my $group = $work->name2examGroup($exam, $playerName)->[0];
+			my $member = $work->examGroupMembers($exam, $group);
+			my $rawscores = $work->rawExamscores($exam, $group);
+			my @scores = map { { role => $_, name => $member->{$_},
+					score => $rawscores->{$_} }
+					} sort keys %$rawscores;
+			$c->stash->{scores} = \@scores;
+			my $total = sum ( map { $_->{score} } @scores );
+			$c->stash->{total} = $total;
+			my $grade = $work->examResultHash->{$playerId}->{$exam};
+			$c->stash->{grade} = $grade;
+			$c->stash->{group} = $group;
+			$c->stash->{template} = 'rawexam.tt2';
 		}
 	}
 }
