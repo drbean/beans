@@ -72,13 +72,13 @@ sub grades :Path :Args(0) {
 	my ($self, $c) = @_;
 }
 
-=head2 grades_listing
+=head2 listing
 
 Calculate grades for one player using Moose grades.
 
 =cut
 
-sub grades_listing : Local {
+sub listing : Local {
 	my ($self, $c) = @_;
 	my $params = $c->request->params;
 	my $leagueId = $params->{league};

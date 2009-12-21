@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 12月 20, 21時56分45秒
+#Last Edit: 2009 12月 21, 08時13分33秒
 
 our $VERSION = 0.07;
 
@@ -1319,9 +1319,22 @@ The ids of the exams, as specified in 'league.yaml', either as a sequence or map
 		else { return $examids }
 	}
 
+=head3 examrounds
+
+The rounds over which the given exam was conducted. Should be an array ref. If there were no rounds, ie there was only one round, undef is returned.
+
+=cut
+
+	method examrounds ( Str $exam ) {
+		my $examids = $self->league->yaml->{exams};
+		return unless ref $examids eq 'HASH';
+		return unless ref $examids->{$exam} eq 'ARRAY';
+		return $examids->{$exam};
+	}
+
 =head3 examdir
 
-The directory in which results for the given exam (exam plus round) exist, below the leagueId dir.
+The directory in which results for the given exam (or exam plus round) exist, below the leagueId dir.
 
 =cut
 
@@ -1332,7 +1345,7 @@ The directory in which results for the given exam (exam plus round) exist, below
 
 =head3 examdirs
 
-The directories in which exam results exist, returned as an array ref of strings or, or as an hash ref, 
+The directories in which exam results exist, returned as an array ref of strings, or as an hash ref, TODO Do what examids is doing here. And have a separate method to get rounds.
 
 =cut
 
