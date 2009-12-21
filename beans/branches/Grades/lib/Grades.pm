@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 10月 28, 19時55分25秒
+#Last Edit: 2009 10月 29, 16時36分24秒
 
 our $VERSION = 0.07;
 
@@ -146,6 +146,43 @@ Dumps a YAML file
 	}
 
 }
+
+
+=head2	PLAYER CLASS
+
+=cut
+
+class Player {
+	use List::MoreUtils qw/firstval/;
+	use List::Util qw/sum/;
+	use POSIX;
+
+	has 'league' => (is => 'ro', isa => 'League', required => 1);
+	has 'id' => (is => 'ro', isa => 'Str', required => 1);
+	has 'name' => (is => 'ro', isa => 'Str', lazy_build => 1);
+	method _build_name {
+		my $league = $self->league;
+		my $id = $self->id;
+		my $members = $league->members;
+		my $member = firstval { $_->{id} eq $id } @$members;
+		$member->{name};
+	}
+
+	has 'Chinese' => (is => 'ro', isa => 'Str');
+	has 'total' => (is => 'ro', isa => 'Int', lazy_build => 1);
+	method _build_total {
+		my $hwgrades = $self->total;
+		sum @$hwgrades;
+	}
+	has 'percent' => (is => 'ro', isa => 'Int', lazy_build => 1);
+	method _build_percent {
+		my $grade = $self->total;
+		my $league = $self->league;
+		my $totalMax = $league->totalMax;
+		floor (100 * $grade / $totalMax);
+	}
+}
+
 
 =head2	GRADES CLASS
 
@@ -920,36 +957,6 @@ A hash ref of the ids of the players and their total exam score, expressed as a 
 	}
 }
 
-class Player {
-	use List::MoreUtils qw/firstval/;
-	use List::Util qw/sum/;
-	use POSIX;
-
-	has 'league' => (is => 'ro', isa => 'League', required => 1);
-	has 'id' => (is => 'ro', isa => 'Str', required => 1);
-	has 'name' => (is => 'ro', isa => 'Str', lazy_build => 1);
-	method _build_name {
-		my $league = $self->league;
-		my $id = $self->id;
-		my $members = $league->members;
-		my $member = firstval { $_->id eq $id } @$members;
-		$member->name;
-	}
-
-	has 'Chinese' => (is => 'ro', isa => 'Str');
-	has 'total' => (is => 'ro', isa => 'Int', lazy_build => 1);
-	method _build_total {
-		my $hwgrades = $self->total;
-		sum @$hwgrades;
-	}
-	has 'percent' => (is => 'ro', isa => 'Int', lazy_build => 1);
-	method _build_percent {
-		my $grade = $self->total;
-		my $league = $self->league;
-		my $totalMax = $league->totalMax;
-		floor (100 * $grade / $totalMax);
-	}
-}
 
 =head2 Grades' Core Methods
 =cut
