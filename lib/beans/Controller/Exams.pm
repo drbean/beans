@@ -7,6 +7,7 @@ use parent 'Catalyst::Controller';
 use lib 'lib';
 use Grades;
 use List::Util qw/sum/;
+use Try::Tiny;
 
 =head1 NAME
 
@@ -86,17 +87,25 @@ sub raw : Local {
             $c->stash->{player} = $playerName;
             $c->stash->{id}     = $playerId;
             $c->stash->{examId} = $exam;
-            my $group = $work->name2examGroup( $exam, $playerName )->[0];
-            my $quiz = $work->quiz( $exam, $group );
-            my $responses = $work->responses( $exam, $group );
-            my $member = $work->examGroupMembers( $exam, $group );
-            my $rawscores = $work->rawExamScores( $exam, $group );
-            my $role = $work->id2examGroupRole( $exam, $group );
+            my $group = $work->name2jigsawGroup( $exam, $playerName )->[0];
+            my $topic = $work->topic( $exam, $group );
+            my $form = $work->form( $exam, $group );
+            my ( $quiz, $responses );
+	    try {
+		    $quiz = $work->quiz( $exam, $group );
+		    $responses = $work->responses( $exam, $group );
+	    }
+	    	catch {
+$c->stash->{status_msg} = "No information available on $topic $form quiz";
+		};
+            my $member = $work->jigsawGroupMembers( $exam, $group );
+            my $rawscores = $work->rawJigsawScores( $exam, $group );
+            my $role = $work->id2jigsawGroupRole( $exam, $group );
             my @scores = map { $rawscores->{$_} }
 		sort { $role->{$a} cmp $role->{$b} } keys %$rawscores;
             $c->stash->{ids} = $work->idsbyRole( $exam, $group );
-            $c->stash->{topic} = $work->topic( $exam, $group );
-            $c->stash->{form} = $work->form( $exam, $group );
+            $c->stash->{topic} = $topic;
+            $c->stash->{form} = $form;
             $c->stash->{quiz} = $quiz;
             $c->stash->{responses} = $responses;
             $c->stash->{scores} = \@scores;
