@@ -50,6 +50,10 @@ sub run {
 		our $classwork = min 100,
 				$league->sprintround($classwork->{$id}) || 0;
 		my $exams =  $exams->{$id};
+		die
+"${name} ${id}'s hw: $homework, class: $classwork, exam: $exams grade?"
+			unless defined $homework and defined $classwork and
+				$exams and ref $exams eq 'ARRAY';
 		our $examGrades = $league->sprintround($exams);
 		my $examGrade = sum(@$exams)/@$exams;
 		our $grade = ( $classwork*$weights->[0] +
