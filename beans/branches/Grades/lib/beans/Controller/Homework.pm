@@ -59,13 +59,13 @@ sub listing : Local {
 }
 
 
-=head2 rawhomework
+=head2 raw
 
 Show homework tallies that allowed allocation of homework grade.
 
 =cut
 
-sub rawhomework : Local {
+sub raw : Local {
 	my ($self, $c) = @_;
 	my $params = $c->request->params;
 	my $leagueId = $params->{league} || $c->request->args->[0];
