@@ -21,7 +21,7 @@ Listing, raw actions
 =cut
 
 
-=head2 exams_listing
+=head2 listing
 
 Calculate exams score for one player using Moose exams script.
 
