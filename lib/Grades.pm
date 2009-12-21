@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 12月 12, 19時09分11秒
+#Last Edit: 2009 12月 12, 19時33分46秒
 
 our $VERSION = 0.07;
 
@@ -1540,7 +1540,7 @@ L<http://search.cpan.org/dist/Grades>
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2006 Dr Bean, all rights reserved.
+Copyright 2009 Dr Bean, all rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
