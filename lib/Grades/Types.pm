@@ -160,15 +160,16 @@ A hashref of classwork results for the lesson, where the keys are beancan names 
 subtype Card,
 	as HashRef,
 	where {
-		my $card = $_;
+		my %card = %$_;
+		delete $card{Absent};
 		all {
 			my $can = $_;
 			Str->check( $can ) and 
-			Int->check( $card->{$can}->{merits} ) and
-			Int->check( $card->{$can}->{absences} ) and
-			Int->check( $card->{$can}->{tardies} );
+			Int->check( $card{$can}->{merits} ) and
+			Int->check( $card{$can}->{absences} ) and
+			Int->check( $card{$can}->{tardies} );
 		}
-		keys %$card;
+		keys %card;
 	},
 	message { 'Probably undefined or non-numeric Merit, Absence, Tardy scores, or possibly illegal beancan,' };
 
