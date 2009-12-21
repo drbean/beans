@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 10月 29, 16時36分24秒
+#Last Edit: 2009 10月 31, 21時54分54秒
 
 our $VERSION = 0.07;
 
@@ -364,6 +364,13 @@ The points of the players in the round.
 	    if ( $player eq 'bye' ) {
 		my $byer = $opponents->{$player};
 		$points->{$byer} = 5;
+		next;
+	    }
+	    if ( $player eq 'late' ) {
+		my $unpaired = $opponents->{$player};
+		for my $unpaired ( @$unpaired ) {
+		    $points->{$unpaired} = 1;
+		}
 		next;
 	    }
 	    if ( $player eq 'unpaired' ) {
