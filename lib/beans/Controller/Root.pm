@@ -105,11 +105,11 @@ sub grades_listing : Local {
 			my $component = $league->approach;
 			my $classwork = $grades->$component->{$playerId};
 			my $homework = $grades->homework->{$playerId};
-			my $examGrade = $grades->examGrade->{$playerId};
+			my $examPercent = $grades->examPercent->{$playerId};
 			my $grade = $grades->grades->{$playerId};
 			$classwork = $grades->sprintround($classwork);
 			$homework = $grades->sprintround($homework);
-			$examGrade = $grades->sprintround($examGrade);
+			$examPercent = $grades->sprintround($examPercent);
 			$grade = $grades->sprintround($grade);
 			$c->stash->{league} = $leagueId;
 			$c->stash->{id} = $playerId;
@@ -120,7 +120,7 @@ sub grades_listing : Local {
 			$c->stash->{total} = $total;
 			$c->stash->{classwork} = $classwork;
 			$c->stash->{homework} = $homework;
-			$c->stash->{exams} = $examGrade;
+			$c->stash->{exams} = $examPercent;
 			$c->stash->{grade} = $grade;
 		}
 	}
