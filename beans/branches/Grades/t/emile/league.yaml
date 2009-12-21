@@ -12,6 +12,8 @@ member:
     name: Rousseau
   - id: 222
     name: Therese
+  - id: 223
+    name: therese
 absent:
   - None
 series:
