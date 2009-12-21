@@ -4,6 +4,9 @@ use strict;
 use warnings;
 use parent 'Catalyst::Controller';
 
+use lib 'lib/beans';
+use Homework;
+
 =head1 NAME
 
 beans::Controller::Homework - Catalyst Controller
@@ -45,6 +48,11 @@ Calculate homework score for one player using Moose homework script.
 
 sub list : Local {
 	my ($self, $c) = @_;
+	my $params = $c->request->params;
+	my $league = $params->{league};
+	my $player = $params->{player};
+	my $id = $params->{id};
+$DB::single=1;
 	$c->stash->{player} = "DrBean";
 	$c->stash->{id} = "DrBean";
 	my @weeks = (
