@@ -111,6 +111,7 @@ sub listing : Local {
 			$c->stash->{homework} = $homework;
 			$c->stash->{exams} = $examPercent;
 			$c->stash->{grade} = $grade;
+			$c->stash->{template} = 'grades_listing.tt2';
 		}
 	}
 }
