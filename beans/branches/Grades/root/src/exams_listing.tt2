@@ -3,7 +3,7 @@
 
 <table>
 <tr><th>Class<th>Name<th>ID<th>Exams:[% FOREACH exam IN exams %]
-    <th>[% exam.name %][% END %]
+    <th>[% exam.name.substr(4) %][% END %]
 <th>Total Score<th>Grade</tr>
   <tr>
     <td>[% league %]</td>
@@ -11,7 +11,8 @@
     <td>[% id %]</td>
     <td>
 [% FOREACH exam IN exams -%]
-    <td>[% exam.grade %]</td>
+    <td><a href=
+"[% c.uri_for('raw/') _ league _ '/' _ id _ '/' _ player _ '/' _ exam.name %]">[% exam.grade %]</a>
 [% END -%]
     <td>[% total %]</td>
     <td>[% percent %]</td>

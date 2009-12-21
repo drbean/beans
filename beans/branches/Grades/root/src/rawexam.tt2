@@ -1,0 +1,21 @@
+[% # Provide a title to root/lib/site/header -%]
+[% META title = 'Raw exam scores' -%]
+
+<h2>[% league %] League</h2>
+<h3>Exam: [% examId.substr(4) %]</h3>
+<h4>Group: [% group %] </h4>
+<table>
+<tr align=center><th>Role <th>Name <th>Correct
+[% FOREACH member IN scores %]
+  <tr align=center>
+    <td>[% member.role %]
+    <td>[% member.name %]
+    <td>[% member.score %]
+[% END -%]
+  </tr>
+</table>
+
+<h4>Total: [% total %] </h4>
+<h4>Grade: [% grade %] </h4>
+
+
