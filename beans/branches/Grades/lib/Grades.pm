@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 11月 15, 11時46分50秒
+#Last Edit: 2009 11月 18, 13時41分39秒
 
 our $VERSION = 0.07;
 
@@ -481,26 +481,26 @@ The points of the players in the given conversation.
 	my $correct = $self->correct( $round );
 	my $points;
 	for my $player ( keys %$opponents ) {
-	    if ( $player eq 'bye' ) {
+	    if ( $player =~ m/bye/i ) {
 		my $byer = $opponents->{$player};
 		$points->{$byer} = 5;
 		next;
 	    }
-	    if ( $player eq 'late' ) {
+	    if ( $player =~ m/late/i ) {
 		my $unpaired = $opponents->{$player};
 		for my $unpaired ( @$unpaired ) {
 		    $points->{$unpaired} = 1;
 		}
 		next;
 	    }
-	    if ( $player eq 'unpaired' ) {
+	    if ( $player =~ m/unpaired/i ) {
 		my $unpaired = $opponents->{$player};
 		for my $unpaired ( @$unpaired ) {
 		    $points->{$unpaired} = 0;
 		}
 		next;
 	    }
-	    if ( $player eq 'transfer' ) {
+	    if ( $player =~ m/transfer/i ) {
 		my $transfer = $opponents->{$player};
 		for my $transfer ( @$transfer ) {
 		    my $leagueId = $transfer->{league};
@@ -551,6 +551,7 @@ The total over the conversations over the series.
 	for my $round ( @$rounds ) {
 	    my $points = $self->points( $round );
 	    for my $id ( @ids ) {
+		    next unless defined $points->{$id};
 		$totals->{$id} += $points->{$id};
 	    }
 	}
