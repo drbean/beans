@@ -170,6 +170,47 @@ sub classwork_listing : Local {
 	}
 }
 
+=head2 exams_listing
+
+Calculate exams score for one player using Moose exams script.
+
+=cut
+
+sub exams_listing : Local {
+	my ($self, $c) = @_;
+	my $params = $c->request->params;
+	my $leagueId = $params->{league} || $c->request->args->[0];
+	my $playerId = $params->{id} || $c->request->args->[1];
+	my $player = $params->{player} || $c->request->args->[2];
+	my $league = League->new( id => "/home/drbean/class/$leagueId" );
+	my $work = Grades->new( league => $league );
+	if ( $league and $league->is_member($playerId) )
+	{
+		my $playerobj = Player->new(league => $league, id => $playerId);
+		if ( $player eq $playerobj->name ) {
+			$c->stash->{league} = $leagueId;
+			$c->stash->{player} = $player;
+			$c->stash->{id} = $playerId;
+			my ($weeks, @grades, %raw, $classwork);
+			my $exams = $work->examResults->{$playerId};
+			my $examGrade = $work->examGrade->{$playerId};
+			$examGrade = $work->sprintround($examGrade);
+			my $examPercent = $work->examPercent->{$playerId};
+			$examPercent = $work->sprintround($examPercent);
+			my @names = qw/I II III IV/;
+			my $max = $work->examMax;
+			my @exams = map { {	name => $names[$_],
+						grade => $work->sprintround(
+							$exams->[$_]) . "/$max"
+					} } 0..$#$exams;
+			$c->stash->{exams} = \@exams;
+			$c->stash->{total} = $examGrade;
+			$c->stash->{percent} = $examPercent;
+			$c->stash->{weeks} = \@grades;
+		}
+	}
+}
+
 =head2 grades
 
 Request a listing of grades
@@ -211,14 +252,8 @@ sub grades_listing : Local {
 			my $grade = $grades->grades($component)->{$playerId};
 			$classwork = $grades->sprintround($classwork);
 			$homework = $grades->sprintround($homework);
+			$examGrade = $grades->sprintround($examGrade);
 			$grade = $grades->sprintround($grade);
-			my $exams = $grades->examResults->{$playerId};
-			my @names = qw/I II III IV/;
-			my $max = $grades->examMax;
-			my @exams = map { {	name => $names[$_],
-						grade => $grades->sprintround(
-							$exams->[$_]) . "/$max"
-					} } 0..$#$exams;
 			$c->stash->{league} = $leagueId;
 			$c->stash->{id} = $playerId;
 			$c->stash->{player} = $name;
@@ -228,7 +263,7 @@ sub grades_listing : Local {
 			$c->stash->{total} = $total;
 			$c->stash->{classwork} = $classwork;
 			$c->stash->{homework} = $homework;
-			$c->stash->{exams} = \@exams;
+			$c->stash->{exams} = $examGrade;
 			$c->stash->{grade} = $grade;
 		}
 	}
