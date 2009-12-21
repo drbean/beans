@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 12月 17, 16時31分22秒
+#Last Edit: 2009 12月 19, 18時05分30秒
 
 our $VERSION = 0.07;
 
@@ -768,11 +768,10 @@ The points of the players in the given conversation.
 		next;
 	    }
 	    my $opponent = $opponents->{$player};
-	    my $opponentopponent = $opponents->{$opponent};
-	    my $test = $opponent and $opponentopponent and
-		$player eq $opponentopponent;
-	    die "$test test: ${player}'s opponent is $opponent, but
-		${opponent}'s opponent is $opponentopponent" unless $test;
+	    my $alterego = $opponents->{$opponent};
+	    die
+"${player}'s opponent is $opponent, but ${opponent}'s opponent is $alterego"
+		unless $opponent and $opponentopponent and $player eq $alterego;
 	    die "No $player quiz card in round $round?" unless exists
 		$correct->{$player};
 	    my $ourcorrect = $correct->{$player};
