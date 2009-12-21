@@ -342,7 +342,7 @@ $name,  $id,	@indgrades, $grade, $percent
 format WEEKS11 =
 @<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
 $name,  $id,	@indgrades, $grade, $percent
-.
+$.
 format WEEKS12 =
 @<<<<<< @<<<<<<< @<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<@<<   @<<<<<   @<<
 $name,  $id,	@indgrades, $grade, $percent
