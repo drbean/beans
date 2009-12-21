@@ -125,6 +125,7 @@ sub classwork_listing : Local {
 			my $name = $player;
 			my $weeks = $work->allweeks;
 			my @grades;
+			die "@$weeks" unless @$weeks;
 			for my $week ( @$weeks ) {
 				my $group = $work->name2beancan($week, $name);
 				my $grade = $league->sprintround($work->work2grades($week)->{$group});
