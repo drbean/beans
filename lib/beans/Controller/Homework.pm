@@ -23,7 +23,7 @@ Pulling homework actions into own controller.
 
 =head2 listing
 
-Calculate homework score for one player using Moose homework script.
+Calculate homework scores for one player using Moose homework script.
 
 =cut
 
