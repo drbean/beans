@@ -71,7 +71,7 @@ sub raw : Local {
 	my $leagueId = $params->{league} || $c->request->args->[0];
 	my $playerId = $params->{id} || $c->request->args->[1];
 	my $playerName = $params->{player} || $c->request->args->[2];
-	my $round = $params->{player} || $c->request->args->[3];
+	my $round =                      $c->request->args->[3];
 	my $league = League->new( id => "/home/drbean/class/$leagueId" );
 	my $work = Grades->new( league => $league );
 	if ( $league and $league->is_member($playerId) )
