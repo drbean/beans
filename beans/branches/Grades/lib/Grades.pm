@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 12月 11, 10時54分14秒
+#Last Edit: 2009 12月 12, 18時50分51秒
 
 our $VERSION = 0.07;
 
@@ -529,6 +529,121 @@ The responses of the members of the given group in the given exam (as an anon ha
 	my $responses = $self->inspect( "$examdir/response.yaml" );
 	return $responses->{$group};
     }
+
+=head3 examConfig
+
+The round.yaml file with data about the given (sub)exam.
+
+=cut
+
+	method examConfig (Str $examId) {
+		my $leagueId = $self->league->id;
+		my $examdir = "$leagueId/$examId";
+		my $round = $self->inspect( "$examdir/round.yaml" );
+	}
+
+=head3 examGroups
+
+A hash ref of all the groups in the exam and the names of members of the groups, keyed on groupnames. There may be duplicated names if one player did the exam twice as an 'assistant' for a group with not enough players, and missing names if a player did not do the exam.
+
+=cut
+
+	method examGroups (Str $examId) {
+		my $round = $self->examConfig( $examId );
+		$round->{group};
+	}
+
+=head3 roles
+
+At the moment, just A .. D.
+
+=cut
+
+	has 'roles' => (is => 'ro', isa => 'ArrayRef[Str]',
+	    default => sub { [ qw/A B C D/ ] } );
+
+
+=head3 assistants
+
+A array ref of all the players in the (sub)exam who did it twice to 'assist' groups with not enough (or absent) players, or individuals with no groups, or to do exams with people who arrived late.
+
+=cut
+
+	method assistants (Str $examId) {
+		my $round = $self->examConfig( $examId );
+		$round->{assistants};
+	}
+
+=head3 examGroupMembers
+
+An hash ref of the names of the members of the given group in the given exam, keyed on the roles, A..D.
+
+=cut
+
+	method examGroupMembers (Str $examId, Str $group) {
+		my $groups = $self->examGroups( $examId );
+		my $members = $groups->{$group};
+	}
+
+=head3 examGroupRole
+
+An hash ref of the roles of the members of the given group in the given exam, keyed on the name of the player.
+
+=cut
+
+	method examGroupRole (Str $examId, Str $group) {
+		my $members = $self->examGroupMembers( $examId, $group );
+		my %roles = reverse %$members;
+		return \%roles;
+	}
+
+=head3 id2examGroupRole
+
+An hash ref of the roles of the members of the given group in the given exam, keyed on the id of the player.
+
+=cut
+
+	method id2examGroupRole (Str $examId, Str $group) {
+		my $member = $self->examGroupMembers( $examId, $group );
+		my %idedroles = map { $self->league->ided($member->{$_}) => $_ }
+						keys %$member;
+		return \%idedroles;
+	}
+
+=head3 name2examGroup
+
+An array ref of the group(s) to which the given name belonged in the given exam. Normally, the array ref has only one element. But if the player was an assistant an array ref of more than one group is returned. If the player did not do the exam, no groups are returned.
+
+=cut
+
+	method name2examGroup (Str $examId, Str $name) {
+		my $groups = $self->examGroups( $examId );
+		my @memberships;
+		for my $id ( keys %$groups ) {
+			my $group = $groups->{$id};
+			my @members = values %$group;
+			push @memberships, $id if any { $_ eq $name } @members;
+		}
+		return \@memberships;
+	}
+
+=head3 rawExamScores
+
+TODO
+
+=cut
+
+	method rawExamScores (Str $examId, Str $group) {
+		my $leagueId = $self->league->id;
+		my $examdir = "$leagueId/$examId";
+		my $data = $self->inspect( "$examdir/scores.yaml" );
+		my $groupdata = $data->{letters}->{$group};
+		my $ids = $self->idsbyRole( $examId, $group );
+		my @roles = grep { my $id = $_; any { $_ eq $id } @$ids } keys %$groupdata;
+		my %scores;
+		@scores{@roles} = @{$groupdata}{@roles};
+		return \%scores;
+	}
 
 }
 
@@ -1309,121 +1424,6 @@ A hash ref of the ids of the players and their total score on exams, expressed a
 		+{ map { my $numbers=$grades->{$_};
 			$_ => sum(@$numbers)/@{$numbers} }
 					keys %$grades };
-	}
-
-=head3 examConfig
-
-The round.yaml file with data about the given (sub)exam.
-
-=cut
-
-	method examConfig (Str $examId) {
-		my $leagueId = $self->league->id;
-		my $examdir = "$leagueId/$examId";
-		my $round = $self->inspect( "$examdir/round.yaml" );
-	}
-
-=head3 examGroups
-
-A hash ref of all the groups in the exam and the names of members of the groups, keyed on groupnames. There may be duplicated names if one player did the exam twice as an 'assistant' for a group with not enough players, and missing names if a player did not do the exam.
-
-=cut
-
-	method examGroups (Str $examId) {
-		my $round = $self->examConfig( $examId );
-		$round->{group};
-	}
-
-=head3 roles
-
-At the moment, just A .. D.
-
-=cut
-
-	has 'roles' => (is => 'ro', isa => 'ArrayRef[Str]',
-	    default => sub { [ qw/A B C D/ ] } );
-
-
-=head3 assistants
-
-A array ref of all the players in the (sub)exam who did it twice to 'assist' groups with not enough (or absent) players, or individuals with no groups, or to do exams with people who arrived late.
-
-=cut
-
-	method assistants (Str $examId) {
-		my $round = $self->examConfig( $examId );
-		$round->{assistants};
-	}
-
-=head3 examGroupMembers
-
-An hash ref of the names of the members of the given group in the given exam, keyed on the roles, A..D.
-
-=cut
-
-	method examGroupMembers (Str $examId, Str $group) {
-		my $groups = $self->examGroups( $examId );
-		my $members = $groups->{$group};
-	}
-
-=head3 examGroupRole
-
-An hash ref of the roles of the members of the given group in the given exam, keyed on the name of the player.
-
-=cut
-
-	method examGroupRole (Str $examId, Str $group) {
-		my $members = $self->examGroupMembers( $examId, $group );
-		my %roles = reverse %$members;
-		return \%roles;
-	}
-
-=head3 id2examGroupRole
-
-An hash ref of the roles of the members of the given group in the given exam, keyed on the id of the player.
-
-=cut
-
-	method id2examGroupRole (Str $examId, Str $group) {
-		my $member = $self->examGroupMembers( $examId, $group );
-		my %idedroles = map { $self->league->ided($member->{$_}) => $_ }
-						keys %$member;
-		return \%idedroles;
-	}
-
-=head3 name2examGroup
-
-An array ref of the group(s) to which the given name belonged in the given exam. Normally, the array ref has only one element. But if the player was an assistant an array ref of more than one group is returned. If the player did not do the exam, no groups are returned.
-
-=cut
-
-	method name2examGroup (Str $examId, Str $name) {
-		my $groups = $self->examGroups( $examId );
-		my @memberships;
-		for my $id ( keys %$groups ) {
-			my $group = $groups->{$id};
-			my @members = values %$group;
-			push @memberships, $id if any { $_ eq $name } @members;
-		}
-		return \@memberships;
-	}
-
-=head3 rawExamScores
-
-TODO
-
-=cut
-
-	method rawExamScores (Str $examId, Str $group) {
-		my $leagueId = $self->league->id;
-		my $examdir = "$leagueId/$examId";
-		my $data = $self->inspect( "$examdir/scores.yaml" );
-		my $groupdata = $data->{letters}->{$group};
-		my $ids = $self->idsbyRole( $examId, $group );
-		my @roles = grep { my $id = $_; any { $_ eq $id } @$ids } keys %$groupdata;
-		my %scores;
-		@scores{@roles} = @{$groupdata}{@roles};
-		return \%scores;
 	}
 
 }
