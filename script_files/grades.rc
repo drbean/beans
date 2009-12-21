@@ -1,0 +1,3 @@
+use Grades;
+my $l = League->new( id => '../GL00029' );
+my $g = Grades->new( league => $l );
