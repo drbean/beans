@@ -5,7 +5,7 @@ use warnings;
 use parent 'Catalyst::Controller';
 
 use lib 'lib';
-use Bean;
+use Grades;
 use List::Util qw/sum/;
 
 #
@@ -74,22 +74,25 @@ sub homework_listing : Local {
 	my $leagueId = $params->{league};
 	my $playerName = $params->{player};
 	my $playerId = $params->{id};
-	my $league = League->new( leagueId => "/home/drbean/class/$leagueId" );
-	my $work = Homework->new( league => $league );
+	my $league = League->new( id => "/home/drbean/class/$leagueId" );
+	my $work = Grades->new( league => $league );
 	if ( $league and $league->is_member($playerId) )
 	{
 		my $player = Player->new( league => $league, id => $playerId );
 		if ( $playerName eq $player->name ) {
-			my $rounds = $work->rounds;
-			my $grades = $work->hwforid($playerId);
 			$c->stash->{league} = $leagueId;
 			$c->stash->{player} = $playerName;
 			$c->stash->{id} = $playerId;
-			$c->stash->{weeks} = [ map { { name => $rounds->[$_],
-				score => $grades->[$_] } } 0..$#$grades ];
-			$c->stash->{total} = $work->total($playerId);
-			$c->stash->{percent} = $league->sprintround(
-						$work->percent($playerId) );
+			my $rounds = $work->rounds;
+			my $grades = $work->hwforid($playerId);
+			my %grades;
+			@grades{ @$rounds } = @$grades;
+			my @weeks = map { { name => $_, score => $grades{$_} } }
+				sort keys %grades;
+			$c->stash->{weeks} = \@weeks;
+			$c->stash->{total} = $work->totalMax;
+			my $percent = $work->homework->{$playerId};
+			$c->stash->{percent} = $work->sprintround( $percent );
 		}
 	}
 }
@@ -116,31 +119,52 @@ sub classwork_listing : Local {
 	my $leagueId = $params->{league};
 	my $player = $params->{player};
 	my $playerId = $params->{id};
-	my $league = League->new( leagueId => "/home/drbean/class/$leagueId" );
-	my $work = Classwork->new( league => $league );
+	my $league = League->new( id => "/home/drbean/class/$leagueId" );
+	my $work = Grades->new( league => $league );
 	if ( $league and $league->is_member($playerId) )
 	{
 		my $playerobj = Player->new(league => $league, id => $playerId);
 		if ( $player eq $playerobj->name ) {
-			my $name = $player;
-			my $weeks = $work->allweeks;
-			my @grades;
-			for my $week ( @$weeks ) {
-				my $group = $work->name2beancan($week, $name);
-				my $grade = $league->sprintround($work->work2grades($week)->{$group});
-				push @grades, {
-					name => $week,
-					grade => $grade};
-			}
-			my $lastweek = $weeks->[-1];
-			my $lastgrp = $work->name2beancan($lastweek, $player);
-			my $merit = $work->meritDemerit($lastweek)->{$lastgrp};
-			$grades[-1]->{name} .= "(Merits)";
 			$c->stash->{league} = $leagueId;
-			$c->stash->{player} = $name;
+			$c->stash->{player} = $player;
 			$c->stash->{id} = $playerId;
-			$c->stash->{percent} = sum(map { $_->{grade} } @grades);
-			$grades[-1]->{grade} .= "($merit)";
+			my ($weeks, @grades, %raw, $classwork);
+			if ( $leagueId =~ m/^GL000/ or $leagueId eq 'FLA0016' )
+			{
+				$weeks = $work->conversations;
+				@grades = map { {
+					name=> $_,
+					grade => $work->sprintround(
+						$work->points($_)->{$playerId})
+						} } @$weeks;
+				my $lastweek = $weeks->[-1];
+				my $correct = $work->correct($lastweek)
+								->{$playerId};
+				%raw = ( name => 'Correct', score => $correct );
+				$classwork = $work->compwork->{$playerId};
+			}
+			else {
+				$weeks = $work->allweeks;
+	                        for my $week ( @$weeks ) {
+					my $group = $work->name2beancan(
+								$week, $player);
+					my $grade = $work->sprintround($work
+						->work2grades($week)->{$group});
+					push @grades,
+						{ name=>$week, grade=>$grade};
+				}
+				my $lastweek = $weeks->[-1];
+				my $lastgrp = $work->name2beancan(
+							$lastweek, $player);
+				my $merit = $work->meritDemerit($lastweek)->
+							{$lastgrp};
+				%raw = ( name => "Merits", score => $merit );
+				$classwork = $work->classwork->{$playerId};
+                        }
+			$grades[-1]->{name} .= "($raw{name})";
+			$classwork = $work->sprintround($classwork);
+			$c->stash->{percent} = $classwork;
+			$grades[-1]->{grade} .= "($raw{score})";
 			$c->stash->{weeks} = \@grades;
 		}
 	}
@@ -168,33 +192,41 @@ sub grades_listing : Local {
 	my $leagueId = $params->{league};
 	my $player = $params->{player};
 	my $playerId = $params->{id};
-	my $league = League->new( leagueId => "/home/drbean/class/$leagueId" );
+	my $league = League->new( id => "/home/drbean/class/$leagueId" );
 	my $grades = Grades->new( league => $league );
 	if ( $league and $league->is_member($playerId) )
 	{
 		my $playerobj = Player->new(league => $league, id => $playerId);
 		if ( $player eq $playerobj->name ) {
 			my $name = $player;
-			my $classwork = $grades->classwork->{$playerId};
+			my $classwork;
+			if ( $leagueId =~ m/^GL000/ or $leagueId eq 'FLA0016' )
+			{
+				$classwork = $grades->compwork->{$playerId};
+			}
+			else { $classwork = $grades->classwork->{$playerId}; }
 			my $homework = $grades->homework->{$playerId};
 			my $examGrade = $grades->examGrade->{$playerId};
 			my $weights = $grades->weights;
-			my $total = sum @$weights;
-			my $grade = ( $classwork*$weights->[0] +
-				$homework*$weights->[1] +
-				$examGrade*$weights->[2] ) / $total;
-			$classwork = $league->sprintround($classwork);
-			$homework = $league->sprintround($homework);
+			my $total = sum values %$weights;
+			my $grade = ( $classwork*$weights->{classwork} +
+				$homework*$weights->{homework} +
+				$examGrade*$weights->{exams} ) / $total;
+			$classwork = $grades->sprintround($classwork);
+			$homework = $grades->sprintround($homework);
 			my $exams = $grades->examResults->{$playerId};
 			my @names = qw/I II III IV/;
+			my $max = $grades->examMax;
 			my @exams = map { {	name => $names[$_],
-						grade => $league->sprintround( $exams->[$_] )
+						grade => $grades->sprintround(
+							$exams->[$_]) . "/$max"
 					} } 0..$#$exams;
-			$grade = $league->sprintround($grade);
+			$grade = $grades->sprintround($grade);
 			$c->stash->{league} = $leagueId;
 			$c->stash->{player} = $name;
 			$c->stash->{id} = $playerId;
 			$c->stash->{weight} = $weights;
+			$c->stash->{total} = $total;
 			$c->stash->{classwork} = $classwork;
 			$c->stash->{homework} = $homework;
 			$c->stash->{exams} = \@exams;
