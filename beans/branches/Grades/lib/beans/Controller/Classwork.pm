@@ -42,7 +42,7 @@ sub listing : Local {
 			$c->stash->{player} = $player;
 			$c->stash->{id} = $playerId;
 			my ($weeks, @grades, $classwork);
-			if ( $leagueId =~ m/^GL000/ or $leagueId eq 'FLA0016' )
+			if ( $league->approach eq "compwork" )
 			{
 				$weeks = $work->conversations;
 				@grades = map { {
@@ -62,7 +62,7 @@ sub listing : Local {
 					push @grades,
 						{ name=>$week, grade=>$grade};
 				}
-				$classwork = $work->classwork->{$playerId};
+				$classwork = $work->groupwork->{$playerId};
                         }
 			$classwork = $work->sprintround($classwork);
 			$c->stash->{percent} = $classwork;
