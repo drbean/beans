@@ -15,7 +15,7 @@
     <td>[% quiz.$n.question %]
     <td>[% theanswer = quiz.$n.answer %][% theanswer %]
     [% FOREACH id IN ids %]
-    <td>[% IF responses.$id.$r == codedvalues.$theanswer %]✓ [% ELSE %] ✘[% END %]
+    <td>[% IF responses.$id.$r == codedvalues.$theanswer %]o [% ELSE %]X [% END %]
     [% END %]
   </tr>
 [% END -%]
