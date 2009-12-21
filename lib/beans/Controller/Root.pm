@@ -104,7 +104,7 @@ sub grades_listing : Local {
 			my $name = $player;
 			my $component = $league->approach;
 			my $classwork = $grades->$component->{$playerId};
-			my $homework = $grades->homework->{$playerId};
+			my $homework = $grades->homeworkPercent->{$playerId};
 			my $examPercent = $grades->examPercent->{$playerId};
 			my $grade = $grades->grades->{$playerId};
 			$classwork = $grades->sprintround($classwork);
