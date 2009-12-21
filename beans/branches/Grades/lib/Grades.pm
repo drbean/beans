@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 12月 09, 16時10分46秒
+#Last Edit: 2009 12月 10, 10時22分50秒
 
 our $VERSION = 0.07;
 
@@ -1334,6 +1334,16 @@ A hash ref of all the groups in the exam and the names of members of the groups,
 		$round->{group};
 	}
 
+=head3 roles
+
+At the moment, just A .. D.
+
+=cut
+
+	has 'roles' => (is => 'ro', isa => 'ArrayRef[Str]',
+	    default => sub { [ qw/A B C D/ ] } );
+
+
 =head3 assistants
 
 A array ref of all the players in the (sub)exam who did it twice to 'assist' groups with not enough (or absent) players, or individuals with no groups, or to do exams with people who arrived late.
@@ -1398,18 +1408,22 @@ An array ref of the group(s) to which the given name belonged in the given exam.
 		return \@memberships;
 	}
 
-=head3 rawExamscores
+=head3 rawExamScores
 
 TODO
 
 =cut
 
-
-	method rawExamscores (Str $examId, Str $group) {
+	method rawExamScores (Str $examId, Str $group) {
 		my $leagueId = $self->league->id;
 		my $examdir = "$leagueId/$examId";
-		my $scores = $self->inspect( "$examdir/scores.yaml" );
-		return $scores->{letters}->{$group};
+		my $data = $self->inspect( "$examdir/scores.yaml" );
+		my $groupdata = $data->{letters}->{$group};
+		my $ids = $self->idsbyRole( $examId, $group );
+		my @roles = grep { my $id = $_; any { $_ eq $id } @$ids } keys %$groupdata;
+		my %scores;
+		@scores{@roles} = @{$groupdata}{@roles};
+		return \%scores;
 	}
 
 }
