@@ -22,7 +22,6 @@ use YAML qw/LoadFile DumpFile/;
 use List::MoreUtils qw/any/;
 
 extends 'Script';
-use Cwd;
 
 has 'yaml' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 sub _build_yaml {
