@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009  9月 13, 21時57分39秒
+#Last Edit: 2009 10月 09, 17時48分41秒
 
 our $VERSION = 0.07;
 
@@ -8,16 +8,16 @@ use MooseX::Declare;
 
 package Grades::Script;
 use Moose;
-use MooseX::Getopt;
+with 'MooseX::Getopt';
 
 has 'man' => (is => 'ro', isa => 'Bool');
 has 'help' => (is => 'ro', isa => 'Bool');
-has 'league' => (traits => ['Getopt'], is => 'ro', isa => 'Str',
-		cmd_aliases => 'l',);
-has 'weights' => (traits => ['Getopt'], is => 'ro', isa => 'Str',
-		cmd_aliases => 'w',);
-has 'player' => (traits => ['Getopt'], is => 'ro', isa => 'Str',
-		cmd_aliases => 'p',);
+has 'league' => (metaclass => 'Getopt', is => 'ro', isa => 'Str',
+		cmd_flag => 'l',);
+has 'weights' => (metaclass => 'Getopt', is => 'ro', isa => 'Str',
+		cmd_flag => 'w',);
+has 'player' => (metaclass => 'Getopt', is => 'ro', isa => 'Str',
+		cmd_flag => 'p',);
 
 package Grades;
 
@@ -447,7 +447,7 @@ A hashref of names of members of beancans (players) and the beancans they were m
 		\%beancansreversed;
 	}
 
-=head3 names2beancans
+=head3 name2beancan
 
 Given the name of a player, the name of the beancan they were a member of in the given week.
 
@@ -890,7 +890,7 @@ no Moose;
 
 __PACKAGE__->meta->make_immutable;
 
-1;    # End of Grades::Types
+1;    # End of Grades
 
 =head1 AUTHOR
 
