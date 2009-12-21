@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 12月 19, 18時05分30秒
+#Last Edit: 2009 12月 19, 19時08分19秒
 
 our $VERSION = 0.07;
 
@@ -767,17 +767,17 @@ The points of the players in the given conversation.
 		$points->{$player} = $oldgrades->points($round)->{$player};
 		next;
 	    }
-	    my $opponent = $opponents->{$player};
-	    my $alterego = $opponents->{$opponent};
+	    my $other = $opponents->{$player};
+	    my $alterego = $opponents->{$other};
 	    die
-"${player}'s opponent is $opponent, but ${opponent}'s opponent is $alterego"
-		unless $opponent and $opponentopponent and $player eq $alterego;
+"${player}'s opponent is $other, but ${other}'s opponent is $alterego"
+		unless $other and $alterego and $player eq $alterego;
 	    die "No $player quiz card in round $round?" unless exists
 		$correct->{$player};
 	    my $ourcorrect = $correct->{$player};
-	    die "No $opponent card against $player?" unless
-		exists $correct->{$opponent};
-	    my $theircorrect = $correct->{$opponent};
+	    die "No $other card against $player?" unless
+		exists $correct->{$other};
+	    my $theircorrect = $correct->{$other};
 	    if ( not defined $ourcorrect ) {
 		$points->{$player} = 0;
 		next;
@@ -1307,7 +1307,7 @@ role Exams {
 
 =head3 examids
 
-The ids of the exams, as specified as a sequence in 'league.yaml'.
+The ids of the exams, as specified as a sequence (or mapping) in 'league.yaml'. Make it a mapping if one or more exams is conducted over a series of rounds. In this case make the keys in examids sortable in some sensible order. It is assumed the rounds are in appropriately-named subdirs of the exam dir.
 
 =cut
 
@@ -1319,7 +1319,7 @@ The ids of the exams, as specified as a sequence in 'league.yaml'.
 
 =head3 examdir
 
-The directory in which results for the given exam exist.
+The directory in which results for the given exam (exam plus round) exist, below the leagueId dir.
 
 =cut
 
@@ -1330,7 +1330,7 @@ The directory in which results for the given exam exist.
 
 =head3 examdirs
 
-The directories in which exam results exist, returned as an array ref.
+The directories in which exam results exist, returned as an array ref of strings or, or as an hash ref, 
 
 =cut
 
@@ -1343,13 +1343,14 @@ The directories in which exam results exist, returned as an array ref.
 		}
 		elsif ( ref $exams eq 'HASH' ) {
 		    my  @dirs;
-		    for my $id ( keys %$exams ) {
+		    for my $id ( sort keys %$exams ) {
 			my $rounds = $exams->{$id};
-			if ( not defined $rounds ) {
+			if ( ref $rounds ne 'ARRAY' ) {
 			    push @dirs, $self->examdir($id);
 			}
 			else {
-			    my @rounds = map { $self->examdir($_) } @$rounds;
+			    my @subdirs = map { "$id/$_" } @$rounds;
+			    my @rounds = map { $self->examdir($_) } @subdirs;
 			    push @dirs, \@rounds;
 			}
 		    }
