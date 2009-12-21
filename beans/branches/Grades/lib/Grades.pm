@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 11月 09, 18時00分02秒
+#Last Edit: 2009 11月 10, 15時08分38秒
 
 our $VERSION = 0.07;
 
@@ -1160,7 +1160,7 @@ A hashref of student ids and final grades.
 		my $homework = $self->homework;
 		my $classcomponent = $league->approach;
 		my $classwork = $self->$classcomponent;
-		my $exams = $self->examGrade;
+		my $exams = $self->examPercent;
 		my @ids = map { $_->{id} } @$members;
 		my $weights = $self->weights;
 		my %grades = map { $_ => $self->sprintround(
