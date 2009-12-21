@@ -100,7 +100,7 @@ A possibly undefined list of Member.
 
 subtype Members,
 	as ArrayRef [Member],
-	message { 'League members are hashrefs with name, id keys' };
+	message { 'Probably undefined or illegal PlayerNames or PlayerIds,' };
 
 =head2 HomeworkResults
 
