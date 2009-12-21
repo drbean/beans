@@ -62,41 +62,6 @@ sub homework : Local {
 	my ($self, $c) = @_;
 }
 
-=head2 homework_listing
-
-Calculate homework score for one player using Moose homework script.
-
-=cut
-
-sub homework_listing : Local {
-	my ($self, $c) = @_;
-	my $params = $c->request->params;
-	my $leagueId = $params->{league} || $c->request->args->[0];
-	my $playerId = $params->{id} || $c->request->args->[1];
-	my $playerName = $params->{player} || $c->request->args->[2];
-	my $league = League->new( id => "/home/drbean/class/$leagueId" );
-	my $work = Grades->new( league => $league );
-	if ( $league and $league->is_member($playerId) )
-	{
-		my $player = Player->new( league => $league, id => $playerId );
-		if ( $playerName eq $player->name ) {
-			$c->stash->{league} = $leagueId;
-			$c->stash->{player} = $playerName;
-			$c->stash->{id} = $playerId;
-			my $rounds = $work->rounds;
-			my $grades = $work->hwforid($playerId);
-			my %grades;
-			@grades{ @$rounds } = @$grades;
-			my @weeks = map { { name => $_, score => $grades{$_} } }
-				sort keys %grades;
-			$c->stash->{weeks} = \@weeks;
-			$c->stash->{total} = $work->totalMax;
-			my $percent = $work->homework->{$playerId};
-			$c->stash->{percent} = $work->sprintround( $percent );
-		}
-	}
-}
-
 =head2 classwork
 
 Request a listing of classwork results
