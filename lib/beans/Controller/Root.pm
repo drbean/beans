@@ -142,16 +142,11 @@ sub grades_listing : Local {
 		my $playerobj = Player->new(league => $league, id => $playerId);
 		if ( $player eq $playerobj->name ) {
 			my $name = $player;
-			my $component;
-			if ( $leagueId =~ m/^GL000/ or $leagueId eq 'FLA0016' )
-			{
-				$component = "compwork";
-			}
-			else { $component = "classwork"; }
+			my $component = $league->approach;
 			my $classwork = $grades->$component->{$playerId};
 			my $homework = $grades->homework->{$playerId};
 			my $examGrade = $grades->examGrade->{$playerId};
-			my $grade = $grades->grades($component)->{$playerId};
+			my $grade = $grades->grades->{$playerId};
 			$classwork = $grades->sprintround($classwork);
 			$homework = $grades->sprintround($homework);
 			$examGrade = $grades->sprintround($examGrade);
