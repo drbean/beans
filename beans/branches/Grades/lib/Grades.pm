@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 12月 19, 21時13分16秒
+#Last Edit: 2009 12月 20, 21時56分45秒
 
 our $VERSION = 0.07;
 
@@ -1307,7 +1307,7 @@ role Exams {
 
 =head3 examids
 
-The ids of the exams, as specified as a sequence (or mapping) in 'league.yaml'. Make it a mapping if one or more exams is conducted over a series of rounds. In this case make the keys in examids sortable in some sensible order. It is assumed the rounds are in appropriately-named subdirs of the exam dir.
+The ids of the exams, as specified in 'league.yaml', either as a sequence or mapping (a mapping if one or more exams is conducted over a series of rounds.) In this latter case, name the keys in some sensible order so they can be sorted. This accessor deletes the rounds and returns an array ref of the sorted exam keys.
 
 =cut
 
@@ -1315,6 +1315,8 @@ The ids of the exams, as specified as a sequence (or mapping) in 'league.yaml'. 
 	method _build_examids {
 		my $leagueId = $self->league->id;
 		my $examids = $self->league->yaml->{exams};
+		if ( ref $examids eq 'HASH' ) { return [ sort keys %$examids ] }
+		else { return $examids }
 	}
 
 =head3 examdir
@@ -1389,36 +1391,53 @@ The maximum score possible in each individual exam. That is, what the exam is ou
 	has 'examMax' => (is => 'ro', isa => 'Int', lazy => 1, required => 1,
 			default => sub { shift->league->yaml->{examMax} } );
 
+=head3 exam
+
+    $grades->exam($id)
+
+The scores of the players on an individual (round of an) exam (in a 'g.yaml file in the $id subdir of the league dir.
+
+=cut
+
+	method exam ( Str $id ) {
+	    my $examdir = $self->examdir( $id );
+	    my $exam = $self->inspect( "$examdir/g.yaml" );
+	    if ( is_Exam($exam) ) {
+		return $exam ;
+	    }
+	    else {
+		croak
+"Exam $id probably has undefined or non-numeric Exam scores, or possibly illegal PlayerIds." ;
+	    }
+	}
+
 =head3 examResults
 
-A hash ref of the ids of the players and arrays of their results over the exam series, ie examdirs, in files named 'g.yaml', if such a file exists in all examdirs. Otherwise, calculate from raw 'response.yaml' files. Croak if any result is larger than examMax.
+A hash ref of the ids of the players and arrays of their results over the exam series, ie examids, in files named 'g.yaml', TODO but only if such a file exists in all examdirs. Otherwise, calculate from raw 'response.yaml' files. Croak if any result is larger than examMax.
 
 =cut
 
     has 'examResults' => ( is => 'ro', isa => 'HashRef', lazy_build => 1 );
     method _build_examResults {
-        my $examdirs = $self->examdirs;
-	my @gfiles = map { "$_/g.yaml" } @$examdirs;
-	if ( all { -e $_ } @gfiles ) {
-	    my @exams    = map { $self->inspect("$_/g.yaml") } @$examdirs;
+        my $examids = $self->examids;
+	my $members = $self->league->members;
+	my @playerids = map { $_->{id} } @$members;
+	my %results;
+	for my $id  ( @$examids ) {
+	    my $exam    = $self->exam( $id );
 	    my $max      = $self->examMax;
-	    my %ids;
-	    for my $n ( 0 .. $#exams ) {
-		croak "Exam " . ++$n . " probably has undefined or non-numeric Exam scores, or possibly illegal PlayerIds."
-		    unless is_Exam( $exams[$n] );
-		$ids{$_}++ for keys %{ $exams[$n] };
+	    for my $playerid ( @playerids ) {
+		my $result = $exam->{$playerid};
+		carp "No $id exam results for $playerid,"
+		  unless defined $result;
+		croak "${playerid}'s $result greater than exam max, $max"
+		  if $result > $max;
+		my $results = $results{$playerid};
+		push @$results, $result;
+		$results{$playerid} = $results;
 	    }
-	    my %results;
-	    for my $id ( keys %ids ) {
-		carp "Only $ids{$id} exam results for $id\n"
-		  unless $ids{$id} == @exams;
-		$results{$id} = [ map { $_->{$id} } @exams ];
-		my $personalMax = max( @{ $results{$id} } );
-		croak "${id}'s $personalMax greater than exam max, $max"
-		  if $personalMax > $max;
-	    }
-	    return \%results;
 	}
+	return \%results;
     }
 
 =head3 examResultHash
