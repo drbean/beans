@@ -1,5 +1,7 @@
 ---
+id: rousseau
 league: Rousseau Cram School
+field: Romanticism
 hw: t/emile/homework
 member:
   - id: S09413
@@ -10,6 +12,8 @@ member:
     name: Rousseau
   - id: 222
     name: Therese
+absent:
+  - None
 series:
   - first
   - second
@@ -26,3 +30,7 @@ weights:
   classwork: 20
   homework : 20
   exams    : 60
+conversations:
+  - compdiscussion
+  - trinka
+approach: groupwork
