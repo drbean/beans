@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 11月 10, 15時08分38秒
+#Last Edit: 2009 11月 11, 09時47分05秒
 
 our $VERSION = 0.07;
 
@@ -1016,13 +1016,13 @@ Running totals for individual ids out of 100, over the whole series.
 =cut
 
 role Exams {
-	use List::Util qw/sum/;
+	use List::Util qw/max sum/;
 	use Carp;
 	use Grades::Types qw/Exam/;
 
 =head3 examdirs
 
-The directories in which exam results exist.
+The directories in which exam results exist, returned as an array ref.
 
 =cut
 
@@ -1044,7 +1044,7 @@ The maximum score possible in each individual exam. That is, what the exam is ou
 
 =head3 examResults
 
-A hash ref of the ids of the players and arrays of their results over the exam series, ie examdirs, in files named 'g.yaml'. TODO: Croak if any result is larger than examMax.
+A hash ref of the ids of the players and arrays of their results over the exam series, ie examdirs, in files named 'g.yaml'. Croak if any result is larger than examMax.
 
 =cut
 
@@ -1052,18 +1052,24 @@ A hash ref of the ids of the players and arrays of their results over the exam s
 	method _build_examResults {
 		my $examdirs = $self->examdirs;
 		my @exams = map { $self->inspect("$_/g.yaml") } @$examdirs;
+		my $max = $self->examMax;
 		my %ids;
 		for my $n ( 0 .. $#exams ) {
 		    croak "Exam " . ++$n . " probably has undefined or non-numeric Exam scores, or possibly illegal PlayerIds."
 			    unless is_Exam( $exams[$n] );
 		    $ids{$_}++ for keys %{$exams[$n]};
 		}
+		my %results;
 		for my $id  ( keys %ids ) {
 			carp "Only $ids{$id} exam results for $id\n" unless 
 					$ids{$id} == @exams;
+			$results{$id} = [ map { $_->{$id} } @exams ];
+			my $personalMax = max( @{ $results{$id} } );
+			croak "${id}'s $personalMax greater than exam max, $max"
+				if $personalMax > $max;
+
 		}
-		+{ map { my $id=$_; $id => [ map { $_->{$id} } @exams ] }
-			keys %ids };
+		return \%results;
 	}
 
 =head3 examResultsasPercent
