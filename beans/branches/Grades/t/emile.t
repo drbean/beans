@@ -1,8 +1,9 @@
 use strict;
 use warnings;
 use Test::More;
+use FindBin qw/$Bin/;
 
-plan tests => 28;
+plan tests => 34;
 plan skip_all => 'unset env var NO_TEST to enable this test' if $ENV{NO_TEST};
 
 use lib 'lib';
@@ -67,3 +68,17 @@ is($g->totalMax, 22, 'maximum possible homework score');
 is_deeply($g->hwforid(34113), [ (0) x 11 ], 'no hw score for Emile');
 is_deeply($g->homework, { 34113 => 0, S09413 => 11 }, "Emile 0, Sophie 11");
 is_deeply($g->homeworkPercent, { 34113 => 0, S09413 => 50 }, "Emile 0%, Sophie 50%");
+
+# jigsaw
+
+is( $g->quizfile( 'exam1' ), 't/emile/activities.yaml', 'Location of exam text.');
+is( $g->topic( 'exam1', 'Brown' ), 'cars', 'Topic of exam text.');
+is( $g->form( 'exam1', 'Brown' ), 1, 'Form of exam text.');
+is( $g->qn( 'exam1', 'Brown' ), 8, 'Number of exam questions' );
+is_deeply( $g->idsbyRole( 'exam1', 'Brown' ), [ 34113, 1, 'S09413', 222 ],
+	'Ids in array, in A-D role order' );
+
+# exams
+is_deeply( $g->examdirs,
+	[ qw{t/emile/exam1 t/emile/exam2 t/emile/exam3 t/emile/exam4} ],
+		'examdirs' );
