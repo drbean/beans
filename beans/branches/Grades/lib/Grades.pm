@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 12月 10, 10時22分50秒
+#Last Edit: 2009 12月 11, 10時54分14秒
 
 our $VERSION = 0.07;
 
@@ -484,7 +484,7 @@ The quiz questions (as an anon array) in the given exam for the given group.
 	my $activity = $self->inspect( $file );
 	my $topic = $self->topic( $exam, $group );
 	my $form = $self->form( $exam, $group );
-	my $quiz = $activity->{$topic}->{$form}->{quiz};
+	my $quiz = $activity->{$topic}->{jigsaw}->{$form}->{quiz};
     }
 
 =head3 qn
