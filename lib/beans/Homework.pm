@@ -6,7 +6,7 @@ with 'MooseX::Getopt';
 
 has 'man' => (is => 'ro', isa => 'Bool');
 has 'help' => (is => 'ro', isa => 'Bool');
-has 'league' => (traits => ['Getopt'], is => 'ro', isa => 'Str',
+has 'leagueId' => (traits => ['Getopt'], is => 'ro', isa => 'Str',
 		cmd_aliases => 'l',);
 has 'player' => (traits => ['Getopt'], is => 'ro', isa => 'Str',
 		cmd_aliases => 'p',);
@@ -21,8 +21,8 @@ extends 'Script';
 has 'yaml' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 sub _build_yaml {
 		my ($instance) = @_;
-		my $league = $instance->league;
-		LoadFile "$league/league.yaml"
+		my $league = $instance->leagueId;
+		LoadFile "$league/league.yaml";
 }
 
 has 'name' => (is => 'ro', isa => 'Str', lazy_build => 1);
@@ -35,7 +35,7 @@ sub _build_name {
 has 'hwdir' => (is => 'ro', isa => 'Str', lazy_build => 1);
 sub _build_hwdir {
 	my $self = shift;
-	my $league = $self->league;
+	my $league = $self->leagueId;
 	my $data = $self->yaml;
 	my $hwdir = $data->{hw} || "$league/homework"
 }
@@ -55,6 +55,13 @@ sub _build_hw {
 }
 has 'hwMax' => (is => 'ro', isa => 'Int', lazy => 1, default =>
 				sub { shift->yaml->{hwMax} } );
+has 'totalMax' => (is => 'ro', isa => 'Int', lazy_build => 1);
+sub _build_totalMax {
+	my $self = shift;
+	my $rounds = $self->rounds;
+	my $hwMax = $self->hwMax;
+	$hwMax * @$rounds;
+}
 has 'totalScores' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 sub _build_totalScores {
 	my $self = shift;
@@ -95,6 +102,8 @@ package Player;
 use Moose;
 extends 'League';
 use List::MoreUtils qw/firstval/;
+use List::Util qw/sum/;
+use POSIX;
 
 has 'league' => (is => 'ro', isa => 'League', required => 1);
 has 'id' => (is => 'ro', isa => 'Str', required => 1);
@@ -112,9 +121,24 @@ has 'grades' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
 sub _build_grades {
 	my $self = shift;
 	my $id = $self->id;
-	my $hw = $self->hw;
-	my $rounds = $self->rounds;
+	my $league = $self->league;
+	my $hw = $league->hw;
+	my $rounds = $league->rounds;
 	[ map { $hw->{$_}->{$id} } @$rounds ];
+}
+has 'total' => (is => 'ro', isa => 'Int', lazy_build => 1);
+sub _build_total {
+	my $self = shift;
+	my $grades = $self->grades;
+	sum @$grades;
+}
+has 'percent' => (is => 'ro', isa => 'Int', lazy_build => 1);
+sub _build_percent {
+	my $self = shift;
+	my $grade = $self->total;
+	my $league = $self->league;
+	my $totalMax = $league->totalMax;
+	floor (100 * $grade / $totalMax);
 }
 
 package main;
@@ -131,11 +155,11 @@ use Pod::Usage;
 run() unless caller;
 
 sub run {
-	my $script = Script->new_with_options( league => getcwd );
+	my $script = Script->new_with_options( leagueId => getcwd );
 	pod2usage(1) if $script->help;
 	pod2usage(-exitstatus => 0, -verbose => 2) if $script->man;
-	my $leagueId = $script->league;
-	my $league = League->new( league => $leagueId ) or
+	my $leagueId = $script->leagueId;
+	my $league = League->new( leagueId => $leagueId ) or
 		die "No $leagueId league: $!";
 	my $hwMax = $league->hwMax;
 	my $rounds = $league->rounds;
@@ -157,8 +181,10 @@ sub run {
 Name        ID  @romans[@$rounds]   Total/$totalMax Grade/100
 -------------------------------------------------------------------------
 ";
-	my $members = $league->is_member( $script->player )? 
-		[ Player->new( id => $script->player, league => $league ) ]:
+	my $id = $script->player && $league->is_member($script->player)?
+				$script->player: undef;
+	my $members = $id ? 
+		[ Player->new( id => $id, league => $league ) ]:
 		$league->members;
 	foreach my $member ( @$members ) 
 	{
