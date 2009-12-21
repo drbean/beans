@@ -53,7 +53,6 @@ A string, where the first letter is upper case, there are some letters or spaces
 
 =cut
 
-# subtype PlayerName, as Str, where { $_ =~ m/^[[:alpha:]'-]+\d?$/ };
 subtype PlayerName, as Str;
 
 =head2 PlayerNames
