@@ -142,10 +142,6 @@ sub classwork_listing : Local {
 			$c->stash->{percent} = sum(map { $_->{grade} } @grades);
 			$grades[-1]->{grade} .= "($merit)";
 			$c->stash->{weeks} = \@grades;
-			$grades[-1]->{grade} .= "($merit)";
-			$c->stash->{weeks} = \@grades;
-			$grades[-1]->{grade} .= "($merit)";
-			$c->stash->{weeks} = \@grades;
 		}
 	}
 }
