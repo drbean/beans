@@ -25,7 +25,7 @@ for my $group ( keys %$groups ) {
 	my $qn = $grades->qn( $exam, $group );
 	for my $id ( @$idsbyRole ) {
 		$response->{$group}->{$id} = { map { $_ => 0 } 1 .. $qn };
-		Bless( $response->{$group}->{$id} )->keys( [0..10] );
+		Bless( $response->{$group}->{$id} )->keys( [1..10] );
 	}
 	Bless( $response->{$group} )->keys( $idsbyRole );
 }
