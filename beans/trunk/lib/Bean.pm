@@ -61,6 +61,7 @@ use List::MoreUtils qw/any/;
 
 has 'leagueId' => (is => 'ro', isa => 'Str', required => 1);
 has 'leagueId' => (is => 'ro', isa => 'Str', required => 1);
+has 'leagueId' => (is => 'ro', isa => 'Str', required => 1);
 has 'yaml' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 sub _build_yaml {
 		my ($instance) = @_;
