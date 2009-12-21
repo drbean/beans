@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 11月 18, 13時41分39秒
+#Last Edit: 2009 11月 30, 22時30分14秒
 
 our $VERSION = 0.07;
 
@@ -493,11 +493,8 @@ The points of the players in the given conversation.
 		}
 		next;
 	    }
-	    if ( $player =~ m/unpaired/i ) {
-		my $unpaired = $opponents->{$player};
-		for my $unpaired ( @$unpaired ) {
-		    $points->{$unpaired} = 0;
-		}
+	    if ( $opponents->{$player} =~ m/unpaired/i ) {
+		$points->{$player} = 0;
 		next;
 	    }
 	    if ( $player =~ m/transfer/i ) {
@@ -513,9 +510,12 @@ The points of the players in the given conversation.
 	    }
 	    my $opponent = $opponents->{$player};
 	    my $opponentopponent = $opponents->{$opponent};
-	    die "${player}'s opponent is $opponent, but
+	my $test = $opponent and $opponentopponent and $player eq $opponentopponent
+		    or $opponent =~ m/unpaired/ and not $opponentopponent;
+	    die "$test test: ${player}'s opponent is $opponent, but
 		${opponent}'s opponent is $opponentopponent" unless
-		$opponent and $opponentopponent and $player eq $opponentopponent;
+		$opponent and $opponentopponent and $player eq $opponentopponent
+		    or $opponent eq 'Unpaired' and not $opponentopponent;
 	    die "No $player quiz card?" unless exists $correct->{$player};
 	    my $ourcorrect = $correct->{$player};
 	    die "No $opponent card against $player?" unless
@@ -981,7 +981,7 @@ Totals for the beancans over the given session. TODO Why '+=' in sessiontotal?
 		for my $week ( @$weeks ) {
 			my $grade = $self->work2grades($week);
 			for my $can ( keys %$beancans ) {
-				if ( $can eq 'Active' ) {
+				if ( $can =~ m/absent/i ) {
 					$sessiontotal{$can} = 0;
 					next;
 				}
@@ -1389,9 +1389,9 @@ Copyright 2006 Dr Bean, all rights reserved.
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
 
-# vim: set ts=8 sts=4 sw=4 noet:
 
 =cut
 
 
+# vim: set ts=8 sts=4 sw=4 noet:
 __END__
