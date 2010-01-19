@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  1月 02, 18時04分19秒
+#Last Edit: 2010  1月 08, 11時30分52秒
 
 our $VERSION = 0.07;
 
@@ -535,6 +535,20 @@ The quiz questions (as an anon array) in the given jigsaw for the given group.
 	my $topic = $self->topic( $exam, $group );
 	my $form = $self->form( $exam, $group );
 	my $quiz = $activity->{$topic}->{jigsaw}->{$form}->{quiz};
+    }
+
+=head3 options
+
+    $grades->options( 'exam3', 'Purple', 0 ) # [ qw/Deborah Don Dovonna Sue/ ]
+
+The options (as an anon array) to the given question in the given jigsaw for the given group.
+
+=cut
+
+    method options ( Str $exam, Str $group, Int $question ) {
+	my $quiz = $self->quiz( $exam, $group );
+	my $options = $quiz->[$question]->{options};
+	return $options || '';
     }
 
 =head3 qn
