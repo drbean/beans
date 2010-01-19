@@ -29,7 +29,8 @@ my $builder = Module::Build->new(
                             script_files/classwork
                             script_files/homework
                             script_files/scantron.pl
-                            script_files/checkAnswers.pl
+                            script_files/score_exam.pl
+                            script_files/score_homework.pl
                                 )],
 
     add_to_cleanup      => [ 'Grades-*' ],
