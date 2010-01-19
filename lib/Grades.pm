@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  1月 14, 09時34分19秒
+#Last Edit: 2010  1月 14, 19時42分45秒
 
 our $VERSION = 0.07;
 
@@ -413,7 +413,7 @@ Given a player's id, returns an array ref of the player's hw scores.
                 my $grades   = Grades->new( league => $league );
                 my $transfergrade    = $grades->hwbyround->{$round}->{$id};
                 warn
-"$id transfered from $leagueId league but no homework there in round $round"
+"$id transfered from $oldleagueId league but no homework there in round $round"
                   unless defined $transfergrade;
                 push @hwbyid, $transfergrade || 0;
             }
