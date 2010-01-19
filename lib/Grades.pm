@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  1月 08, 11時30分52秒
+#Last Edit: 2010  1月 10, 11時39分59秒
 
 our $VERSION = 0.07;
 
@@ -716,6 +716,20 @@ The individual scores on the quiz of each member of the group, keyed on their ro
 		my %scores;
 		@scores{@keys} = @{$groupdata}{@keys};
 		return \%scores;
+	}
+
+=head3 jigsawFlaw
+
+Points deducted for undesirable performance elements (ie Chinese use) on the quiz of the given group in the given exam.
+
+=cut
+
+	method jigsawFlaw (Str $examId, Str $group) {
+		my $leagueId = $self->league->id;
+		my $examdir = "$leagueId/$examId";
+		my $data = $self->inspect( "$examdir/scores.yaml" );
+		my $demerits = $data->{Chinese}->{$group};
+		return $demerits;
 	}
 
 }
