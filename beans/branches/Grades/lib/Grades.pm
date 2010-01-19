@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  1月 10, 19時00分26秒
+#Last Edit: 2010  1月 14, 08時54分25秒
 
 our $VERSION = 0.07;
 
@@ -279,8 +279,9 @@ The name is 'Bye'. The id is too, as a matter of fact.
 role Homework {
 	use YAML qw/LoadFile DumpFile/;
 	use List::Util qw/min sum/;
+	use Scalar::Util qw/looks_like_number/;
 	use Carp;
-    use Grades::Types qw/PlayerId HomeworkResults/;
+    use Grades::Types qw/PlayerId HomeworkResult HomeworkRound HomeworkRounds/;
 
 =head3 hwdir
 
@@ -343,7 +344,7 @@ A hashref of the homework grades for players in the league for each round.
 
 =cut
 
-	has 'hwbyround', (is => 'ro', isa => HomeworkResults, lazy_build => 1);
+	has 'hwbyround', (is => 'ro', isa => HomeworkRounds, lazy_build => 1);
 	method _build_hwbyround {
 		my $hwdir = $self->hwdir;
 		my $rounds = $self->rounds;
@@ -392,19 +393,36 @@ Given a player's id, returns an array ref of the player's hw scores.
 
 =cut
 
-	method hwforid (PlayerId  $id) {
-		my $hw = $self->hwbyround;
-		my $rounds = $self->rounds;
-		my @hwbyid;
-		for my $round ( @$rounds ) {
-			if ( $hw->{$round} and defined $hw->{$round}->{$id} ) {
-				push @hwbyid, $hw->{$round}->{$id};
-			}
-			else { warn
-				"No homework result for $id in Round $round\n";}
-		}
-		\@hwbyid;
-	}
+    method hwforid( PlayerId $id) {
+	my $leagueId = $self->league->id;
+        my $hw       = $self->hwbyround;
+        my $rounds = $self->rounds;
+        my @hwbyid;
+        for my $round (@$rounds) {
+            unless ( $hw->{$round} ) {
+                warn "No homework results in Round $round in $leagueId league";
+                next;
+            }
+            my $grade = $hw->{$round}->{$id};
+	    if ( defined $grade and looks_like_number( $grade ) ) {
+                push @hwbyid, $grade;
+            }
+            elsif ( $grade =~ m/transfer/i ) {
+                my $oldleagueId = $self->league->transfer->{$id};
+                my $league   = League->new( id => $oldleagueId );
+                my $grades   = Grades->new( league => $league );
+                my $transfergrade    = $grades->hwbyround->{$round}->{$id};
+                warn
+"$id transfered from $leagueId league but no homework there in round $round"
+                  unless defined $transfergrade;
+                push @hwbyid, $transfergrade || 0;
+            }
+            else {
+	warn "No homework result for $id in Round $round in $leagueId league\n";
+            }
+        }
+        \@hwbyid;
+    }
 
 =head3 hwforidasHash
 
@@ -432,12 +450,15 @@ Running total homework scores of the league.
 =cut
 
 	method homework {
-		my $league = $self->league->id;
+		my $league = $self->league;
+		my $leagueId = $league->id;
+		my $players = $league->members;
+		my %players = map { $_->{id} => $_ } @$players;
 		my $hw = $self->hwbyround;
 		my (%idtotals, %totalcounted);
 		for my $round ( keys %$hw ) {
 			my %countedinround;
-			for my $id ( keys %{ $hw->{$round} } ) {
+			for my $id ( keys %players ) {
 				$totalcounted{$id}++;
 				$countedinround{$id}++;
 				carp "$id not in round $round homework" unless
@@ -445,7 +466,7 @@ Running total homework scores of the league.
 				$idtotals{$id} += $hw->{$round}->{$id};
 			}
 			carp
-		    "Missing/added players in $league round $round homework" if 
+		    "Missing/added players in $leagueId round $round homework" if 
 				keys %totalcounted != keys %countedinround;
 		}
 		+{ map { $_ => $idtotals{$_} || 0 } keys %idtotals };
