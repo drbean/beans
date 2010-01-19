@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 12月 22, 09時48分19秒
+#Last Edit: 2010  1月 02, 18時04分19秒
 
 our $VERSION = 0.07;
 
@@ -381,7 +381,7 @@ Given a round, returns a hashref of the raw scores for that round, keyed on the 
 	method rawscoresinRound (Int $round) {
 		my $hwdir = $self->hwdir;
 		my $files = $self->roundfiles->{$round};
-		my @ex = map m/^$hwdir\/\d+([_.]\w+)\.yaml$/, @$files;
+		my @ex = map m/^$hwdir\/$round([_.]\w+)\.yaml$/, @$files;
 		+{ map { substr($_,1) =>
 			$self->inspect( "$hwdir/$round$_.yaml" ) } @ex };
 	}
@@ -1495,9 +1495,11 @@ A hashref of the ids of the players and arrays of their results over the exams e
 	has 'examResultsasPercent' => (is=>'ro', isa=>'HashRef', lazy_build=>1);
 	method _build_examResultsasPercent {
 		my $scores = $self->examResults;
+		my @ids = keys %$scores;
 		my $max = $self->examMax;
-		+{ map { my $id=$_; $id => [ map { $_*(100/$max) } @{$scores->{$_}} ] }
-			keys %$scores };
+		my %percent =  map { my $id = $_; my $myscores = $scores->{$id};
+		    $id => [ map { $_*(100/$max) } @$myscores ] } @ids;
+		return \%percent;
 	}
 
 =head3 examGrade
