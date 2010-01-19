@@ -1,0 +1,19 @@
+---
+round: Exam 1
+week: 4
+file: t/emile/activities.yaml
+questions:
+  - 9
+pass: 5
+assistant:
+absent:
+group:
+  Brown:
+    A: Emile
+    B: Rousseau
+    C: Sophie
+    D: Therese
+activity:
+  Brown:
+    topic: cars
+    form : 1

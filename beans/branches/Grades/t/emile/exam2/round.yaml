@@ -1,0 +1,37 @@
+---
+round: Exam 2 (Part1)
+week: 9
+texts:
+questions:
+  - 10
+pass: 5
+assistant:
+  - Stewart
+  - Marie
+absent:
+group:
+  Brown:
+    A: Queena
+    B: Jeff
+    C: Xiu-Jie
+    D: Lisa
+  DarkBlue:
+    A: Yi-Fan
+    B: Marie
+    C: Stewart
+    D: Gladys
+  DarkGreen:
+    A: Allen
+    B: Yong-hung
+    C: Eva
+    D: Marie
+  LightGreen:
+    A: Phil
+    B: David
+    C: Ken
+    D: Meng-sun
+  Orange:
+    A: Philip
+    B: Stewart
+    C: Kenny
+    D: Howard
