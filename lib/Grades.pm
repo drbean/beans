@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  1月 10, 17時44分31秒
+#Last Edit: 2010  1月 10, 19時00分26秒
 
 our $VERSION = 0.07;
 
@@ -1608,7 +1608,7 @@ A hashref of student ids and final grades.
 	method grades {
 		my $league = $self->league;
 		my $members = $league->members;
-		my $homework = $self->homework;
+		my $homework = $self->homeworkPercent;
 		my $classcomponent = $league->approach;
 		my $classwork = $self->$classcomponent;
 		my $exams = $self->examPercent;
