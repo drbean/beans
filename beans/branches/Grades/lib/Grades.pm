@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2009 12月 21, 08時13分33秒
+#Last Edit: 2009 12月 22, 09時48分19秒
 
 our $VERSION = 0.07;
 
@@ -100,6 +100,19 @@ The name of the league (class).
 	method _build_name {
 		my $data = $self->yaml;
 		$data->{league};
+	}
+
+
+=head3 field
+
+The field of the league (class). What is the subject or description, the area of endeavor?
+
+=cut
+
+	has 'field' => (is => 'ro', isa => 'Str', lazy_build => 1);
+	method _build_field {
+		my $data = $self->yaml;
+		$data->{field};
 	}
 
 
@@ -1321,7 +1334,7 @@ The ids of the exams, as specified in 'league.yaml', either as a sequence or map
 
 =head3 examrounds
 
-The rounds over which the given exam was conducted. Should be an array ref. If there were no rounds, ie there was only one round, undef is returned.
+The rounds over which the given exam was conducted. Should be an array ref. If there were no rounds, undef is returned.
 
 =cut
 
