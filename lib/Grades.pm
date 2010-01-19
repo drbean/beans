@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  1月 10, 11時39分59秒
+#Last Edit: 2010  1月 10, 11時59分59秒
 
 our $VERSION = 0.07;
 
@@ -1485,7 +1485,7 @@ A hash ref of the ids of the players and arrays of their results over the exam s
 		carp "No $id exam results for $playerid,"
 		  unless defined $result;
 		croak "${playerid}'s $result greater than exam max, $max"
-		  if $result > $max;
+		  if defined $result and $result > $max;
 		my $results = $results{$playerid};
 		push @$results, $result;
 		$results{$playerid} = $results;
