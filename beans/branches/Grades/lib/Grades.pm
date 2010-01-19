@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  1月 14, 19時42分45秒
+#Last Edit: 2010  1月 14, 19時57分21秒
 
 our $VERSION = 0.07;
 
@@ -407,7 +407,7 @@ Given a player's id, returns an array ref of the player's hw scores.
 	    if ( defined $grade and looks_like_number( $grade ) ) {
                 push @hwbyid, $grade;
             }
-            elsif ( $grade =~ m/transfer/i ) {
+            elsif ( defined $grade and $grade =~ m/transfer/i ) {
                 my $oldleagueId = $self->league->transfer->{$id};
                 my $league   = League->new( id => $oldleagueId );
                 my $grades   = Grades->new( league => $league );
