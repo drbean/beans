@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  1月 10, 11時59分59秒
+#Last Edit: 2010  1月 10, 17時29分46秒
 
 our $VERSION = 0.07;
 
@@ -1526,7 +1526,7 @@ A hashref of the ids of the players and arrays of their results over the exams e
 		my @ids = keys %$scores;
 		my $max = $self->examMax;
 		my %percent =  map { my $id = $_; my $myscores = $scores->{$id};
-		    $id => [ map { $_*(100/$max) } @$myscores ] } @ids;
+		    $id => [ map { $_||0 * (100/$max) } @$myscores ] } @ids;
 		return \%percent;
 	}
 
