@@ -6,13 +6,13 @@ use List::MoreUtils qw/all/;
 
 use MooseX::Types -declare =>
 	[ qw/PlayerName PlayerNames AbsenteeNames PlayerId Member Members
-		HomeworkResults
+		HomeworkResult HomeworkRound HomeworkRounds
 		Beancans Card
 		ExamIds
 		Exam
 		Weights/ ];
 
-use MooseX::Types::Moose qw/Int Num Ref ArrayRef HashRef Str Maybe/;
+use MooseX::Types::Moose qw/Value Int Num Ref ArrayRef HashRef Str Maybe/;
 
 =head1 NAME
 
@@ -103,25 +103,52 @@ subtype Members,
 	as ArrayRef [Member],
 	message { 'Probably undefined or illegal PlayerNames or PlayerIds,' };
 
-=head2 HomeworkResults
+=head2 HomeworkResult
+
+A number or the string 'transfer'.
+
+=cut
+
+subtype HomeworkResult,
+	as Value,
+	where { Num->check( $_ ) or m/transfer/i },
+	message {
+"Missing or non-numerical score or not string 'transfer'," };
+
+=head2 HomeworkRound
+
+A hashref of PlayerId keys and HomeworkResult values.
+
+=cut
+
+subtype HomeworkRound,
+	as HashRef,
+	where { 
+	    my $play = $_;
+	    all {
+		    my $player = $_;
+		    PlayerId->check( $player ) and 
+		    HomeworkResult->check( $play->{$player} )
+	    }
+	    keys %$play;
+	},
+	message {
+"Problematic PlayerId or Homework Result," };
+
+=head2 HomeworkRounds
 
 A hashref of the homework keyed on the round (an Int.) For each round, the keys are PlayerId, and the values are scores, or Num.
 
 =cut
 
-subtype HomeworkResults,
+subtype HomeworkRounds,
 	as HashRef,
 	where { 
 		my $results = $_;
 		all {
 			my $round = $_;
 			Int->check( $round ) and
-			all {
-				my $player = $_;
-				PlayerId->check( $player ) and 
-				Num->check( $results->{$round}->{$player} )
-			}
-			keys %{ $results->{$round} };
+			    HomeworkRound->check( $results->{$round} )
 		}
 		keys %$results;
 	},
