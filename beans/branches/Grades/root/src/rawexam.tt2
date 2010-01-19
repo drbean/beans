@@ -24,7 +24,8 @@
 <tr><td colspan=1><td>Scores [% FOREACH total IN scores %]<td align=center> [% total %] [% END %]
 </table>
 
-<h4>Average: [% total %] </h4>
+<h4>Average: [% average %] </h4>
+<h4>Chinese use: [% chinese %] </h4>
 <h4>Grade: [% grade %] </h4>
 
 
