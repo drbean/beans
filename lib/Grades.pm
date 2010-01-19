@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  1月 14, 08時54分25秒
+#Last Edit: 2010  1月 14, 09時15分41秒
 
 our $VERSION = 0.07;
 
@@ -454,20 +454,11 @@ Running total homework scores of the league.
 		my $leagueId = $league->id;
 		my $players = $league->members;
 		my %players = map { $_->{id} => $_ } @$players;
-		my $hw = $self->hwbyround;
-		my (%idtotals, %totalcounted);
-		for my $round ( keys %$hw ) {
-			my %countedinround;
-			for my $id ( keys %players ) {
-				$totalcounted{$id}++;
-				$countedinround{$id}++;
-				carp "$id not in round $round homework" unless
-					defined $hw->{$round}->{$id};
-				$idtotals{$id} += $hw->{$round}->{$id};
-			}
-			carp
-		    "Missing/added players in $leagueId round $round homework" if 
-				keys %totalcounted != keys %countedinround;
+		my %idtotals;
+		for my $player ( keys %players ) {
+		    my $homework = $self->hwforid( $player );
+		    my $total = sum @$homework;
+		    $idtotals{$player} = $total;
 		}
 		+{ map { $_ => $idtotals{$_} || 0 } keys %idtotals };
 	}
