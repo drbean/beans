@@ -10,12 +10,14 @@
 <tr align=center><th>Question <th>Answer [% FOREACH id IN ids %]<th>[% id %][% END %]
 [% FOREACH n IN [ 0 .. quiz.max ] %]
   [% r = n + 1 %]
-  [% codedvalues = { True = 1 False = 0 } %]
+  [% item = quiz.$n %]
+    [% IF item.option %] [% codevalue = item.option.coded %]
+    [% ELSE %][% codevalue = { True => 1, False => 0 } %] [% END %]
     <tr align=center>
-    <td>[% quiz.$n.question %]
-    <td>[% theanswer = quiz.$n.answer %][% theanswer %]
+    <td>[% item.question %]
+    <td>[% theanswer = item.answer %][% theanswer %]
     [% FOREACH id IN ids %]
-    <td>[% IF responses.$id.$r == codedvalues.$theanswer %]o [% ELSE %]X [% END %]
+    <td>[% IF responses.$id.$r == codevalue.$theanswer %]o [% ELSE %]X [% END %]
     [% END %]
   </tr>
 [% END -%]
