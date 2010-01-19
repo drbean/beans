@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  1月 14, 09時15分41秒
+#Last Edit: 2010  1月 14, 09時34分19秒
 
 our $VERSION = 0.07;
 
@@ -465,30 +465,16 @@ Running total homework scores of the league.
 
 =head3 homeworkPercent
 
-Running total homework scores of the league as percentages of the totalMax, with a maximum of 100.
+Running total homework scores of the league as percentages of the totalMax to that point, with a maximum of 100.
 
 =cut
 
 	method homeworkPercent {
 		my $league = $self->league->id;
-		my $hw = $self->hwbyround;
 		my $totalMax = $self->totalMax;
-		my (%idtotals, %totalcounted);
-		for my $round ( keys %$hw ) {
-			my %countedinround;
-			for my $id ( keys %{ $hw->{$round} } ) {
-				$totalcounted{$id}++;
-				$countedinround{$id}++;
-				carp "$id not in round $round homework" unless
-					defined $hw->{$round}->{$id};
-				$idtotals{$id} += $hw->{$round}->{$id};
-			}
-			carp
-		    "Missing/added players in $league round $round homework" if 
-				keys %totalcounted != keys %countedinround;
-		}
-		+{ map { $_ => min( 100, 100 * $idtotals{$_} / $totalMax )
-				|| 0 } keys %idtotals };
+		my $idtotals = $self->homework;
+		+{ map { $_ => min( 100, 100 * $idtotals->{$_} / $totalMax )
+				|| 0 } keys %$idtotals };
 	}
 
 }
