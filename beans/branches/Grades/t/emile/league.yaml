@@ -6,14 +6,19 @@ hw: t/emile/homework
 member:
   - id: S09413
     name: Sophie
+    rating: 500
   - id: 34113
     name: Emile
+    rating: 1500
   - id: 1
     name: Rousseau
+    rating: 3500
   - id: 222
     name: Therese
+    rating: 1500
   - id: 223
     name: therese
+    rating: 1500
 absent:
   - None
 series:
