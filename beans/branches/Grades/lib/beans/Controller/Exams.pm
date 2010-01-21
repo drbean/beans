@@ -34,7 +34,7 @@ sub listing : Local {
 	my $leagueId = $params->{league} || $c->request->args->[0];
 	my $playerId = $params->{id} || $c->request->args->[1];
 	my $player = $params->{player} || $c->request->args->[2];
-	my $league = League->new( id => "/home/drbean/class/$leagueId" );
+	my $league = League->new( id => $c->config->{leagues} . $leagueId );
 	my $work = Grades->new( league => $league );
 	if ( $league and $league->is_member($playerId) )
 	{
@@ -78,7 +78,7 @@ sub raw : Local {
     my $playerId   = $params->{id} || $c->request->args->[1];
     my $playerName = $params->{player} || $c->request->args->[2];
     my $exam       = $c->request->args->[3];
-    my $league     = League->new( id => "/home/drbean/class/$leagueId" );
+    my $league     = League->new( id => $c->config->{leagues} . $leagueId );
     my $work       = Grades->new( league => $league );
     if ( $league and $league->is_member($playerId) ) {
         my $player = Player->new( league => $league, id => $playerId );
