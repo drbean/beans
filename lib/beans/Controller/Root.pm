@@ -84,7 +84,7 @@ sub listing : Local {
 	my $leagueId = $params->{league};
 	my $player = $params->{player};
 	my $playerId = $params->{id};
-	my $league = League->new( id => "/home/drbean/class/$leagueId" );
+	my $league = League->new( id => $c->config->{leagues} . $leagueId );
 	my $grades = Grades->new( league => $league );
 	if ( $league and $league->is_member($playerId) )
 	{
