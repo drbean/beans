@@ -26,11 +26,7 @@ series:
   - second
   - third
   - fourth
-exams:
-  - exam1
-  - exam2
-  - exam3
-  - exam4
+exams: t/emile/exams
 examMax: 15
 hwMax: 2
 weights:
@@ -38,6 +34,4 @@ weights:
   homework : 20
   exams    : 60
 conversations:
-  - compdiscussion
-  - trinka
 approach: groupwork
