@@ -5,6 +5,7 @@
   <tr><td>League:</td><td>
   <select name="league" size="[% leagues.size %]">
 
+<option value="beans/t/emile">The Rousseau School of Prestentialism</option>
 <option value="GL00029">GL00029日語文共同學制虛擬班二甲 中級英文聽說訓練</option>
 <option value="GL00030">GL00030日語文共同學制虛擬班二乙 中級英文聽說訓練</option>
 <option value="GL00031">GL00031日語文共同學制虛擬班二丙 中級英文聽說訓練</option>
