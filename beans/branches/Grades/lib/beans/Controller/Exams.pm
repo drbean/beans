@@ -87,33 +87,48 @@ sub raw : Local {
             $c->stash->{player} = $playerName;
             $c->stash->{id}     = $playerId;
             $c->stash->{examId} = $exam;
-            my $group = $work->name2jigsawGroup( $exam, $playerName )->[0];
-            my $topic = $work->topic( $exam, $group );
-            my $form = $work->form( $exam, $group );
-            my ( $quiz, $responses );
-	    try {
-		    $quiz = $work->quiz( $exam, $group );
-		    $responses = $work->responses( $exam, $group );
-	    }
-	    	catch {
-$c->stash->{status_msg} = "No information available on $topic $form quiz";
-		};
-            my $member = $work->jigsawGroupMembers( $exam, $group );
-            my $rawscores = $work->rawJigsawScores( $exam, $group );
-            my $role = $work->id2jigsawGroupRole( $exam, $group );
-            my @scores = map { $rawscores->{$_} }
-		sort { $role->{$a} cmp $role->{$b} } keys %$rawscores;
-            $c->stash->{ids} = $work->idsbyRole( $exam, $group );
-            $c->stash->{topic} = $topic;
-            $c->stash->{form} = $form;
-            $c->stash->{quiz} = $quiz;
-            $c->stash->{responses} = $responses;
+	    my $rounds = $work->examrounds( $exam );
+            my ( @quiz, @responses, @ids, @topics, @forms, @scores, @chinese,
+		    @groups );
+	    do {
+		my $round = shift @$rounds;
+		my $task = $exam;
+		$task .= "/$round" if $round;
+		my $group = $work->name2jigsawGroup($task, $playerName )->[0];
+		push @groups, $group;
+		push @ids, $work->idsbyRole( $task, $group );
+		my $topic = $work->topic( $task, $group );
+		push @topics, $topic;
+		my $form = $work->form( $task, $group );
+		push @forms, $form;
+		try {
+			my $quiz = $work->quiz( $task, $group );
+			push @quiz, $quiz;
+			my $responses = $work->responses( $task, $group );
+			push @responses, $responses;
+		}
+		    catch {
+    $c->stash->{status_msg} = "No information available on $topic $form quiz";
+		    };
+		my $member = $work->jigsawGroupMembers( $task, $group );
+		my $rawscores = $work->rawJigsawScores( $task, $group );
+		my $role = $work->id2jigsawGroupRole( $task, $group );
+		my @taskscores = map { $rawscores->{$_} }
+		    sort { $role->{$a} cmp $role->{$b} } keys %$rawscores;
+		push @scores, \@taskscores;
+		push @chinese, $work->jigsawDeduction( $exam, $group );
+            } while @$rounds;
+            $c->stash->{ids} = \@ids;
+            $c->stash->{topic} = \@topics;
+            $c->stash->{form} = \@forms;
+            $c->stash->{quiz} = \@quiz;
+            $c->stash->{responses} = \@responses;
             $c->stash->{scores} = \@scores;
             $c->stash->{average} = sum( @scores ) / @scores;
-            $c->stash->{chinese} = $work->jigsawDeduction( $exam, $group );
+            $c->stash->{chinese} = \@chinese;
             my $grade = $work->examResultHash->{$playerId}->{$exam};
             $c->stash->{grade}    = $grade;
-            $c->stash->{group}    = $group;
+            $c->stash->{group}    = \@groups;
             $c->stash->{template} = 'rawexam.tt2';
         }
     }
@@ -129,5 +144,7 @@ This library is free software, you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =cut
+
+# vim: set ts=8 sts=4 sw=4 noet:
 
 1;
