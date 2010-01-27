@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  1月 23, 12時50分54秒
+#Last Edit: 2010  1月 25, 17時34分33秒
 
 our $VERSION = 0.07;
 
@@ -182,11 +182,14 @@ The id of the member with the given player name.
 
     method ided( Str $player) {
         my $members = $self->members;
-	my @ids = map { $_->{id} }
+	my %ids = map { $_->{name} => $_->{id} }
 	    grep { $_->{name} =~ m/^$player$/i } @$members;
-	warn @ids . " players named '$player' with ids: @ids," unless @ids==1;
+	my @names = keys %ids;
+	my @ids = values %ids;
+	local $" = ', ';
+	warn @ids . " players named @names with ids: @ids," unless @ids==1;
 	if ( @ids == 1 ) { return $ids[0] }
-	else { return \@ids; }
+	else { return $ids{$player}; }
       }
 
 =head3 inspect
@@ -488,14 +491,20 @@ The jigsaw is a cooperative learning activity where all the players in a group g
 
 role Jigsaw {
     use List::MoreUtils qw/any all/;
+    use Try::Tiny;
 
-=head3 quizfile
+=head3 jigsawConfig
 
-The file system location of the file of the given jigsaw with the quiz questions and answers.
+The round.yaml file with data about the jigsaw activity in the given location (directory.)
 
 =cut
 
-    method quizfile ( Str $exam ) { $self->jigsawConfig($exam)->{file}; }
+	method jigsawConfig (Str $location) {
+		my $config;
+		try { $config = $self->inspect( "$location/round.yaml" ) }
+		    catch { warn "No config file for $location jigsaw" };
+		return $config;
+	}
 
 =head3 topic
 
@@ -503,8 +512,8 @@ The topic of the quiz in the given jigsaw for the given group.
 
 =cut
 
-    method topic ( Str $exam, Str $group ) {
-	my $config = $self->jigsawConfig($exam);
+    method topic ( Str $location, Str $group ) {
+	my $config = $self->jigsawConfig($location);
 	my $activity = $config->{activity}->{$group};
 	my $topic = $activity->{topic};
 }
@@ -515,11 +524,22 @@ The form of the quiz in the given jigsaw for the given group.
 
 =cut
 
-    method form ( Str $exam, Str $group ) {
-	my $config = $self->jigsawConfig($exam);
+    method form ( Str $location, Str $group ) {
+	my $config = $self->jigsawConfig($location);
 	my $activity = $config->{activity}->{$group};
 	my $form = $activity->{form};
 }
+
+=head3 quizfile
+
+The file system location of the file with the quiz questions and answers for the given jigsaw.
+
+=cut
+
+    method quizfile ( Str $location ) {
+	my $config = $self->jigsawConfig($location);
+	return $config->{file};
+    }
 
 =head3 quiz
 
@@ -527,24 +547,26 @@ The quiz questions (as an anon array) in the given jigsaw for the given group.
 
 =cut
 
-    method quiz ( Str $exam, Str $group ) {
-	my $file = $self->jigsawConfig($exam)->{file};
-	my $activity = $self->inspect( $file ) or die "$file file problem";
-	my $topic = $self->topic( $exam, $group );
-	my $form = $self->form( $exam, $group );
+    method quiz ( Str $location, Str $group ) {
+	my $quizfile = $self->quizfile($location);
+	my $activity;
+	try { $activity = $self->inspect( $quizfile ) }
+	    catch { warn "No $quizfile jigsaw content file" };
+	my $topic = $self->topic( $location, $group );
+	my $form = $self->form( $location, $group );
 	my $quiz = $activity->{$topic}->{jigsaw}->{$form}->{quiz};
     }
 
 =head3 options
 
-    $grades->options( 'exam3', 'Purple', 0 ) # [ qw/Deborah Don Dovonna Sue/ ]
+    $grades->options( '2/1', 'Purple', 0 ) # [ qw/Deborah Don Dovonna Sue/ ]
 
 The options (as an anon array) to the given question in the given jigsaw for the given group.
 
 =cut
 
-    method options ( Str $exam, Str $group, Int $question ) {
-	my $quiz = $self->quiz( $exam, $group );
+    method options ( Str $location, Str $group, Int $question ) {
+	my $quiz = $self->quiz( $location, $group );
 	my $options = $quiz->[$question]->{options};
 	return $options || '';
     }
@@ -555,28 +577,9 @@ The number of questions in the given jigsaw for the given group.
 
 =cut
 
-    method qn ( Str $exam, Str $group ) {
-	my $quiz = $self->quiz( $exam, $group );
+    method qn ( Str $location, Str $group ) {
+	my $quiz = $self->quiz( $location, $group );
 	return scalar @$quiz;
-    }
-
-=head3 idsbyRole
-
-Ids in array, in A-D role order
-
-=cut
-
-
-    method idsbyRole ( Str $exam, Str $group ) {
-	my $members = $self->league->members;
-	my %namedMembers = map { $_->{name} => $_ } @$members;
-	my $namesbyRole = $self->jigsawGroupMembers( $exam, $group );
-	my @idsbyRole;
-	for my $role ( sort keys %$namesbyRole ) {
-		my $id = $namedMembers{ $namesbyRole->{$role} }->{id};
-		push @idsbyRole, $id;
-	}
-	return \@idsbyRole;
     }
 
 =head3 responses
@@ -586,23 +589,10 @@ The responses of the members of the given group in the given jigsaw (as an anon 
 =cut
 
 
-    method responses ( Str $exam, Str $group ) {
-	my $examdir = $self->examdir( $exam );
-	my $responses = $self->inspect( "$examdir/response.yaml" );
+    method responses ( Str $location, Str $group ) {
+	my $responses = $self->inspect( "$location/response.yaml" );
 	return $responses->{$group};
     }
-
-=head3 jigsawConfig
-
-The round.yaml file with data about the given (sub)jigsaw.
-
-=cut
-
-	method jigsawConfig (Str $examId) {
-		my $leagueId = $self->league->id;
-		my $jigsawdir = "$leagueId/$examId";
-		my $round = $self->inspect( "$jigsawdir/round.yaml" );
-	}
 
 =head3 jigsawGroups
 
@@ -610,9 +600,20 @@ A hash ref of all the groups in the jigsaw and the names of members of the group
 
 =cut
 
-	method jigsawGroups (Str $examId) {
-		my $round = $self->jigsawConfig( $examId );
-		$round->{group};
+	method jigsawGroups (Str $location ) {
+		my $config = $self->jigsawConfig( $location );
+		$config->{group};
+	}
+
+=head3 jigsawGroupMembers
+
+An hash ref of the names of the members of the given group in the given jigsaw, keyed on the roles, A..D.
+
+=cut
+
+	method jigsawGroupMembers (Str $location, Str $group) {
+		my $groups = $self->jigsawGroups( $location );
+		my $members = $groups->{$group};
 	}
 
 =head3 roles
@@ -625,26 +626,34 @@ At the moment, just A .. D.
 	    default => sub { [ qw/A B C D/ ] } );
 
 
+=head3 idsbyRole
+
+Ids in array, in A-D role order
+
+=cut
+
+
+    method idsbyRole ( Str $location, Str $group ) {
+	my $members = $self->league->members;
+	my %namedMembers = map { $_->{name} => $_ } @$members;
+	my $namesbyRole = $self->jigsawGroupMembers( $location, $group );
+	my @idsbyRole;
+	for my $role ( sort keys %$namesbyRole ) {
+		my $id = $namedMembers{ $namesbyRole->{$role} }->{id};
+		push @idsbyRole, $id;
+	}
+	return \@idsbyRole;
+    }
+
 =head3 assistants
 
 A array ref of all the players in the (sub)jigsaw who did the the activity twice to 'assist' groups with not enough (or absent) players, or individuals with no groups, or people who arrived late.
 
 =cut
 
-	method assistants (Str $examId) {
-		my $round = $self->jigsawConfig( $examId );
+	method assistants (Str $location) {
+		my $round = $self->jigsawConfig( $location );
 		$round->{assistants};
-	}
-
-=head3 jigsawGroupMembers
-
-An hash ref of the names of the members of the given group in the given jigsaw, keyed on the roles, A..D.
-
-=cut
-
-	method jigsawGroupMembers (Str $examId, Str $group) {
-		my $groups = $self->jigsawGroups( $examId );
-		my $members = $groups->{$group};
 	}
 
 =head3 jigsawGroupRole
@@ -653,8 +662,8 @@ An hash ref of the roles of the members of the given group in the given jigsaw, 
 
 =cut
 
-	method jigsawGroupRole (Str $examId, Str $group) {
-		my $members = $self->jigsawGroupMembers( $examId, $group );
+	method jigsawGroupRole (Str $location, Str $group) {
+		my $members = $self->jigsawGroupMembers( $location, $group );
 		my %roles = reverse %$members;
 		return \%roles;
 	}
@@ -665,8 +674,8 @@ An hash ref of the roles of the members of the given group in the given jigsaw, 
 
 =cut
 
-	method id2jigsawGroupRole (Str $examId, Str $group) {
-		my $member = $self->jigsawGroupMembers( $examId, $group );
+	method id2jigsawGroupRole (Str $location, Str $group) {
+		my $member = $self->jigsawGroupMembers( $location, $group );
 		my %idedroles = map { $self->league->ided($member->{$_}) => $_ }
 						keys %$member;
 		return \%idedroles;
@@ -678,8 +687,8 @@ An array ref of the group(s) to which the given name belonged in the given jigsa
 
 =cut
 
-	method name2jigsawGroup (Str $examId, Str $name) {
-		my $groups = $self->jigsawGroups( $examId );
+	method name2jigsawGroup (Str $location, Str $name) {
+		my $groups = $self->jigsawGroups( $location );
 		my @memberships;
 		for my $id ( keys %$groups ) {
 			my $group = $groups->{$id};
@@ -691,30 +700,31 @@ An array ref of the group(s) to which the given name belonged in the given jigsa
 
 =head3 rawJigsawScores
 
-The individual scores on the quiz of each member of the group, keyed on their roles, no, ids, from the file called 'scores.yaml' in the jigsaw dir. If the scores in that file have a key which is a role, handle that, but, yes, the keys of the hashref returned here are the players' ids.
+The individual scores on the quiz of each member of the given group, keyed on their roles, no, ids, from the file called 'scores.yaml' in the given jigsaw dir. If the scores in that file have a key which is a role, handle that, but, yes, the keys of the hashref returned here are the players' ids.
 
 =cut
 
-	method rawJigsawScores (Str $examId, Str $group) {
-		my $leagueId = $self->league->id;
-		my $examdir = "$leagueId/$examId";
-		my $data = $self->inspect( "$examdir/scores.yaml" );
-		my $groupdata = $data->{letters}->{$group};
-		my $ids = $self->idsbyRole( $examId, $group );
-		my $roles = $self->roles;
-		my @keys;
-		if ( any { my $key = $_;
-			any { $_ eq $key } @$roles } keys %$groupdata ) {
-		    @keys = @$roles;
-		}
-		else {
-		    @keys = grep { my $id = $_;
-				    any { $_ eq $id } @$ids } keys %$groupdata;
-		}
-		my %scores;
-		@scores{@keys} = @{$groupdata}{@keys};
-		return \%scores;
+    method rawJigsawScores (Str $location, Str $group) {
+        my $data;
+	try { $data = $self->inspect("$location/scores.yaml"); }
+	    catch { warn "No scores for $group group in $location jigsaw."; };
+	my $groupdata = $data->{letters}->{$group};
+	my $ids       = $self->idsbyRole( $location, $group );
+	my $roles     = $self->roles;
+	my @keys;
+	if (
+	    any { my $key = $_; any { $_ eq $key } @$roles; } keys %$groupdata
+	) {
+	    @keys = @$roles;
 	}
+        else {
+            @keys = grep { my $id = $_; any { $_ eq $id } @$ids }
+		    keys %$groupdata;
+        }
+        my %scores;
+	@scores{@keys} = @{$groupdata}{@keys};
+	return \%scores;
+    }
 
 =head3 jigsawDeduction
 
@@ -1342,97 +1352,49 @@ role Exams {
 	use List::Util qw/max sum/;
 	use List::MoreUtils qw/any all/;
 	use Carp;
-	use Grades::Types qw/ExamIds Exam/;
-
-=head3 examids
-
-The ids of the exams, as specified in 'league.yaml', either as a sequence or mapping (a mapping if one or more exams is conducted over a series of rounds.) In this latter case, name the keys in some sensible order so they can be sorted. This accessor deletes the rounds and returns an array ref of the sorted exam keys.
-
-=cut
-
-	has 'examids' => (is => 'ro', isa => ExamIds, lazy_build => 1);
-	method _build_examids {
-		my $leagueId = $self->league->id;
-		my $examids = $self->league->yaml->{exams};
-		if ( ref $examids eq 'HASH' ) { return [ sort keys %$examids ] }
-		else { return $examids }
-	}
-
-=head3 examrounds
-
-The rounds over which the given exam was conducted. Should be an array ref. If there were no rounds, undef is returned.
-
-=cut
-
-	method examrounds ( Str $exam ) {
-		my $examids = $self->league->yaml->{exams};
-		return unless ref $examids eq 'HASH';
-		return unless ref $examids->{$exam} eq 'ARRAY';
-		return $examids->{$exam};
-	}
+	use Grades::Types qw/Exam/;
 
 =head3 examdir
 
-The directory in which results for the given exam (or exam plus round) exist, below the leagueId dir.
+The directory where the exams are.
 
 =cut
 
-	method examdir ( Str $exam ) {
-		my $leagueId = $self->league->id;
-		return "$leagueId/$exam";
-	}
-
-=head3 examdirs
-
-The directories in which exam results exist, returned as an array ref of strings, or as an hash ref, TODO Do what examids is doing here. And have a separate method to get rounds.
-
-=cut
-
-	has 'examdirs' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
+	has 'examdirs' => (is => 'ro', isa => 'Str', lazy_build => 1);
 	method _build_examdirs {
-		my $leagueId = $self->league->id;
-		my $exams = $self->examids;
-		if ( ref $exams eq 'ARRAY' ) {
-		    return [ map { $self->examdir($_) } @$exams ];
-		}
-		elsif ( ref $exams eq 'HASH' ) {
-		    my  @dirs;
-		    for my $id ( sort keys %$exams ) {
-			my $rounds = $exams->{$id};
-			if ( ref $rounds ne 'ARRAY' ) {
-			    push @dirs, $self->examdir($id);
-			}
-			else {
-			    my @subdirs = map { "$id/$_" } @$rounds;
-			    my @rounds = map { $self->examdir($_) } @subdirs;
-			    push @dirs, \@rounds;
-			}
-		    }
-		    return \@dirs;
-		}
-		else { return };
+		my $league = $self->league->id;
+		my $data = $self->league->yaml;
+		my $examdirs = $data->{exams} || "$league/exams"
 	}
 
-=head3 examsubdirs
+=head3 examids
 
-The directories in which exam results exist in subdirs of those directories, returned as an array ref of array refs.
+An arrayref of the ids of the exams for which there are grades for players in the league, in numerical order, of the form, [1, 3 .. 7, 9, 10 .. 99 ]. Results are in sub directories of the same name, under examdir.
 
 =cut
 
-	has 'examsubdirs' => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
-	method _build_examsubdirs {
-		my $leagueId = $self->league->id;
-		my $examdirs = $self->league->yaml->{exams};
-		my @dirs;
-		for my $dir ( @$examdirs ) {
-			if ( ref $dir eq 'ARRAY' ) {
-				my @subdirs = map { "$leagueId/$dir/$_" } @$dir;
-				push @dirs, \@subdirs;
-			}
-			else { push @dirs, "$leagueId/$_"; }
-		}
-		return \@dirs;
-	}
+    has 'examids',
+      ( is => 'ro', isa => 'Maybe[ArrayRef[Int]]', lazy_build => 1 );
+    method _build_examids {
+        my $examdirs = $self->examdirs;
+        my @exams   = glob "$examdirs/[0-9] $examdirs/[1-9][0-9]";
+        [ sort { $a <=> $b } map m/^$examdirs\/(\d+)$/, @exams ];
+    }
+
+=head3 examrounds
+
+The rounds over which the given exam was conducted. Should be an array ref. If there were no rounds, ie the exam was conducted in one round, a null anonymous array is returned. The results for the rounds are in sub directories underneath the 'examid' directory named, in numerical order, 1 .. 99.
+
+=cut
+
+    method examrounds( Str $exam ) {
+	my $examdirs = $self->examdirs;
+        my $examids = $self->examids;
+        carp "No exam $exam in exams @$examids"
+	    unless any { $_ eq $exam } @$examids;
+        my @rounds = glob "$examdirs/$exam/[0-9] $examdirs/$exam/[0-9][0-9]";
+        [ sort { $a <=> $b } map m/^$examdirs\/$exam\/(\d+)$/, @rounds ];
+      }
 
 =head3 examMax
 
@@ -1452,8 +1414,8 @@ The scores of the players on an individual (round of an) exam (in a 'g.yaml file
 =cut
 
 	method exam ( Str $id ) {
-	    my $examdir = $self->examdir( $id );
-	    my $exam = $self->inspect( "$examdir/g.yaml" );
+	    my $examdirs = $self->examdirs;
+	    my $exam = $self->inspect( "$examdirs/$id/g.yaml" );
 	    if ( is_Exam($exam) ) {
 		return $exam ;
 	    }
