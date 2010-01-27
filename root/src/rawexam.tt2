@@ -2,30 +2,32 @@
 [% META title = 'Raw exam scores' -%]
 
 <h2>[% league %] League</h2>
-<h3>Exam: [% examId.substr(4) %]</h3>
-<h4>Group: [% group %] </h4>
 <table>
-<caption>Results in [% topic %][% form %] Quiz </caption>
+<caption> <h3>Results in Exam: [% examId %]</h3> </caption>
+
+[% FOREACH round IN rounds %]
+<tr><th colspan="6">[% round.topic %][% round.form %] Quiz in [% round.group %] Group
 <tr><th colspan="2"> <th>A <th>B <th>C <th>D
-<tr align=center><th>Question <th>Answer [% FOREACH id IN ids %]<th>[% id %][% END %]
-[% FOREACH n IN [ 0 .. quiz.max ] %]
+<tr align=center><th>Question <th>Answer [% FOREACH id IN round.ids %]<th>[% id %][% END %]
+[% FOREACH n IN [ 0 .. round.quiz.max ] %]
   [% r = n + 1 %]
-  [% item = quiz.$n %]
+  [% item = round.quiz.$n %]
     [% IF item.option %] [% codevalue = item.option.coded %]
     [% ELSE %][% codevalue = { True => 1, False => 0 } %] [% END %]
     <tr align=center>
     <td>[% item.question %]
     <td>[% theanswer = item.answer %][% theanswer %]
-    [% FOREACH id IN ids %]
-    <td>[% IF responses.$id.$r == codevalue.$theanswer %]o [% ELSE %]X [% END %]
+    [% FOREACH id IN round.ids %]
+    <td>[% IF round.responses.$id.$r == codevalue.$theanswer %]o [% ELSE %]X [% END %]
     [% END %]
   </tr>
 [% END -%]
-<tr><td colspan=1><td>Scores [% FOREACH total IN scores %]<td align=center> [% total %] [% END %]
+<tr><td colspan=1><td>Scores: [% FOREACH total IN round.scores %]<td align=center> [% total %] [% END %]
+<tr><td colspan="1"><h4><td>Average: <td colspan="4" align=center> [% round.average %] </h4>
+<tr><td colspan="1"><h4><td>Chinese: <td colspan="4" align=center> [% round.chinese %] </h4>
+[% END -%]
 </table>
 
-<h4>Average: [% average %] </h4>
-<h4>Chinese use: [% chinese %] </h4>
 <h4>Grade: [% grade %] </h4>
 
 
