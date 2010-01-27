@@ -8,7 +8,6 @@ use MooseX::Types -declare =>
 	[ qw/PlayerName PlayerNames AbsenteeNames PlayerId Member Members
 		HomeworkResult HomeworkRound HomeworkRounds
 		Beancans Card
-		ExamIds
 		Exam
 		Weights/ ];
 
@@ -200,27 +199,6 @@ subtype Card,
 		keys %card;
 	},
 	message { 'Probably undefined or non-numeric Merit, Absence, Tardy scores, or possibly illegal beancan,' };
-
-=head2 ExamIds
-
-A hashref (in case of exams that are made up of a number of rounds) or array ref.
-
-=cut
-
-subtype ExamIds,
-	as Ref,
-	where {
-	    my $examids = $_;
-	    if ( ref $examids eq 'ARRAY' ) { all { not ref } @$examids }
-	    elsif ( ref $examids eq 'HASH') {
-		all {
-		    my $rounds = $examids->{$_}; all { not ref $_ } @$rounds;
-		    } keys %$examids;
-	    }
-	    else { 0 }
-	},
-	message {
-	    'Probably missing exams, or examids is not hash or array ref,' };
 
 =head2 Exam
 
