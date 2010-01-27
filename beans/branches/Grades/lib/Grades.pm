@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  1月 25, 17時34分33秒
+#Last Edit: 2010  1月 26, 12時20分32秒
 
 our $VERSION = 0.07;
 
@@ -499,12 +499,12 @@ The round.yaml file with data about the jigsaw activity in the given location (d
 
 =cut
 
-	method jigsawConfig (Str $location) {
-		my $config;
-		try { $config = $self->inspect( "$location/round.yaml" ) }
-		    catch { warn "No config file for $location jigsaw" };
-		return $config;
-	}
+    method jigsawConfig( Str $location) {
+        my $config;
+	try { $config = $self->inspect("$location/round.yaml") }
+	    catch { warn "No config file for $location jigsaw" };
+	return $config;
+    }
 
 =head3 topic
 
@@ -732,10 +732,11 @@ Points deducted for undesirable performance elements (ie Chinese use) on the qui
 
 =cut
 
-	method jigsawDeduction (Str $examId, Str $group) {
-		my $leagueId = $self->league->id;
-		my $examdir = "$leagueId/$examId";
-		my $data = $self->inspect( "$examdir/scores.yaml" );
+	method jigsawDeduction (Str $location, Str $group) {
+		my $data = $self->inspect( "$location/scores.yaml" );
+		try { $data = $self->inspect( "$location/scores.yaml" ); }
+		    catch { warn
+			"Deductions for $group group in $location jigsaw?" };
 		my $demerits = $data->{Chinese}->{$group};
 		return $demerits;
 	}
