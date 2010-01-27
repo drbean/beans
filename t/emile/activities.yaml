@@ -10,6 +10,9 @@ cars:
     conclusion: The experiment was very successful. But other car showrooms may not be able to copy Penske-Wynn's solution. Other showrooms are not in Las Vegas. They do not have many visitors, and are not showing expensive cars to people who dream of being rich. 
     quiz     :
       - question: The problem was that too many people wanted to look at the cars.
+        options:
+          - True
+          - False
         answer  : True
       - question: People go to Las Vegas to spend lots of money, not win lots of money.
         answer  : False
