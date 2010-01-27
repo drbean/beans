@@ -3,7 +3,7 @@ use warnings;
 use Test::More;
 use FindBin qw/$Bin/;
 
-plan tests => 34;
+plan tests => 46;
 plan skip_all => 'unset env var NO_TEST to enable this test' if $ENV{NO_TEST};
 
 use lib 'lib';
@@ -70,15 +70,44 @@ is_deeply($g->homework, { 34113 => 0, S09413 => 11 }, "Emile 0, Sophie 11");
 is_deeply($g->homeworkPercent, { 34113 => 0, S09413 => 50 }, "Emile 0%, Sophie 50%");
 
 # jigsaw
+my $quizfile = "/home/$ENV{USER}/class/beans/t/emile/activities.yaml";
 
-is( $g->quizfile( 'exam1' ), 't/emile/activities.yaml', 'Location of exam text.');
-is( $g->topic( 'exam1', 'Brown' ), 'cars', 'Topic of exam text.');
-is( $g->form( 'exam1', 'Brown' ), 1, 'Form of exam text.');
-is( $g->qn( 'exam1', 'Brown' ), 8, 'Number of exam questions' );
-is_deeply( $g->idsbyRole( 'exam1', 'Brown' ), [ 34113, 1, 'S09413', 222 ],
-	'Ids in array, in A-D role order' );
+is_deeply( $g->jigsawConfig( 't/emile/exams/2/1'), $g->inspect('t/emile/exams/2/1/round.yaml'), 'Config file.');
+is( $g->topic( 't/emile/exams/2/2', 'Brown' ), 'citrus', 'Topic of exam text');
+is( $g->form( 't/emile/exams/3/2', 'Brown' ), 2, 'Form of exam text');
+is( $g->quizfile( 't/emile/exams/1/1' ), $quizfile, 'Location of exam text');
+is( $g->quizfile( 't/emile/exams/4/1' ), $quizfile, 'Location of exam text');
+is_deeply($g->quiz( 't/emile/exams/4/1', 'Brown' ),
+	$g->inspect('t/emile/activities.yaml')->{cars}->{jigsaw}->{2}->{quiz},
+	'Quiz content');
+is_deeply( $g->options( 't/emile/exams/1/1', 'Brown', 0 ), ['True','False'],
+	'Options');
+is( $g->qn( 't/emile/exams/1/2', 'Brown' ), 8, 'Number of exam questions' );
+my ($emile, $rousseau, $sophie, $therese);
+@$emile{1..9} = ( (0,1) x 4, 0 ); @$rousseau{1..9} = (0,0,1) x 3;
+@$sophie{1..9} = ( (0,0,0,1) x 2, 0 ); @$therese{1..9} = ( (0) x 4, 1, (0) x 4);
+is_deeply( $g->responses( 't/emile/exams/4/2', 'Brown' ),
+	{ 34113 => $emile, 1 => $rousseau, S09413 => $sophie, 222 => $therese },
+	"Question responses" );
+is_deeply( $g->jigsawGroups( 't/emile/exams/2/2'),
+	{ Brown => { A => 'Emile', B => 'Rousseau',
+		C => 'Sophie', D => 'Therese' } }, "Jigsaw groups" );
+is_deeply( $g->jigsawGroupMembers( 't/emile/exams/3/1', 'Brown' ),
+	{ A => 'Emile', B => 'Rousseau', C => 'Sophie', D => 'Therese' },
+	"Jigsaw groups" );
+is_deeply( $g->idsbyRole( 't/emile/exams/2/1', 'Brown' ),
+	[ 34113, 1, 'S09413', 222 ], 'Ids in array, in A-D role order' );
+is_deeply( $g->jigsawGroupRole('t/emile/exams/1/2', 'Brown' ),
+	{ Emile => 'A', Rousseau => 'B', Sophie => 'C', Therese => 'D' },
+	 "Members' roles" );
+is_deeply( $g->id2jigsawGroupRole('t/emile/exams/3/2', 'Brown' ),
+	{ 34113 => 'A', 1 => 'B', S09413 => 'C', 222 => 'D' }, 'Id to role' );
+is_deeply( $g->name2jigsawGroup('t/emile/exams/3/1', 'Rousseau'), [ 'Brown' ],
+	'Name in which groups?');
+is_deeply( $g->rawJigsawScores('t/emile/exams/3/1', 'Brown'),
+	{ 1 => 4, 222 => 4, 34113 => 6, S09413 => 2 }, 'Raw scores');
+is_deeply( $g->rawJigsawScores('t/emile/exams/4/2', 'Brown'),
+	{ 34113 => 5, 1 => 5, S09413 => 3, 222 => 2 }, 'Jigsaw scores' );
 
 # exams
-is_deeply( $g->examdirs,
-	[ qw{t/emile/exam1 t/emile/exam2 t/emile/exam3 t/emile/exam4} ],
-		'examdirs' );
+is( $g->examdirs, qw{t/emile/exams}, 'examdirs' );
