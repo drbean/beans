@@ -79,41 +79,43 @@ Calculate grades for one player using Moose grades.
 =cut
 
 sub listing : Local {
-	my ($self, $c) = @_;
-	my $params = $c->request->params;
-	my $leagueId = $params->{league};
-	my $player = $params->{player};
-	my $playerId = $params->{id};
-	my $league = League->new( id => $c->config->{leagues} . $leagueId );
-	my $grades = Grades->new( league => $league );
-	if ( $league and $league->is_member($playerId) )
-	{
-		my $playerobj = Player->new(league => $league, id => $playerId);
-		if ( $player eq $playerobj->name ) {
-			my $name = $player;
-			my $component = $league->approach;
-			my $classwork = $grades->$component->{$playerId};
-			my $homework = $grades->homeworkPercent->{$playerId};
-			my $examPercent = $grades->examPercent->{$playerId};
-			my $grade = $grades->grades->{$playerId};
-			$classwork = $grades->sprintround($classwork);
-			$homework = $grades->sprintround($homework);
-			$examPercent = $grades->sprintround($examPercent);
-			$grade = $grades->sprintround($grade);
-			$c->stash->{league} = $leagueId;
-			$c->stash->{id} = $playerId;
-			$c->stash->{player} = $name;
-			my $weights = $grades->weights;
-			my $total = sum values %$weights;
-			$c->stash->{weight} = $weights;
-			$c->stash->{total} = $total;
-			$c->stash->{classwork} = $classwork;
-			$c->stash->{homework} = $homework;
-			$c->stash->{exams} = $examPercent;
-			$c->stash->{grade} = $grade;
-		}
-	}
-	$c->stash->{template} = 'grades_listing.tt2';
+    my ( $self, $c ) = @_;
+    my $params   = $c->request->params;
+    my $leagueId = $params->{league};
+    my $player   = $params->{player};
+    my $playerId = $params->{id};
+    my $league   = League->new( id => $c->config->{leagues} . $leagueId );
+    my $grades   = Grades->new( league => $league );
+    if ( $league and $league->is_member($playerId) ) {
+        my $playerobj = Player->new( league => $league, id => $playerId );
+        if ( $player eq $playerobj->name ) {
+            my $name        = $player;
+            my $component   = $league->approach;
+            my $classwork   = $grades->$component->{$playerId};
+            my $homework    = $grades->homeworkPercent->{$playerId};
+            my $examPercent = $grades->examPercent->{$playerId};
+            my $grade       = $grades->grades->{$playerId};
+            $classwork          = $grades->sprintround($classwork);
+            $homework           = $grades->sprintround($homework);
+            $examPercent        = $grades->sprintround($examPercent);
+            $grade              = $grades->sprintround($grade);
+            my $weights = $grades->weights;
+            my $total   = sum values %$weights;
+            $c->stash->{weight}    = $weights;
+            $c->stash->{total}     = $total;
+            $c->stash->{classwork} = $classwork;
+            $c->stash->{classwork_listing} =
+              $c->uri_for( 'classwork/listing', $leagueId, $playerId, $name );
+            $c->stash->{homework} = $homework;
+            $c->stash->{homework_listing} =
+              $c->uri_for( 'homework/listing', $leagueId, $playerId, $name );
+            $c->stash->{exams} = $examPercent;
+            $c->stash->{exams_listing} =
+              $c->uri_for( 'exams/listing', $leagueId, $playerId, $name );
+            $c->stash->{grade} = $grade;
+        }
+    }
+    $c->stash->{template} = 'grades_listing.tt2';
 }
 
 =head1 AUTHOR
