@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  1月 19, 17時45分10秒
+#Last Edit: 2010  1月 23, 12時50分54秒
 
 our $VERSION = 0.07;
 
@@ -747,7 +747,7 @@ The topics of the conversations in order.
 
 =cut
 
-    has 'conversations' => ( is => 'ro', isa => 'ArrayRef[Str]',
+    has 'conversations' => ( is => 'ro', isa => 'Maybe[ArrayRef[Str]]',
 	lazy => 1, default => sub { shift->league->yaml->{conversations} } );
 
 =head3 opponents
