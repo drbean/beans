@@ -1,8 +1,12 @@
 ---
 id: emile
 league: Rousseau Cram School
-field: Romanticism
+field: Prestentialism
 hw: t/emile/homework
+groupwork: t/emile/classwork
+exams: t/emile/exams
+examMax: 15
+hwMax: 2
 member:
   - id: S09413
     name: Sophie
@@ -26,12 +30,9 @@ series:
   - second
   - third
   - fourth
-exams: t/emile/exams
-examMax: 15
-hwMax: 2
 weights:
   classwork: 20
   homework : 20
   exams    : 60
 conversations:
-approach: groupwork
+approach: Groupwork
