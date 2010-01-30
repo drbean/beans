@@ -67,6 +67,8 @@ sub listing : Local {
 			$classwork = $work->sprintround($classwork);
 			$c->stash->{percent} = $classwork;
 			$c->stash->{weeks} = \@grades;
+			$c->stash->{raw} = $c->uri_for_action( 'classwork/raw',
+			    $leagueId, $playerId, $player );
 			$c->stash->{template} = 'classwork_listing.tt2';
 		}
 	}
@@ -136,6 +138,8 @@ sub raw : Local {
 		};
 	    }
 	    $c->stash->{exercise} = $exercise;
+	    $c->stash->{demerits} = $c->uri_for_action( 'classwork/demerits',
+		$leagueId, $playerId, $playerName );
 	    $c->stash->{template} = 'rawclasswork.tt2';
 	}
     }
