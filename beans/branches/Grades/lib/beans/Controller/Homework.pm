@@ -53,6 +53,8 @@ sub listing : Local {
 			$c->stash->{total} = $work->sprintround( $total );
 			my $percent = $work->homeworkPercent->{$playerId};
 			$c->stash->{percent} = $work->sprintround( $percent );
+			$c->stash->{raw} = $c->uri_for_action('homework/raw',
+				$leagueId, $playerId, $playerName );
 			$c->stash->{template} = 'homework_listing.tt2';
 		}
 	}
@@ -91,6 +93,8 @@ sub raw : Local {
 			$c->stash->{total} = $total;
 			my $grade = $work->hwforidasHash($playerId)->{$round};
 			$c->stash->{grade} = $grade;
+			$c->stash->{raw} = $c->uri_for_action('homework/raw',
+				$leagueId, $playerId, $playerName );
 			$c->stash->{template} = 'rawhomework.tt2';
 		}
 	}
