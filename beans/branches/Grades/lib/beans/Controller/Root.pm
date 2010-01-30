@@ -91,7 +91,7 @@ sub listing : Local {
         if ( $player eq $playerobj->name ) {
             my $name        = $player;
             my $component   = $league->approach;
-            my $classwork   = $grades->$component->{$playerId};
+            my $classwork   = $grades->groupwork->{$playerId};
             my $homework    = $grades->homeworkPercent->{$playerId};
             my $examPercent = $grades->examPercent->{$playerId};
             my $grade       = $grades->grades->{$playerId};
@@ -105,13 +105,13 @@ sub listing : Local {
             $c->stash->{total}     = $total;
             $c->stash->{classwork} = $classwork;
             $c->stash->{classwork_listing} =
-              $c->uri_for( 'classwork/listing', $leagueId, $playerId, $name );
+              $c->uri_for_action( 'classwork/listing', $leagueId, $playerId, $name );
             $c->stash->{homework} = $homework;
             $c->stash->{homework_listing} =
-              $c->uri_for( 'homework/listing', $leagueId, $playerId, $name );
+              $c->uri_for_action( 'homework/listing', $leagueId, $playerId, $name );
             $c->stash->{exams} = $examPercent;
             $c->stash->{exams_listing} =
-              $c->uri_for( 'exams/listing', $leagueId, $playerId, $name );
+              $c->uri_for_action( 'exams/listing', $leagueId, $playerId, $name );
             $c->stash->{grade} = $grade;
         }
     }
