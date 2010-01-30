@@ -58,7 +58,7 @@ sub listing : Local {
             } 0 .. $#$exams;
             $c->stash->{exams} = \@exams;
             $c->stash->{raw} =
-		$c->uri_for( 'raw', $leagueId, $playerId, $player );
+		$c->uri_for_action( 'exams/raw', $leagueId, $playerId, $player );
             $c->stash->{total}    = $examGrade;
             $c->stash->{percent}  = $examPercent;
             $c->stash->{weeks}    = \@grades;
@@ -127,7 +127,7 @@ sub raw : Local {
             my $grade = $work->examResultHash->{$playerId}->{$exam};
             $c->stash->{grade}    = $grade;
             $c->stash->{raw} =
-              $c->uri_for( 'raw', $leagueId, $playerId, $name );
+              $c->uri_for_action( 'exams/raw', $leagueId, $playerId, $name );
             $c->stash->{template} = 'rawexam.tt2';
         }
     }
