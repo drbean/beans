@@ -3,7 +3,7 @@ use warnings;
 use Test::More;
 use FindBin qw/$Bin/;
 
-plan tests => 49;
+plan tests => 50;
 plan skip_all => 'unset env var NO_TEST to enable this test' if $ENV{NO_TEST};
 
 use lib 'lib';
@@ -14,6 +14,10 @@ my $g = Grades->new( league => $l );
 
 # groupwork
 
+my $a = $l->approach->meta->apply( $g );
+is_deeply( $g->classworkPercent,
+	{ 34113 => 80, S09413 => 80, 1 => 60, 222 => 60, 223=>0},
+	"Classwork role delegates classworkPercent to Groupwork role" );
 is( $g->groupworkdirs, 't/emile/classwork', 'groupwork location' );
 is_deeply( $g->series, [ 1 .. 4 ], '4-session series' );
 is_deeply($g->beancanseries, {
