@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  1月 26, 12時20分32秒
+#Last Edit: 2010  1月 30, 21時03分48秒
 
 our $VERSION = 0.07;
 
@@ -118,7 +118,7 @@ The field of the league (class). What is the subject or description, the area of
 
 =head3 approach
 
-The style of classwork competition, eg compwork, or classwork (ie groupwork). This is a name of a method in the appropriate role that returns the final grades for classwork. TODO This is the name of the class to which 'classwork' and '' methods are delegated.
+The style of classwork competition, eg CompComp, or Groupwork. This is the name of the class (think OOP) to which 'classwork' and other methods are delegated.
 
 =cut
 
@@ -882,38 +882,58 @@ The total over the conversations over the series expressed as a percentage of th
 }
 
 
-=head2 Grades' Classwork Methods
+=head2 Grades' Groupwork Methods
 =cut
 
-role Classwork {
+role Groupwork {
 	use List::Util qw/max min sum/;
 	use List::MoreUtils qw/any/;
 	use Carp;
 	use POSIX;
 	use Grades::Types qw/Beancans Card/;
+	use Try::Tiny;
 
-=head3 series
+=head3 groupworkdirs
 
-The sessions over the series (semester) in which there was a different grouping (beancans) of players. Everyone in the same beancan for one session gets the same number of beans (classwork score.)
+The directory under which there are subdirectories containing data for the groupwork sessions.
 
 =cut
 
-	has 'series' => (is => 'ro', isa => 'ArrayRef[Str]',
-	    lazy => 1, default => sub { shift->league->yaml->{series} } );
+    has 'groupworkdirs' => (is => 'ro', isa => 'Str',
+	lazy => 1, default => sub { shift->league->yaml->{groupwork} } );
+
+=head3 series
+
+The sessions over the series (semester) in which there was a different grouping (beancans) of players. Everyone in the same beancan for one session gets the same number of beans (classwork score.) This method returns an arrayref of the names of the sessions, in numerical order, of the form, [1, 3 .. 7, 9, 10 .. 99 ]. Results are in sub directories of the same name, under groupworkdirs.
+
+=cut
+
+    has 'series' =>
+      ( is => 'ro', isa => 'Maybe[ArrayRef[Int]]', lazy_build => 1 );
+    method _build_series {
+        my $dir = $self->groupworkdirs;
+        my @subdirs = grep { -d } glob "$dir/*";
+        [ sort { $a <=> $b } map m/^$dir\/(\d+)$/, @subdirs ];
+    }
 
 =head3 beancanseries
 
 The different beancans for each of the sessions in the series. In the directory for each session of the series, there is a file called beancans.yaml, containing mappings of a beancan name to a sequence of PlayerNames, the members of the beancan.
 
 =cut
-	has 'beancanseries' => (is => 'ro', isa => Beancans, lazy_build => 1);
-	method _build_beancanseries {
-		my $series = $self->series;
-		my $league = $self->league->id;
-		+{ map { $_ => $self->inspect( "$league/$_/beancans.yaml" ) }
-			@$series };
-	}
 
+    has 'beancanseries' => ( is => 'ro', isa => Beancans, lazy_build => 1 );
+    method _build_beancanseries {
+	my $dir = $self->groupworkdirs;
+        my $series = $self->series;
+        my $league = $self->league->id;
+	my %beancans;
+	try { %beancans = 
+	    map { $_ => $self->inspect("$dir/$_/beancans.yaml") } @$series }
+		catch { local $" = ' ,';
+		    warn "Missing beancans in $league $dir @$series sessions" };
+	return \%beancans;
+    }
 
 =head3 allfiles
 
@@ -924,10 +944,11 @@ The files containing classwork points (beans) awarded to beancans.
 
 	has 'allfiles'  => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
 	method _build_allfiles {
-		my $league = $self->league->id;
+		my $dir = $self->groupworkdirs;
 		my $series = $self->series;
+		my $league = $self->league->id;
 		my $files = [ map { grep m|/(\d+)\.yaml$|,
-					glob "$league/$_/*.yaml" } @$series ];
+					glob "$dir/$_/*.yaml" } @$series ];
 		croak "${league}'s @$series files: @$files?" unless @$files;
 		return $files;
 	}
@@ -989,7 +1010,7 @@ Classwork beans for each beancan for the given week
 
 A hashref of all the beancans in a given session with the names of the members of each beancan. The number, composition and names of the beancans may change from one session of the series to the next.
 	
-Players in one beancan all get the same classwork grade for that session. The beancan members may be the same as the members of the class group, who work together in class, or may be individuals. Usually in a big class, the beancans will be the same as the groups, and in a small class they will be individuals.
+Players in one beancan all get the same Groupwork grade for that session. The beancan members may be the same as the members of the class group, who work together in class, or may be individuals. Usually in a big class, the beancans will be the same as the groups, and in a small class they will be individuals.
 
 Players in the 'Absent' beancan all get a grade of 0 for the session.
 
@@ -1036,7 +1057,7 @@ Given a session, returns the weeks (an array ref of integers) in which beans wer
 
 =head3 week2session
 
-	$classwork->week2session(15) # fourth
+	$Groupwork->week2session(15) # fourth
 
 Given the name of a week, return the name of the session it is in.
 
@@ -1073,7 +1094,7 @@ A hashref of names of members of beancans (players) and the beancans they were m
 
 =head3 name2beancan
 
-	$classwork->name2beancan( $week, $playername )
+	$Groupwork->name2beancan( $week, $playername )
 
 Given the name of a player, the name of the beancan they were a member of in the given week.
 
@@ -1095,7 +1116,7 @@ Given the name of a player, the name of the beancan they were a member of in the
 
 =head3 beancansNotInCard
 
-	$classwork->beancansNotInCard( $beancans, $card, 3)
+	$Groupwork->beancansNotInCard( $beancans, $card, 3)
 
 Test all beancans, except Absent, exist in the beancans listed on the card for the week.
 
@@ -1111,7 +1132,7 @@ Test all beancans, except Absent, exist in the beancans listed on the card for t
 
 =head3 beancanDataOnCard
 
-	$classwork->beancansNotInCard( $beancans, $card, 3)
+	$Groupwork->beancansNotInCard( $beancans, $card, 3)
 
 Test all of the beancans, except Absent, have all the points due them for the week. Duplicates the check done by the Card type.
 
@@ -1292,7 +1313,7 @@ Totals for the beancans over the given session. TODO Why '+=' in sessiontotal?
 					$sessiontotal{$can} = 0;
 					next;
 				}
-				carp "$can not in week $week classwork"
+				carp "$can not in week $week Groupwork"
 					unless defined $grade->{$can};
 				$sessiontotal{$can} += $grade->{$can};
 			}
@@ -1337,7 +1358,7 @@ Running totals for individual ids out of 100, over the whole series.
 			}
 			else {
 				my $name = $member->{name};
-				carp "$name $id classwork?";
+				carp "$name $id Groupwork?";
 				$grades{$id} = 0;
 			}
 		}
@@ -1378,7 +1399,7 @@ An arrayref of the ids of the exams for which there are grades for players in th
       ( is => 'ro', isa => 'Maybe[ArrayRef[Int]]', lazy_build => 1 );
     method _build_examids {
         my $examdirs = $self->examdirs;
-        my @exams   = glob "$examdirs/[0-9] $examdirs/[1-9][0-9]";
+        my @exams   = grep { -d } glob "$examdirs/[0-9] $examdirs/[1-9][0-9]";
         [ sort { $a <=> $b } map m/^$examdirs\/(\d+)$/, @exams ];
     }
 
@@ -1525,7 +1546,7 @@ A hash ref of the ids of the players and their total score on exams, expressed a
 =head2 Grades' Core Methods
 =cut
 
-class Grades with Homework with CompComp with Classwork with Exams with Jigsaw {
+class Grades with Homework with CompComp with Groupwork with Exams with Jigsaw {
 
 	use Carp;
 	use Grades::Types qw/Weights/;
@@ -1571,7 +1592,7 @@ A hashref of student ids and final grades.
 		my $members = $league->members;
 		my $homework = $self->homeworkPercent;
 		my $classcomponent = $league->approach;
-		my $classwork = $self->$classcomponent;
+		my $classwork = $self->groupwork;
 		my $exams = $self->examPercent;
 		my @ids = map { $_->{id} } @$members;
 		my $weights = $self->weights;
