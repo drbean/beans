@@ -1,6 +1,7 @@
 package Grades;
 
-#Last Edit: 2010  1月 30, 21時03分48秒
+#Last Edit: 2010  1月 31, 13時21分05秒
+#$Id$
 
 our $VERSION = 0.07;
 
@@ -744,6 +745,28 @@ Points deducted for undesirable performance elements (ie Chinese use) on the qui
 }
 
 
+=head2 Grades' Classwork Methods
+
+Classwork is work done in class with everyone and the teacher present. The two classwork approaches are CompComp and Groupwork. Depending on the league's approach, the methods are delegated to either CompComp or Groupwork.
+
+=cut
+
+role Classwork {
+
+=head3 approach
+
+The teaching approach and the grading approach.
+The role that will handle 'classwork' and 'classworkPercent'
+
+=cut
+
+    has 'approach' => ( is => 'rw', isa => 'Object',
+	handles => { classwork => 'total', classworkPercent => 'totalPercent' }
+	);
+	
+}
+
+
 =head2 Grades' CompComp Methods
 
 The comprehension question competition is a Swiss tournament regulated 2-partner conversation competition where players try to understand more of their opponent's information than their partners understand of theirs.
@@ -879,19 +902,29 @@ The total over the conversations over the series expressed as a percentage of th
 	my %percentages = map { $_ => $totals->{$_} * 100 / (5*$n) } keys %$totals;
 	return \%percentages;
     }
+
 }
 
 
 =head2 Grades' Groupwork Methods
 =cut
 
-role Groupwork {
+class Groupwork {
 	use List::Util qw/max min sum/;
 	use List::MoreUtils qw/any/;
 	use Carp;
 	use POSIX;
 	use Grades::Types qw/Beancans Card/;
 	use Try::Tiny;
+
+=head3 league
+
+The league (object) doing the groupwork.
+
+=cut
+
+	has 'league' => (is => 'ro', isa => 'League', required => 1,
+				handles => [ 'inspect' ] );
 
 =head3 groupworkdirs
 
@@ -930,7 +963,7 @@ The different beancans for each of the sessions in the series. In the directory 
 	my %beancans;
 	try { %beancans = 
 	    map { $_ => $self->inspect("$dir/$_/beancans.yaml") } @$series }
-		catch { local $" = ' ,';
+		catch { local $" = ', ';
 		    warn "Missing beancans in $league $dir @$series sessions" };
 	return \%beancans;
     }
@@ -1321,13 +1354,13 @@ Totals for the beancans over the given session. TODO Why '+=' in sessiontotal?
 		\%sessiontotal;
 	}
 
-=head3 groupwork
+=head3 groupworkPercent
 
 Running totals for individual ids out of 100, over the whole series.
 
 =cut
 
-	method groupwork {
+	method groupworkPercent {
 		my $members = $self->league->members;
 		my $series = $self->series;
 		my (%grades);
@@ -1364,6 +1397,14 @@ Running totals for individual ids out of 100, over the whole series.
 		}
 		\%grades;
 	}
+
+=head3 totalPercent
+
+A generic name for groupworkPercent. Suitable for when Classwork delegates classwork in Groupwork approach.
+
+=cut
+
+    method totalPercent { $self->groupworkPercent }
 
 }
 
@@ -1546,7 +1587,7 @@ A hash ref of the ids of the players and their total score on exams, expressed a
 =head2 Grades' Core Methods
 =cut
 
-class Grades with Homework with CompComp with Groupwork with Exams with Jigsaw {
+class Grades with Homework with CompComp with Classwork with Exams with Jigsaw {
 
 	use Carp;
 	use Grades::Types qw/Weights/;
@@ -1592,7 +1633,7 @@ A hashref of student ids and final grades.
 		my $members = $league->members;
 		my $homework = $self->homeworkPercent;
 		my $classcomponent = $league->approach;
-		my $classwork = $self->groupwork;
+		my $classwork = $self->classworkPercent;
 		my $exams = $self->examPercent;
 		my @ids = map { $_->{id} } @$members;
 		my $weights = $self->weights;
