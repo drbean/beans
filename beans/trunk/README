@@ -1,14 +1,14 @@
 Grades
 
-This is a collection of scripts useful for the micromanagement of grading students.
+This is a collection of methods useful for the micromanagement of grading students.
 
 A configuration file, league.yaml, as in t/emile/league.yaml in the distribution, holds names and ids of members, etc.
 
 Homework scores is a mapping of ids and scores for each round in individual files, named 3.yaml, etc in a homework subdirectory.
 
-Classwork scores are in individual files for each week, eg 1.yaml, 3.yaml, etc, in different subdirectories, eg, first, second, etc, for each session of the semester with a different student grouping. All the members of an individual group, called a beancan, get the same classwork score over that session.
+Classwork scores are in individual files for each week, eg 1.yaml, 3.yaml, etc, in different sub-subdirectories, eg, 1, 2 , etc, of a classwork subdirectory, for each session of the semester with a different student grouping. All the members of an individual group, called a beancan, get the same classwork score over that session.
 
-Exam scores are in files called g.yaml, in individual subdirs for each exam.
+Exam scores are in files called g.yaml, in sub-subdirs, 1, 2, etc of an exams subdirectory.
 
 INSTALLATION
 
