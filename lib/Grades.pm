@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  1月 31, 13時21分05秒
+#Last Edit: 2010  2月 01, 10時30分50秒
 #$Id$
 
 our $VERSION = 0.07;
@@ -45,13 +45,16 @@ Grades - A collocation of homework, classwork and exams
 	my $league = League->new( id => $script->league );
 	my $grades = Grades->new( league => $league );
 
-	my $homeworkgrades = $grades->homework;
+	$league->approach->meta->apply( $grades );
 	my $classworkgrades = $grades->classwork;
+	my $homeworkgrades = $grades->homework;
 	my $examgrades = $grades->examGrade;
 
 =head1 DESCRIPTION
 
 An alternative to a spreadsheet for grading students, using YAML files and scripts. The students are the players in a league ( class.) See the README and example emile league in t/emile in the distribution for the layout of the league directory in which homework, classwork and exam scores are recorded.
+
+Grades are a collocation of Classwork, Homework and Exams roles, but the Classwork role 'delegates' its methods to one of a number of approaches, each of which has a 'total' and 'totalPercent' method. Current approaches, or forms of curriculum, include CompComp, Groupwork and Jigsaw.
 
 Keywords: gold stars, token economies, bean counter
 
@@ -123,11 +126,8 @@ The style of classwork competition, eg CompComp, or Groupwork. This is the name 
 
 =cut
 
-	has 'approach' => (is => 'ro', isa => 'Str', lazy_build => 1);
-	method _build_approach {
-		my $data = $self->yaml;
-		$data->{approach};
-	}
+	has 'approach' => (is => 'ro', isa => 'Str', lazy => 1,
+	    default => sub { shift->yaml->{approach} } );
 
 =head3 members
 
@@ -747,23 +747,24 @@ Points deducted for undesirable performance elements (ie Chinese use) on the qui
 
 =head2 Grades' Classwork Methods
 
-Classwork is work done in class with everyone and the teacher present. The two classwork approaches are CompComp and Groupwork. Depending on the league's approach, the methods are delegated to either CompComp or Groupwork.
+Classwork is work done in class with everyone and the teacher present. The two classwork approaches are CompComp and Groupwork. Depending on the league's approach, the methods are 'delegated' to either CompComp or Groupwork.
 
 =cut
 
 role Classwork {
+	use Grades::Types qw/Results/;
 
-=head3 approach
+=head3 classwork, classworkPercent
 
-The teaching approach and the grading approach.
-The role that will handle 'classwork' and 'classworkPercent'
+Consume either Groupwork or Classwork's total, totalPercent methods as classwork, classworkPercent.
 
 =cut
 
-    has 'approach' => ( is => 'rw', isa => 'Object',
-	handles => { classwork => 'total', classworkPercent => 'totalPercent' }
-	);
-	
+    has 'classwork' => ( is => 'ro', isa => Results, lazy => 1,
+	default => sub { shift->total } );
+    has 'classworkPercent' => ( is => 'ro', isa => Results, lazy => 1,
+	default => sub { shift->totalPercent } );
+
 }
 
 
@@ -909,22 +910,13 @@ The total over the conversations over the series expressed as a percentage of th
 =head2 Grades' Groupwork Methods
 =cut
 
-class Groupwork {
+role Groupwork {
 	use List::Util qw/max min sum/;
 	use List::MoreUtils qw/any/;
 	use Carp;
 	use POSIX;
 	use Grades::Types qw/Beancans Card/;
 	use Try::Tiny;
-
-=head3 league
-
-The league (object) doing the groupwork.
-
-=cut
-
-	has 'league' => (is => 'ro', isa => 'League', required => 1,
-				handles => [ 'inspect' ] );
 
 =head3 groupworkdirs
 
@@ -1375,12 +1367,12 @@ Running totals for individual ids out of 100, over the whole series.
 				if ( defined $beancan ) {
 					my $grade = $grade->{$can->{$name}};
 					carp $member->{name} .
-						" not in $session session"
+						" not in session $session"
 						unless defined $grade;
 					$grades{$id} += $grade;
 				} else {
 					carp $member->{name} .
-					"'s beancan in $session session?"
+					"'s beancan in session $session?"
 				}
 			}
 		}
