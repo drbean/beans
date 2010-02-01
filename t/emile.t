@@ -83,7 +83,7 @@ is_deeply($g->homeworkPercent, { 34113=>0, S09413=>50, 1=>100, 222=>50, 223=>0},
 	"total %homework");
 
 # jigsaw
-my $quizfile = "/home/$ENV{USER}/class/beans/t/emile/activities.yaml";
+my $quizfile = "t/emile/activities.yaml";
 
 is_deeply( $g->jigsawConfig( 't/emile/exams/2/1'), $g->inspect('t/emile/exams/2/1/round.yaml'), 'Config file.');
 is( $g->topic( 't/emile/exams/2/2', 'Brown' ), 'citrus', 'Topic of exam text');
