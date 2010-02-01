@@ -90,8 +90,8 @@ sub listing : Local {
         my $playerobj = Player->new( league => $league, id => $playerId );
         if ( $player eq $playerobj->name ) {
             my $name        = $player;
-            my $component   = $league->approach;
-            my $classwork   = $grades->groupwork->{$playerId};
+	    $league->approach->meta->apply( $grades );
+            my $classwork   = $grades->classworkPercent->{$playerId};
             my $homework    = $grades->homeworkPercent->{$playerId};
             my $examPercent = $grades->examPercent->{$playerId};
             my $grade       = $grades->grades->{$playerId};

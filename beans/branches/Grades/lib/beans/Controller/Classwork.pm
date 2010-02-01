@@ -27,53 +27,52 @@ Calculate classwork score for one player using Moose classwork script.
 =cut
 
 sub listing : Local {
-	my ($self, $c) = @_;
-	my $params = $c->request->params;
-	my $leagueId = $params->{league} || $c->request->args->[0];
-	my $playerId = $params->{id} || $c->request->args->[1];
-	my $player = $params->{player} || $c->request->args->[2];
-	my $league = League->new( id => $c->config->{leagues} . $leagueId );
-	my $work = Grades->new( league => $league );
-	if ( $league and $league->is_member($playerId) )
-	{
-		my $playerobj = Player->new(league => $league, id => $playerId);
-		if ( $player eq $playerobj->name ) {
-			$c->stash->{league} = $leagueId;
-			$c->stash->{player} = $player;
-			$c->stash->{id} = $playerId;
-			my ($weeks, @grades, $classwork);
-			if ( $league->approach eq "compwork" )
-			{
-				$weeks = $work->conversations;
-				@grades = map { {
-					name=> $_,
-					grade => $work->sprintround(
-						$work->points($_)->{$playerId})
-						} } @$weeks;
-				$classwork = $work->compwork->{$playerId};
-			}
-			else {
-				$weeks = $work->allweeks;
-	                        for my $week ( @$weeks ) {
-					my $group = $work->name2beancan(
-								$week, $player);
-					my $grade = $work->sprintround($work
-						->work2grades($week)->{$group});
-					push @grades,
-						{ name=>$week, grade=>$grade};
-				}
-				$classwork = $work->groupwork->{$playerId};
-                        }
-			$classwork = $work->sprintround($classwork);
-			$c->stash->{percent} = $classwork;
-			$c->stash->{weeks} = \@grades;
-			$c->stash->{raw} = $c->uri_for_action( 'classwork/raw',
-			    $leagueId, $playerId, $player );
-			$c->stash->{template} = 'classwork_listing.tt2';
-		}
-	}
+    my ( $self, $c ) = @_;
+    my $params   = $c->request->params;
+    my $leagueId = $params->{league} || $c->request->args->[0];
+    my $playerId = $params->{id} || $c->request->args->[1];
+    my $player   = $params->{player} || $c->request->args->[2];
+    my $league   = League->new( id => $c->config->{leagues} . $leagueId );
+    my $work     = Grades->new( league => $league );
+    $league->approach->meta->apply($work);
+    if ( $league and $league->is_member($playerId) ) {
+        my $playerobj = Player->new( league => $league, id => $playerId );
+        if ( $player eq $playerobj->name ) {
+            $c->stash->{league} = $leagueId;
+            $c->stash->{player} = $player;
+            $c->stash->{id}     = $playerId;
+            my ( $weeks, @grades, $classwork );
+            if ( $league->approach eq "compwork" ) {
+                $weeks  = $work->conversations;
+                @grades = map {
+                    {
+                        name => $_,
+                        grade =>
+                          $work->sprintround( $work->points($_)->{$playerId} )
+                    }
+                } @$weeks;
+                $classwork = $work->compwork->{$playerId};
+            }
+            else {
+                $weeks = $work->allweeks;
+                for my $week (@$weeks) {
+                    my $group = $work->name2beancan( $week, $player );
+                    my $grade =
+                      $work->sprintround( $work->work2grades($week)->{$group} );
+                    push @grades, { name => $week, grade => $grade };
+                }
+                $classwork = $work->groupworkPercent->{$playerId};
+            }
+            $classwork           = $work->sprintround($classwork);
+            $c->stash->{percent} = $classwork;
+            $c->stash->{weeks}   = \@grades;
+            $c->stash->{raw} =
+              $c->uri_for_action( 'classwork/raw', $leagueId, $playerId,
+                $player );
+            $c->stash->{template} = 'classwork_listing.tt2';
+        }
+    }
 }
-
 
 =head2 raw
 
@@ -90,6 +89,7 @@ sub raw : Local {
     my $round      = $c->request->args->[3];
     my $league     = League->new( id => $c->config->{leagues} . $leagueId );
     my $work       = Grades->new( league => $league );
+    $league->approach->meta->apply($work);
     if ( $league and $league->is_member($playerId) ) {
         my $player = Player->new( league => $league, id => $playerId );
         if ( $playerName eq $player->name ) {
@@ -160,6 +160,7 @@ sub demerits : Local {
 	my $round =                      $c->request->args->[3];
 	my $league = League->new( id => $c->config->{leagues} . $leagueId );
 	my $work = Grades->new( league => $league );
+	$league->approach->meta->apply($work);
 	if ( $league and $league->is_member($playerId) )
 	{
 		my $player = Player->new( league => $league, id => $playerId );
