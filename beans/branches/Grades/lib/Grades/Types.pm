@@ -6,6 +6,7 @@ use List::MoreUtils qw/all/;
 
 use MooseX::Types -declare =>
 	[ qw/PlayerName PlayerNames AbsenteeNames PlayerId Member Members
+		Results
 		HomeworkResult HomeworkRound HomeworkRounds
 		Beancans Card
 		Exam
@@ -101,6 +102,26 @@ A possibly undefined list of Member.
 subtype Members,
 	as ArrayRef [Member],
 	message { 'Probably undefined or illegal PlayerNames or PlayerIds,' };
+
+=head2 Results
+
+A number for each playerId.
+
+=cut
+
+subtype Results,
+	as HashRef,
+	where {
+	    my $results = $_;
+	    all {
+		my $player = $_;
+		PlayerId->check( $player ) and 
+		Num->check( $results->{$player} )
+	    }
+	    keys %$results;
+	},
+	message {
+"Missing or non-numerical score or bad player id," };
 
 =head2 HomeworkResult
 
