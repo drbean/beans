@@ -19,15 +19,20 @@ my $builder = Module::Build->new(
 	    'Carp' => 0,
 	    'POSIX' => 0,
     },
-    dist_abstract => 
-	    'Ongoing grading of a league of players (ie class of students.)',
-    dist_abstract => 
-	    'Ongoing grading of a league of players (ie class of students.)',
     build_requires => {
         'Test::More' => 0,
 	'Pod::Coverage::Moose' => 0,
     },
     create_makefile_pl => 'traditional',
+    script_files        => [qw(
+                            script_files/grades
+                            script_files/classwork
+                            script_files/homework
+                            script_files/scantron.pl
+                            script_files/score_exam.pl
+                            script_files/score_homework.pl
+                                )],
+
     add_to_cleanup      => [ 'Grades-*' ],
     meta_merge => {
       resources => {

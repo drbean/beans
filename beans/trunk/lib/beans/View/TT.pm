@@ -2,6 +2,14 @@ package beans::View::TT;
 
 use strict;
 use base 'Catalyst::View::TT';
+use Template::Stash;
+
+$Template::Stash::LIST_OPS->{coded} = sub {
+	my $list = shift;
+	my %hash;
+	@hash{ @$list } = ( 0 .. $#$list );
+	return \%hash if $list;
+	};
 
 # __PACKAGE__->config(TEMPLATE_EXTENSION => '.tt');
 __PACKAGE__->config(TEMPLATE_EXTENSION => '.tt2',

@@ -60,8 +60,6 @@ use YAML qw/LoadFile DumpFile/;
 use List::MoreUtils qw/any/;
 
 has 'leagueId' => (is => 'ro', isa => 'Str', required => 1);
-has 'leagueId' => (is => 'ro', isa => 'Str', required => 1);
-has 'leagueId' => (is => 'ro', isa => 'Str', required => 1);
 has 'yaml' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 sub _build_yaml {
 		my ($instance) = @_;
@@ -217,32 +215,6 @@ sub percent {
 	my $totalMax = $self->totalMax;
 	$hw * ( 100/ $totalMax );
 }
-has 'allfiles'  => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
-sub _build_allfiles {
-	my $self = shift;
-	my $league = $self->leagueId;
-	my $series = $self->series;
-	[ map { grep m|/(\d+)\.yaml$|, glob "$league/$_/*" } @$series ];
-}
-has 'allweeks' => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
-sub _build_allweeks {
-	my $self = shift;
-	my $files = $self->allfiles;
-	[ map { m|/(\d+)\.yaml$|; $1 } @$files ];
-}
-has 'lastweek' => ( is => 'ro', isa => 'Int', lazy_build => 1 );
-sub _build_lastweek {
-	my $self = shift;
-	my $weeks = $self->allweeks;
-	max @$weeks;
-}
-has 'data' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
-sub _build_data {
-	my $self = shift;
-	my $files = $self->allfiles;
-	my $weeks = $self->allweeks;
-	+{ map { $weeks->[$_] => LoadFile $files->[$_] } 0..$#$weeks };
-}
 
 =head2 Classwork
 =cut
@@ -272,8 +244,6 @@ sub _build_allfiles {
 	my $series = $self->series;
 	my $files = [ map { grep m|/(\d+)\.yaml$|, glob "$league/$_/*.yaml" } @$series ];
 	die "${league}'s @$series files: @$files?" unless @$files;
-	return $files;
-	return $files;
 	return $files;
 
 }
@@ -450,9 +420,7 @@ How much should be given out for each week in this session, so that the total sc
 
 sub payout {
 	my $self = shift;
-	my $week = shift;
-	my $demerits = $self->demerits($week);
-	my $session = $self->week2session($week);
+	my $session = shift;
 	my $sessions = $self->series;
 	my $beancans = $self->beancans($session);
 	my $weeks = $self->weeks($session);
@@ -596,7 +564,7 @@ sub _build_examResults {
 	for my $exam ( @exams ) { $ids{$_}++ for keys %$exam; }
 	for my $id  ( keys %ids ) {
 		warn "Only $ids{$id} exam results for $id\n" unless 
-				$ids{$id} == @exams;
+				$ids{$id} and $ids{$id} == @exams;
 	}
 	+{ map { my $id=$_; $id => [ map { $_->{$id} } @exams ] } keys %ids };
 }

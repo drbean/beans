@@ -3,7 +3,7 @@
 
 <table>
 <tr><th>Class</th><th>Name</th><th>ID</th>
-<th>Weeks:</th>[% FOREACH week IN weeks %]
+<th>Weeks:</th>[% FOREACH week IN weeks.nsort('name') %]
     <th>[% week.name %]</th>[% END %]
 <th>Total Score</th><th>Grade</th></tr>
   <tr>
@@ -11,8 +11,8 @@
     <td>[% player %]</td>
     <td>[% id %]</td>
     <td></td>
-[% FOREACH week IN weeks -%]
-    <td>[% week.score %]</td>
+[% FOREACH week IN weeks.nsort('name') -%]
+    <td><a href="[% raw _ '/' _ week.name %]">[% week.score %]</a>
 [% END -%]
     <td>[% total %]</td>
     <td>[% percent %]</td>

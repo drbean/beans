@@ -4,11 +4,13 @@
 <table >
 <caption>Weight of Course Components</caption>
 <tr>
-  <td>Classwork<td>[% weight.0 %]
+  <td>Classwork<td>[% weight.classwork %]%
 <tr>
-  <td>Homework<td>[% weight.1 %]
+  <td>Homework<td>[% weight.homework %]%
 <tr>
-  <td>Exams<td>[% weight.2 %]
+  <td>Exams<td>[% weight.exams %]%
+<tr>
+  <td>Total<td>[% total %]%
 </table>
 <table>
 <tr><th>Class</th><th>Name</th><th>ID</th><th>Classwork</th><th>Homework</th>
@@ -19,11 +21,9 @@
     <td>[% league %]</td>
     <td>[% player %]</td>
     <td>[% id %]</td>
-    <td>[% classwork %]</td>
-    <td>[% homework %]</td>
-[% FOREACH exam IN exams -%]
-    <td>[% exam.grade %]</td>
-[% END -%]
+    <td><a href="[% classwork_listing %]">[% classwork %]</a>
+    <td><a href="[% homework_listing %]">[% homework %]</a>
+    <td><a href="[% exams_listing %]">[% exams %]</a>
     <td>[% grade %]</td>
   </tr>
 </table>
