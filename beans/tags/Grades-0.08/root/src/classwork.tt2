@@ -1,0 +1,24 @@
+[% META title = 'Classwork Grades Request' -%]
+
+<form method="post" action="[% c.uri_for('classwork_listing') %]">
+<table>
+  <tr><td>League:</td><td>
+  <select name="league" size="[% leagues.size %]">
+
+<option value="GL00029">GL00029日語文共同學制虛擬班二甲 中級英文聽說訓練</option>
+<option value="GL00030">GL00030日語文共同學制虛擬班二乙 中級英文聽說訓練</option>
+<option value="GL00031">GL00031日語文共同學制虛擬班二丙 中級英文聽說訓練</option>
+<option value="GL00034">GL00034日語文共同學制虛擬班二丁 中級英文聽說訓練</option>
+<option value="FLA0016">FLA0016夜應外大學二甲 英語會話(二)</option>
+<option value="MIA0017">MIA0017日資管大學二甲 商用英文實務</option>
+<option value="BMA0099">BMA0099日經管大學二甲 商用英文實務</option>
+<option value="BMA0100">BMA0100日經管大學二乙 商用英文實務</option>
+<option value="FLA0030">FLA0030夜應外大學四甲 商用英文</option>
+<option value="FLA0027">FLA0027夜應外大學二甲 跨文化溝通</option>
+
+  </select></td></tr>
+  <tr><td>Id:</td><td><input type="text" name="id"></td></tr>
+  <tr><td>English Name:</td><td><input type="text" name="player"></td></tr>
+</table>
+<input type="submit" name="Submit" value="Submit">
+</form>

@@ -1,0 +1,184 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use List::Util qw/sum/;
+use YAML qw/LoadFile DumpFile/;
+use IO::All;
+
+use Getopt::Long;
+use Pod::Usage;
+
+my $man = 0;
+my $help = 0;
+my ($league );
+
+GetOptions (
+	"league=s" => \$league,
+	'help|?' => \$help, man => \$man) or pod2usage(2);
+pod2usage(1) if $help;
+pod2usage(-exitstatus => 0, -verbose => 2) if $man;
+
+die "League: ?" unless $league;
+my $class = LoadFile "/home/greg/$league/league.yaml"
+					or die "No league with this name: $!";
+my @sessions = @{$class->{series}};
+my @members = @{$class->{member}};
+my %ids = map { $_->{name} => $_->{id} } @members;
+my %names = map { $_->{id} => $_->{name} } @members;
+my @names = values %names;
+my $names = join '|', @names;
+my $nameqr = qr/$names/;
+
+my $hwdir = $class->{hw} || "/home/greg/$league/hw";
+my @hwfiles = glob "$hwdir/*.yaml";
+my @weeks = map { m/^$hwdir\/(\d+)\.yaml$/ } @hwfiles;
+my @hw = map { LoadFile "$hwdir/$_.yaml" } @weeks;
+
+my $oldtotal = LoadFile "$hwdir/cumulative.yaml";
+
+my %grades;
+
+format STDOUT_TOP = 
+                            Homework
+Name        ID          Weeks                 Total HomeWork Grade
+-------------------------------------------------------------------------
+.
+
+my $i = 0;
+foreach my $hw ( @hw )
+{
+	my $week = $weeks[$i++];
+	my @session = grep { -e "/home/greg/$league/$_/$week.yaml" } @sessions;
+	die "Week $week classwork in 2 @session of @sessions sessions"
+			unless $#session == 0;
+	my $session = $session[0];
+	my $teams = LoadFile "/home/greg/$league/$session/teams.yaml";
+	foreach my $team ( keys %$teams )
+	{
+		unless ( ref $hw->{$team} )
+		{
+			my @members = @{$teams->{$team}};
+			for my $name ( @members )
+			{
+				$grades{$name}{$week} = $hw->{$team}/@members;;
+			}
+		}
+
+		elsif ( ref $hw->{$team} eq 'ARRAY' )
+		{
+			my @members = @{ $hw->{$team}};
+			foreach my $member ( @members )
+			{
+				if ( ref $member eq 'HASH' )
+				{	
+					my ( $name, $grade ) = each %$member; 
+					$grades{$name}{$week} = $grade;
+				}
+			}
+		}
+		elsif ( ref $hw->{$team} eq 'HASH' )
+		{
+			my @membership = keys %{ $hw->{$team} };
+			if (grep m/$nameqr/, @membership)
+			{
+				foreach my $writer ( @membership )
+				{
+					$grades{$writer}{$week} =
+						$hw->{$team}->{$writer};
+				}
+			}
+			else
+			{
+				my $writers = $hw->{$team}->{Writers};
+				foreach my $member ( @$writers ) 
+				{
+					my ($name, $grade)  = each %$member;
+					$grades{$name}{$week} = $grade;
+				}
+			}
+		}
+	}
+}
+
+my %accumulated;
+@accumulated{ keys %names } = map {
+			my $name = $_;
+			my $total = sum map
+    {
+        my $week = $_;
+	# die "$name has $grades{$name}{$week} in week $week?" unless exists $grades{$name}{$week};
+        defined $grades{$name}{$week}? $grades{$name}{$week}: 0;
+    } @weeks;
+    } values %names;
+
+foreach my $id ( sort values %ids ) 
+{
+	my $name = $names{$id};
+	my $grade = $accumulated{$id};
+	die "No homework grade for $name $id" unless defined $grade;
+	my @indgrades = map { $grades{$name}{$_} } @weeks;
+	no warnings;
+	format STDOUT =
+@<<<<<<<<<< @<<<<<<<<<  @<<<  @<<<  @<<<  @<<<  @<<<  @<<<  @<<<      @<<<<<
+$name,   $id,	@indgrades, $grade
+.
+	write;
+	use warnings;
+	# $grades->{$partner} = $newGrade;
+}
+
+
+my $log = io "$hwdir/hwtotal.log";
+localtime() . ": $0 run to calculate homework totals at week $weeks[-1].\n"
+									>> $log;
+DumpFile ("$hwdir/cumulative.yaml.bak", $oldtotal);
+DumpFile ("$hwdir/cumulative.yaml", \%accumulated);
+
+__END__
+
+=head1 NAME
+
+hwtotal - Add homework results to a cumulative total and show present standing
+
+=head1 SYNOPSIS
+
+hwtotal [options] 
+
+Options:
+
+--help            This help message
+
+--man            A man page
+
+--session First	The part of the semester in which the work was done (ignored)
+
+--team Gray	The team to which the claimant belongs (ignored)
+
+--league m/j	The league whose results these are
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-league>
+
+The league to which the redeemer belongs
+
+=item B<-session>
+
+The session in which the beans were won. (ignored)
+
+=item B<-team>
+
+The team to which the claimant belongs. (ignored)
+
+=back
+
+=head1 DESCRIPTION
+
+B<hwtotal> tallies individuals' scores in the files in the hw directory recorded in league.yaml. It stores the total in cumulative.yaml, in the same directory.
+
+=cut
+
