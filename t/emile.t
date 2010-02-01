@@ -14,7 +14,7 @@ my $g = Grades->new( league => $l );
 
 # groupwork
 
-my $a = $l->approach->meta->apply( $g );
+$l->approach->meta->apply( $g );
 is_deeply( $g->classworkPercent,
 	{ 34113 => 80, S09413 => 80, 1 => 60, 222 => 60, 223=>0},
 	"Classwork role delegates classworkPercent to Groupwork role" );
