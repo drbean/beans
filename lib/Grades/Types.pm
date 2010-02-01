@@ -6,12 +6,13 @@ use List::MoreUtils qw/all/;
 
 use MooseX::Types -declare =>
 	[ qw/PlayerName PlayerNames AbsenteeNames PlayerId Member Members
-		HomeworkResults
+		Results
+		HomeworkResult HomeworkRound HomeworkRounds
 		Beancans Card
 		Exam
 		Weights/ ];
 
-use MooseX::Types::Moose qw/Int Num ArrayRef HashRef Str Maybe/;
+use MooseX::Types::Moose qw/Value Int Num Ref ArrayRef HashRef Str Maybe/;
 
 =head1 NAME
 
@@ -53,8 +54,7 @@ A string, where the first letter is upper case, there are some letters or spaces
 
 =cut
 
-subtype PlayerName, as Str, where { $_ =~ m/^[[:alpha:]'-]+\d?$/ };
-# subtype PlayerName, as Str;
+subtype PlayerName, as Str;
 
 =head2 PlayerNames
 
@@ -103,25 +103,72 @@ subtype Members,
 	as ArrayRef [Member],
 	message { 'Probably undefined or illegal PlayerNames or PlayerIds,' };
 
-=head2 HomeworkResults
+=head2 Results
+
+A number for each playerId.
+
+=cut
+
+subtype Results,
+	as HashRef,
+	where {
+	    my $results = $_;
+	    all {
+		my $player = $_;
+		PlayerId->check( $player ) and 
+		Num->check( $results->{$player} )
+	    }
+	    keys %$results;
+	},
+	message {
+"Missing or non-numerical score or bad player id," };
+
+=head2 HomeworkResult
+
+A number or the string 'transfer'.
+
+=cut
+
+subtype HomeworkResult,
+	as Value,
+	where { Num->check( $_ ) or m/transfer/i },
+	message {
+"Missing or non-numerical score or not string 'transfer'," };
+
+=head2 HomeworkRound
+
+A hashref of PlayerId keys and HomeworkResult values.
+
+=cut
+
+subtype HomeworkRound,
+	as HashRef,
+	where { 
+	    my $play = $_;
+	    all {
+		    my $player = $_;
+		    PlayerId->check( $player ) and 
+		    HomeworkResult->check( $play->{$player} )
+	    }
+	    keys %$play;
+	},
+	message {
+"Problematic PlayerId or Homework Result," };
+
+=head2 HomeworkRounds
 
 A hashref of the homework keyed on the round (an Int.) For each round, the keys are PlayerId, and the values are scores, or Num.
 
 =cut
 
-subtype HomeworkResults,
+subtype HomeworkRounds,
 	as HashRef,
 	where { 
 		my $results = $_;
 		all {
 			my $round = $_;
 			Int->check( $round ) and
-			all {
-				my $player = $_;
-				PlayerId->check( $player ) and 
-				Num->check( $results->{$round}->{$player} )
-			}
-			keys %{ $results->{$round} };
+			    HomeworkRound->check( $results->{$round} )
 		}
 		keys %$results;
 	},
@@ -161,15 +208,16 @@ A hashref of classwork results for the lesson, where the keys are beancan names 
 subtype Card,
 	as HashRef,
 	where {
-		my $card = $_;
+		my %card = %$_;
+		delete $card{Absent};
 		all {
 			my $can = $_;
 			Str->check( $can ) and 
-			Int->check( $card->{$can}->{merits} ) and
-			Int->check( $card->{$can}->{absences} ) and
-			Int->check( $card->{$can}->{tardies} );
+			Int->check( $card{$can}->{merits} ) and
+			Int->check( $card{$can}->{absences} ) and
+			Int->check( $card{$can}->{tardies} );
 		}
-		keys %$card;
+		keys %card;
 	},
 	message { 'Probably undefined or non-numeric Merit, Absence, Tardy scores, or possibly illegal beancan,' };
 

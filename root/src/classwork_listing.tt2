@@ -12,7 +12,7 @@
     <td>[% id %]</td>
     <td></td>
 [% FOREACH week IN weeks -%]
-    <td>[% week.grade %]</td>
+    <td><a href="[% raw _ '/' _ week.name %]">[% week.grade %]</a>
 [% END -%]
     <td>[% percent %]</td>
   </tr>

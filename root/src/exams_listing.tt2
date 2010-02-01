@@ -1,0 +1,20 @@
+[% # Provide a title to root/lib/site/header -%]
+[% META title = 'Exam scores' -%]
+
+<table>
+<tr><th>Class<th>Name<th>ID<th>Exams:[% FOREACH exam IN exams %]
+    <th>[% exam.name %][% END %]
+<th>Total Score<th>Grade</tr>
+  <tr>
+    <td>[% league %]</td>
+    <td>[% player %]</td>
+    <td>[% id %]</td>
+    <td>
+[% FOREACH exam IN exams -%]
+    <td><a href="[% raw _ '/' _ exam.name %]">[% exam.grade %]</a>
+[% END -%]
+    <td>[% total %]</td>
+    <td>[% percent %]</td>
+  </tr>
+</table>
+
