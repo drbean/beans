@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  3月 01, 21時14分29秒
+#Last Edit: 2010  3月 01, 21時19分10秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -290,6 +290,7 @@ role Homework {
 	use Scalar::Util qw/looks_like_number/;
 	use Carp;
     use Grades::Types qw/PlayerId HomeworkResult HomeworkRound HomeworkRounds/;
+
 
 =head3 hwdir
 
