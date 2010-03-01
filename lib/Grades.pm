@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  3月 01, 21時19分27秒
+#Last Edit: 2010  3月 01, 21時21分25秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -1648,7 +1648,7 @@ no Moose;
 
 __PACKAGE__->meta->make_immutable;
 
-1;    # End of Grades::Types
+1;    # End of Grades
 
 =head1 AUTHOR
 
