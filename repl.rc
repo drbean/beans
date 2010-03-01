@@ -7,7 +7,7 @@ use lib 'lib';
 use Grades;
 
 my %leagues = map { $_ => League->new( id => "../../$_" ) }
-		qw/GL00003 GL00022 GL00031 CLA0013 MIA0012 FLA0015 FLB0002/;
+		qw/GL00003 GL00022 GL00031 GL00038 GL00040 CLA0013 MIA0012 FLA0015 FLB0002/;
 my %grades = map { $_ => Grades->new( league => $leagues{$_} ) } keys %leagues;
 
 my $league = 'GL00022';
@@ -19,4 +19,4 @@ my $i = $grades->{$can->{$members->[1]->{name}}};
 my $ii = $grades->{$can->{$members->[2]->{name}}};
 my $iii = $grades->{$can->{$members->[3]->{name}}};
 my $jj = Grades->new( league => League->new( id => 't/emile/' ) );
-use Grades::Types qw/Name Id Member Members/;
+use Grades::Types qw/PlayerName PlayerId Member Members/;
