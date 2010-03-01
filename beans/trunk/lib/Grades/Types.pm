@@ -165,13 +165,14 @@ subtype HomeworkRounds,
 	as HashRef,
 	where { 
 		my $results = $_;
-		all {
+		my $test = all {
 			my $round = $_;
 			Int->check( $round ) and
 			    HomeworkRound->check( $results->{$round} )
 			keys %{ $results->{$round} };
 		}
 		keys %$results;
+		return 0 unless $test or not defined $test;
 	},
 	message {
 "Impossible round number or PlayerId, or missing or non-numerical score," };
