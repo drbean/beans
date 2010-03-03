@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  3月 01, 21時23分39秒
+#Last Edit: 2010  3月 03, 14時24分20秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -17,6 +17,9 @@ has 'league' => (metaclass => 'Getopt', is => 'ro', isa => 'Str',
 		cmd_flag => 'l',);
 has 'exam' => ( metaclass => 'Getopt', is => 'ro', isa => 'Str',
 		cmd_flag => 'e',);
+
+has 'round' => ( metaclass => 'Getopt', is => 'ro', isa => 'Str',
+		cmd_flag => 'r',);
 
 # letters2score.pl
 has 'exercise' => ( metaclass => 'Getopt', is => 'ro', isa => 'Str',
