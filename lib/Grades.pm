@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  3月 03, 14時24分20秒
+#Last Edit: 2010  3月 09, 22時55分36秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -784,14 +784,28 @@ The comprehension question competition is a Swiss tournament regulated 2-partner
 
 role CompComp {
 
-=head3 conversations
+=head3 compcompdirs
 
-The topics of the conversations in order.
+The directory under which there are subdirectories containing data for the CompComp rounds.
 
 =cut
 
-    has 'conversations' => ( is => 'ro', isa => 'Maybe[ArrayRef[Str]]',
-	lazy => 1, default => sub { shift->league->yaml->{conversations} } );
+    has 'compcompdirs' => (is => 'ro', isa => 'Str',
+	lazy => 1, default => sub { shift->league->yaml->{compcomp} } );
+
+=head3 conversations
+
+The pair conversations over the series (semester). This method returns an arrayref of the numbers of the conversations, in numerical order, of the form, [1, 3 .. 7, 9, 10 .. 99 ]. Results are in sub directories of the same name, under compcompdirs.
+
+=cut
+
+    has 'conversations' =>
+      ( is => 'ro', isa => 'Maybe[ArrayRef[Int]]', lazy_build => 1 );
+    method _build_conversations {
+        my $dir = $self->compcompdirs;
+        my @subdirs = grep { -d } glob "$dir/*";
+        [ sort { $a <=> $b } map m/^$dir\/(\d+)$/, @subdirs ];
+    }
 
 =head3 opponents
 
