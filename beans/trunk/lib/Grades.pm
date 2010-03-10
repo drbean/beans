@@ -1,6 +1,5 @@
 package Grades;
-
-#Last Edit: 2010  3月 09, 22時55分36秒
+#Last Edit: 2010  3月 10, 15時15分06秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -79,10 +78,11 @@ class League {
 	use YAML qw/LoadFile DumpFile/;
 	use List::MoreUtils qw/any/;
 	use Grades::Types qw/PlayerName PlayerNames Members/;
+	use Try::Tiny;
 
 =head3 id
 
-Unless called from the script or web app, it's a path to the league directory.
+Actually, it's a path to the league directory, below the $grades->leagues dir.
 
 =cut
 
@@ -206,8 +206,11 @@ Loads a YAML file.
 
 =cut
 
-	method inspect (Str $file) {
-		LoadFile $file;
+    method inspect (Str $file) {
+	my ($warning, $data);
+	try { $data = LoadFile $file }
+	    catch { warn "Couldn't open $file: $_, $@" };
+	return $data;
 	}
 
 =head3 save
