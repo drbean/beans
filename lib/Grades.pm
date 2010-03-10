@@ -1,5 +1,5 @@
 package Grades;
-#Last Edit: 2010  3月 10, 15時15分24秒
+#Last Edit: 2010  3月 10, 15時15分44秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -78,10 +78,20 @@ class League {
 	use YAML qw/LoadFile DumpFile/;
 	use List::MoreUtils qw/any/;
 	use Grades::Types qw/PlayerName PlayerNames Members/;
+	use Try::Tiny;
+
+=head3 leagues
+
+The path to the league directory.
+
+=cut
+
+	has 'leagues' => (is => 'ro', isa => 'Str', required => 1, lazy => 1,
+	    default => '/home/drbean/class' );
 
 =head3 id
 
-Unless called from the script or web app, it's a path to the league directory.
+Actually, it's a path to the league directory, below the $grades->leagues dir.
 
 =cut
 
@@ -205,8 +215,8 @@ Loads a YAML file.
 
 =cut
 
-	method inspect (Str $file) {
-		LoadFile $file;
+    method inspect (Str $file) {
+	LoadFile $file;
 	}
 
 =head3 save
@@ -1600,7 +1610,7 @@ A hash ref of the ids of the players and their total score on exams, expressed a
 =head2 Grades' Core Methods
 =cut
 
-class Grades with Homework with CompComp with Classwork with Exams with Jigsaw {
+class Grades with Homework with CompComp with Groupwork with Classwork with Exams with Jigsaw {
 
 	use Carp;
 	use Grades::Types qw/Weights/;
