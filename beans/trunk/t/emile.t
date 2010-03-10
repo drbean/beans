@@ -3,13 +3,13 @@ use warnings;
 use Test::More;
 use FindBin qw/$Bin/;
 
-plan tests => 50;
+plan tests => 52;
 plan skip_all => 'unset env var NO_TEST to enable this test' if $ENV{NO_TEST};
 
 use lib 'lib';
 use Grades;
 
-my $l = League->new( id => 't/emile' );
+my $l = League->new( leagues => 't', id => 'emile' );
 my $g = Grades->new( league => $l );
 
 # groupwork
@@ -125,3 +125,7 @@ is_deeply( $g->rawJigsawScores('t/emile/exams/4/2', 'Brown'),
 # exams
 is( $g->examdirs, qw{t/emile/exams}, 'examdirs' );
 is_deeply( $g->examids, [ 1 .. 4 ], 'examids' );
+
+# compcomp
+is( $g->compcompdirs, 't/emile/comp', 'compcompdirs' );
+is_deeply( $g->conversations, [ 1..2 ], 'conversations' );
