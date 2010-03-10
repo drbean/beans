@@ -1,5 +1,6 @@
 package Grades;
-#Last Edit: 2010  3月 10, 15時15分44秒
+
+#Last Edit: 2010  3月 10, 15時16分08秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -105,9 +106,9 @@ The content of the league configuration file.
 
 	has 'yaml' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 	method _build_yaml {
-			my ($instance) = @_;
-			my $league = $instance->id;
-			$self->inspect( "$league/league.yaml" );
+			my $leaguedirs = $self->leagues;
+			my $league = $self->id;
+			$self->inspect( "$leaguedirs/$league/league.yaml" );
 	}
 
 =head3 name
@@ -799,8 +800,11 @@ The directory under which there are subdirectories containing data for the CompC
 
 =cut
 
-    has 'compcompdirs' => (is => 'ro', isa => 'Str',
-	lazy => 1, default => sub { shift->league->yaml->{compcomp} } );
+    has 'compcompdirs' => (is => 'ro', isa => 'Str', lazy_build => 1 );
+    method _build_compcompdirs { 
+	my $leaguedir = $self->league->leagues . "/" . $self->league->id;
+	my $compcompdir = $leaguedir .'/' . shift->league->yaml->{compcomp};
+    }
 
 =head3 conversations
 
@@ -823,8 +827,8 @@ The ids of opponents of the players in the given conversation.
 =cut
 
     method opponents ( Str $round ) {
-	my $league = $self->league->id;
-	my $file = "$league/$round/opponent.yaml";
+	my $comp = $self->compcompdirs;
+	my $file = "$comp/$round/opponent.yaml";
 	my $opponents = $self->inspect( $file );
 }
 
@@ -836,8 +840,8 @@ The number of questions correct in the given conversation.
 =cut
 
     method correct ( Str $round ) {
-	my $league = $self->league->id;
-	my $file = "$league/$round/correct.yaml";
+	my $comp = $self->compcompdirs;
+	my $file = "$comp/$round/correct.yaml";
 	my $correct = $self->inspect( $file );
 }
 
