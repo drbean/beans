@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  3月 10, 15時16分08秒
+#Last Edit: 2010  3月 20, 18時29分54秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -62,10 +62,6 @@ Grades are a collocation of Classwork, Homework and Exams roles, but the Classwo
 Keywords: gold stars, token economies, bean counter
 
 =cut
-
-=cut
-
-
 
 =head1 ATTRIBUTES & METHODS
 
@@ -217,7 +213,10 @@ Loads a YAML file.
 =cut
 
     method inspect (Str $file) {
-	LoadFile $file;
+	my ($warning, $data);
+	try { $data = LoadFile $file }
+	    catch { warn "Couldn't open $file," };
+	return $data;
 	}
 
 =head3 save
@@ -303,7 +302,6 @@ role Homework {
 	use Scalar::Util qw/looks_like_number/;
 	use Carp;
     use Grades::Types qw/PlayerId HomeworkResult HomeworkRound HomeworkRounds/;
-
 
 =head3 hwdir
 
@@ -848,7 +846,7 @@ The number of questions correct in the given conversation.
 
 =head3 points
 
-The points of the players in the given conversation.
+The points of the players in the given conversation. 5 for a Bye, 1 for Late, 0 for Unpaired, 1 for a non-numerical number correct result, 5 for more correct, 3 for less correct, 4 for the same number correct. Transfers' results are computed from their results in the same round in their old league.
 
 =cut
 
@@ -889,6 +887,10 @@ The points of the players in the given conversation.
 	    my $theircorrect = $correct->{$other};
 	    if ( not defined $ourcorrect ) {
 		$points->{$player} = 0;
+		next;
+	    }
+	    if ( $correct->{$player} !~ m/^\d+$/ ) {
+		$points->{$player} = 1;
 		next;
 	    }
 	    if ( not defined $theircorrect ) {
