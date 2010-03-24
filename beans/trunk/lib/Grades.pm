@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  3月 20, 18時29分54秒
+#Last Edit: 2010  3月 22, 21時58分42秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -1446,7 +1446,7 @@ role Exams {
 	use Carp;
 	use Grades::Types qw/Exam/;
 
-=head3 examdir
+=head3 examdirs
 
 The directory where the exams are.
 
@@ -1461,7 +1461,7 @@ The directory where the exams are.
 
 =head3 examids
 
-An arrayref of the ids of the exams for which there are grades for players in the league, in numerical order, of the form, [1, 3 .. 7, 9, 10 .. 99 ]. Results are in sub directories of the same name, under examdir.
+An arrayref of the ids of the exams for which there are grades for players in the league, in numerical order, of the form, [1, 3 .. 7, 9, 10 .. 99 ]. Results are in sub directories of the same name, under examdirs.
 
 =cut
 
