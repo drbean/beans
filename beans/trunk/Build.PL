@@ -33,6 +33,7 @@ my $builder = Module::Build->new(
     },
     create_makefile_pl => 'traditional',
     add_to_cleanup      => [ 'Grades-*' ],
+	script_files => [ qw( script_files/scantron.pl ) ],
     meta_merge => {
       resources => {
           bugtracker => 'http://rt.cpan.org/NoAuth/Bugs.html?Dist=Grades',
