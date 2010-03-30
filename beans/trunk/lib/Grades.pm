@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  3月 30, 10時02分33秒
+#Last Edit: 2010  3月 29, 18時32分14秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -833,6 +833,17 @@ The round.yaml file with data about the CompComp activity for the given conversa
 	try { $config = $self->inspect($file) }
 	    catch { warn "No config file for CompComp round $round at $file" };
 	return $config;
+    }
+
+=head3 tables
+
+The tables with players according to their roles for the given round. In the 'pairs' mapping in the config file.
+
+=cut
+
+    method tables ( Str $round ) {
+	my $config = $self->compConfig($round);
+	return $config->{pairs};
     }
 
 =head3 compQuizfile
