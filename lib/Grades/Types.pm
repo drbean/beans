@@ -169,9 +169,7 @@ subtype HomeworkRounds,
 			my $round = $_;
 			Int->check( $round ) and
 			    HomeworkRound->check( $results->{$round} )
-			keys %{ $results->{$round} };
-		}
-		keys %$results;
+		    } keys %$results;
 		return 0 unless $test or not defined $test;
 	},
 	message {
