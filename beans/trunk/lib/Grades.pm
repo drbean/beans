@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  3月 29, 22時22分31秒
+#Last Edit: 2010  3月 29, 22時36分44秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -639,7 +639,7 @@ A hash ref of all the groups in the jigsaw and the names of members of the group
 
 =head3 jigsawGroupMembers
 
-An hash ref of the names of the members of the given group in the given jigsaw, keyed on the roles, A..D.
+An array (was hash ref) of the names of the members of the given group in the given jigsaw, in order of the roles, A..D.
 
 =cut
 
@@ -669,11 +669,7 @@ Ids in array, in A-D role order
 	my $members = $self->league->members;
 	my %namedMembers = map { $_->{name} => $_ } @$members;
 	my $namesbyRole = $self->jigsawGroupMembers( $location, $group );
-	my @idsbyRole;
-	for my $role ( sort keys %$namesbyRole ) {
-		my $id = $namedMembers{ $namesbyRole->{$role} }->{id};
-		push @idsbyRole, $id;
-	}
+	my @idsbyRole = map { $namedMembers{$_}->{id} } @$namesbyRole;
 	return \@idsbyRole;
     }
 
