@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  3月 22, 21時58分42秒
+#Last Edit: 2010  3月 30, 10時02分33秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -791,6 +791,8 @@ The comprehension question competition is a Swiss tournament regulated 2-partner
 =cut
 
 role CompComp {
+    use Try::Tiny;
+    use List::MoreUtils qw/any/;
 
 =head3 compcompdirs
 
@@ -818,6 +820,125 @@ The pair conversations over the series (semester). This method returns an arrayr
         [ sort { $a <=> $b } map m/^$dir\/(\d+)$/, @subdirs ];
     }
 
+=head3 compConfig
+
+The round.yaml file with data about the CompComp activity for the given conversation (directory.)
+
+=cut
+
+    method compConfig( Str $round) {
+	my $comp = $self->compcompdirs;
+	my $file = "$comp/$round/round.yaml";
+        my $config;
+	try { $config = $self->inspect($file) }
+	    catch { warn "No config file for CompComp round $round at $file" };
+	return $config;
+    }
+
+=head3 compQuizfile
+
+The file system location of the file with the quiz questions and answers for the given CompComp activity.
+
+=cut
+
+    method compQuizfile ( Str $round ) {
+	my $config = $self->compConfig($round);
+	return $config->{text};
+    }
+
+=head3 compQuiz
+
+The compQuiz questions (as an anon array) in the given CompComp activity for the given table.
+
+=cut
+
+    method compQuiz ( Str $round, Str $table ) {
+	my $quizfile = $self->compQuizfile($round);
+	my $activity;
+	try { $activity = $self->inspect( $quizfile ) }
+	    catch { warn "No $quizfile CompComp content file" };
+	my $topic = $self->compTopic( $round, $table );
+	my $form = $self->compForm( $round, $table );
+	my $quiz = $activity->{$topic}->{compcomp}->{$form}->{quiz};
+    }
+
+=head3 compTopic
+
+The topic of the quiz in the given CompComp round for the given table.
+
+=cut
+
+    method compTopic ( Str $round, Str $table ) {
+	my $config = $self->compConfig($round);
+	my $activity = $config->{activity};
+	for my $topic ( keys %$activity ) {
+	    my $forms = $activity->{$topic};
+	    for my $form ( keys %$forms ) {
+		my $tables = $forms->{$form};
+		return $topic if any { $_ eq $table } @$tables;
+	    }
+	}
+    }
+
+=head3 compForm
+
+The form of the quiz in the given CompComp round for the given table.
+
+=cut
+
+    method compForm ( Str $round, Str $table ) {
+	my $config = $self->compConfig($round);
+	my $activity = $config->{activity};
+	for my $topic ( keys %$activity ) {
+	    my $forms = $activity->{$topic};
+	    for my $form ( keys %$forms ) {
+		my $tables = $forms->{$form};
+		return $form if any { $_ eq $table } @$tables;
+	    }
+	}
+    }
+
+=head3 compqn
+
+The number of questions in the given CompComp quiz for the given pair.
+
+=cut
+
+    method compqn ( Str $round, Str $table ) {
+	my $quiz = $self->compQuiz( $round, $table );
+	return scalar @$quiz;
+    }
+
+=head3 idsbyCompRole
+
+Ids in array, in White, Black role order
+
+=cut
+
+
+    method idsbyCompRole ( Str $round, Str $table ) {
+	my $members = $self->league->members;
+	my %namedMembers = map { $_->{name} => $_ } @$members;
+	my $config = $self->compConfig( $round );
+	my $pair = $config->{pair}->{$table};
+	my @idsbyRole = @$pair{qw/White Black/};
+	return \@idsbyRole;
+    }
+
+=head3 compResponses
+
+The responses of the members of the given pair in the given round (as an anon hash keyed on the ids of the members). In a file in the CompComp round directory called 'response.yaml'.
+
+=cut
+
+
+    method compResponses ( Str $round, Str $table ) {
+	my $comp = $self->compcompdirs;
+	my $file = "$comp/$round/response.yaml";
+	my $responses = $self->inspect( $file );
+	return $responses->{$table};
+    }
+
 =head3 opponents
 
 The ids of opponents of the players in the given conversation.
@@ -828,7 +949,7 @@ The ids of opponents of the players in the given conversation.
 	my $comp = $self->compcompdirs;
 	my $file = "$comp/$round/opponent.yaml";
 	my $opponents = $self->inspect( $file );
-}
+    }
 
 
 =head3 correct
@@ -841,7 +962,7 @@ The number of questions correct in the given conversation.
 	my $comp = $self->compcompdirs;
 	my $file = "$comp/$round/correct.yaml";
 	my $correct = $self->inspect( $file );
-}
+    }
 
 
 =head3 points
@@ -1461,7 +1582,7 @@ The directory where the exams are.
 
 =head3 examids
 
-An arrayref of the ids of the exams for which there are grades for players in the league, in numerical order, of the form, [1, 3 .. 7, 9, 10 .. 99 ]. Results are in sub directories of the same name, under examdirs.
+An arrayref of the ids of the exams for which there are grades for players in the league, in numerical order, of the form, [1, 3 .. 7, 9, 10 .. 99 ]. Results are in sub directories of the same name, under examdir.
 
 =cut
 
