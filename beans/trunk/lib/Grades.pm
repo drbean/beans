@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  3月 29, 18時32分14秒
+#Last Edit: 2010  3月 29, 22時22分31秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -510,16 +510,31 @@ role Jigsaw {
     use List::MoreUtils qw/any all/;
     use Try::Tiny;
 
-=head3 jigsawConfig
+=head3 jigsawdirs
 
-The round.yaml file with data about the jigsaw activity in the given location (directory.)
+The directory where the jigsaws are.
 
 =cut
 
-    method jigsawConfig( Str $location) {
+    has 'jigsawdirs' => (is => 'ro', isa => 'Str', lazy_build => 1);
+    method _build_jigsawdirs {
+	my $league = $self->league->id;
+	my $leaguedir = $self->league->leagues . "/" . $league;
+	my $basename = shift->league->yaml->{jigsaw} || "exams";
+	my $jigsawdir = $leaguedir .'/' . $basename;
+	}
+
+=head3 jigsawConfig
+
+The round.yaml file with data about the jigsaw activity in the given round (directory.)
+
+=cut
+
+    method jigsawConfig( Str $round) {
+	my $jigsaws = $self->jigsawdirs;
         my $config;
-	try { $config = $self->inspect("$location/round.yaml") }
-	    catch { warn "No config file for $location jigsaw" };
+	try { $config = $self->inspect("$jigsaws/$round/round.yaml") }
+	    catch { warn "No config file for $jigsaws/$round jigsaw" };
 	return $config;
     }
 
@@ -555,7 +570,7 @@ The file system location of the file with the quiz questions and answers for the
 
     method quizfile ( Str $location ) {
 	my $config = $self->jigsawConfig($location);
-	return $config->{file};
+	return $config->{text};
     }
 
 =head3 quiz
