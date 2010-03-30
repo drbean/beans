@@ -27,7 +27,9 @@ for my $group ( keys %$groups ) {
 	my $groupresponse = $response->{$group};
 	my %questions; @questions{1..$qn } = ( undef ) x $qn;
 	@$groupresponse{@$idsbyRole} = ( \%questions ) x @$idsbyRole;
+	$response->{$group} = $groupresponse;
 	Bless( $response->{$group}->{$_} )->keys( [1..$qn] ) for @$idsbyRole;
 	Bless( $response->{$group} )->keys( $idsbyRole );
 }
+$YAML::UseAliases = 0;
 print Dump $response;
