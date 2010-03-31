@@ -25,15 +25,16 @@ my $builder = Module::Build->new(
     },
     dist_abstract => 
 	    'Ongoing grading of a league of players (ie class of students.)',
-    dist_abstract => 
-	    'Ongoing grading of a league of players (ie class of students.)',
     build_requires => {
         'Test::More' => 0,
 	'Pod::Coverage::Moose' => 0,
     },
     create_makefile_pl => 'traditional',
     add_to_cleanup      => [ 'Grades-*' ],
-	script_files => [ qw( script_files/scantron.pl ) ],
+	script_files => [ qw( script_files/scantron.pl
+							script_files/score_exam.pl
+							script_files/score_homework.pl
+							) ],
     meta_merge => {
       resources => {
           bugtracker => 'http://rt.cpan.org/NoAuth/Bugs.html?Dist=Grades',
