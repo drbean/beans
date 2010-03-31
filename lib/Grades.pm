@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  3月 29, 22時36分44秒
+#Last Edit: 2010  3月 30, 13時37分45秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -524,13 +524,13 @@ The directory where the jigsaws are.
 	my $jigsawdir = $leaguedir .'/' . $basename;
 	}
 
-=head3 jigsawConfig
+=head3 config
 
 The round.yaml file with data about the jigsaw activity in the given round (directory.)
 
 =cut
 
-    method jigsawConfig( Str $round) {
+    method config( Str $round) {
 	my $jigsaws = $self->jigsawdirs;
         my $config;
 	try { $config = $self->inspect("$jigsaws/$round/round.yaml") }
@@ -545,9 +545,16 @@ The topic of the quiz in the given jigsaw for the given group.
 =cut
 
     method topic ( Str $location, Str $group ) {
-	my $config = $self->jigsawConfig($location);
-	my $activity = $config->{activity}->{$group};
-	my $topic = $activity->{topic};
+	my $config = $self->config('Jigsaw', $location);
+	my $activity = $config->{activity};
+	for my $topic ( keys %$activity ) {
+	    my $forms = $activity->{$topic};
+	    for my $form ( keys %$forms ) {
+		my $tables = $forms->{$form};
+		return $topic if any { $_ eq $group } @$tables;
+	    }
+	}
+	return;
 }
 
 =head3 form
@@ -557,10 +564,17 @@ The form of the quiz in the given jigsaw for the given group.
 =cut
 
     method form ( Str $location, Str $group ) {
-	my $config = $self->jigsawConfig($location);
-	my $activity = $config->{activity}->{$group};
-	my $form = $activity->{form};
-}
+	my $config = $self->config('Jigsaw', $location);
+	my $activity = $config->{activity};
+	for my $topic ( keys %$activity ) {
+	    my $forms = $activity->{$topic};
+	    for my $form ( keys %$forms ) {
+		my $tables = $forms->{$form};
+		return $form if any { $_ eq $group } @$tables;
+	    }
+	}
+	return;
+    }
 
 =head3 quizfile
 
@@ -569,7 +583,7 @@ The file system location of the file with the quiz questions and answers for the
 =cut
 
     method quizfile ( Str $location ) {
-	my $config = $self->jigsawConfig($location);
+	my $config = $self->config('Jigsaw', $location);
 	return $config->{text};
     }
 
@@ -621,8 +635,9 @@ The responses of the members of the given group in the given jigsaw (as an anon 
 =cut
 
 
-    method responses ( Str $location, Str $group ) {
-	my $responses = $self->inspect( "$location/response.yaml" );
+    method responses ( Str $round, Str $group ) {
+	my $jigsaws = $self->jigsawdirs;
+	my $responses = $self->inspect( "$jigsaws/$round/response.yaml" );
 	return $responses->{$group};
     }
 
@@ -633,7 +648,7 @@ A hash ref of all the groups in the jigsaw and the names of members of the group
 =cut
 
 	method jigsawGroups (Str $location ) {
-		my $config = $self->jigsawConfig( $location );
+		my $config = $self->config( 'Jigsaw', $location );
 		$config->{group};
 	}
 
@@ -787,10 +802,24 @@ Consume either Groupwork or Classwork's total, totalPercent methods as classwork
 
 =cut
 
-    has 'classwork' => ( is => 'ro', isa => Results, lazy => 1,
-	default => sub { shift->total } );
-    has 'classworkPercent' => ( is => 'ro', isa => Results, lazy => 1,
-	default => sub { shift->totalPercent } );
+    has 'classwork' => ( is => 'ro', isa => Results, lazy_build => 1 );
+    method _build_classwork {
+	my $approach = $self->league->approach;
+	if ( $approach eq 'CompComp' ) {
+	    return $self->totalcomp;
+	}
+    }
+
+    has 'classworkPercent' => ( is => 'ro', isa => Results, lazy_build => 1 );
+    method _build_classworkPercent {
+	my $approach = $self->league->approach;
+	if ( $approach eq 'CompComp' ) {
+	    return $self->compwork;
+	}
+	elsif ( $approach eq 'Groupwork' ) {
+	    return $self->groupworkPercent;
+	}
+    }
 
 }
 
@@ -831,13 +860,13 @@ The pair conversations over the series (semester). This method returns an arrayr
         [ sort { $a <=> $b } map m/^$dir\/(\d+)$/, @subdirs ];
     }
 
-=head3 compConfig
+=head3 config
 
 The round.yaml file with data about the CompComp activity for the given conversation (directory.)
 
 =cut
 
-    method compConfig( Str $round) {
+    method config( Str $round) {
 	my $comp = $self->compcompdirs;
 	my $file = "$comp/$round/round.yaml";
         my $config;
@@ -1570,14 +1599,6 @@ Running totals for individual ids out of 100, over the whole series.
 		\%grades;
 	}
 
-=head3 totalPercent
-
-A generic name for groupworkPercent. Suitable for when Classwork delegates classwork in Groupwork approach.
-
-=cut
-
-    method totalPercent { $self->groupworkPercent }
-
 }
 
 =head2 Grades' Exams Methods
@@ -1764,6 +1785,16 @@ class Grades with Homework with CompComp with Groupwork with Classwork with Exam
 	use Carp;
 	use Grades::Types qw/Weights/;
 
+=head3 config
+
+The possible grades config files. Including Jigsaw, CompComp.
+
+=cut
+
+	method config ( $role, $round ) {
+	    my $config = "${role}::config"; $self->$config( $round );
+	}
+
 =head3 league
 
 The league (object) whose grades these are.
@@ -1772,7 +1803,6 @@ The league (object) whose grades these are.
 
 	has 'league' => (is =>'ro', isa => 'League', required => 1,
 				handles => [ 'inspect' ] );
-
 
 =head3 weights
 
