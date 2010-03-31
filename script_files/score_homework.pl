@@ -2,11 +2,12 @@
 
 use strict;
 use warnings;
+use Cwd; use File::Basename;
 
 use Grades;
 
 my $script = Grades::Script->new_with_options;
-my $id = $script->league;
+my $id = $script->league || basename( getcwd );
 my $exercise = $script->exercise;
 my $two = $script->two;
 my $one = $script->one;

@@ -3,11 +3,13 @@
 use strict;
 use warnings;
 
+use Cwd;
+use File::Basename;
 use YAML qw/Bless Dump/;
 use Grades;
 
 my $answers = Grades::Script->new_with_options;
-my $id = $answers->league;
+my $id = $answers->league || basename( getcwd );
 my $exam = $answers->exam;
 
 my $league = League->new( id => $id );
