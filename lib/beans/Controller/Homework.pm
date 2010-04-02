@@ -33,7 +33,8 @@ sub listing : Local {
 	my $leagueId = $params->{league} || $c->request->args->[0];
 	my $playerId = $params->{id} || $c->request->args->[1];
 	my $playerName = $params->{player} || $c->request->args->[2];
-	my $league = League->new( id => $c->config->{leagues} . $leagueId );
+    my $league   = League->new(
+		leagues => $c->config->{leagues}, id => $leagueId );
 	my $work = Grades->new( league => $league );
 	if ( $league and $league->is_member($playerId) )
 	{
@@ -74,7 +75,8 @@ sub raw : Local {
 	my $playerId = $params->{id} || $c->request->args->[1];
 	my $playerName = $params->{player} || $c->request->args->[2];
 	my $round =                      $c->request->args->[3];
-	my $league = League->new( id => $c->config->{leagues} . $leagueId );
+    my $league   = League->new(
+		leagues => $c->config->{leagues}, id => $leagueId );
 	my $work = Grades->new( league => $league );
 	if ( $league and $league->is_member($playerId) )
 	{
