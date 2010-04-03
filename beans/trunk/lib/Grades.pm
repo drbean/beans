@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  3月 30, 13時37分45秒
+#Last Edit: 2010  3月 31, 11時28分35秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -309,12 +309,13 @@ The directory where the homework is.
 
 =cut
 
-	has 'hwdir' => (is => 'ro', isa => 'Str', lazy_build => 1);
-	method _build_hwdir {
-		my $league = $self->league->id;
-		my $data = $self->league->yaml;
-		my $hwdir = $data->{hw} || "$league/homework"
-	}
+    has 'hwdir' => (is => 'ro', isa => 'Str', lazy_build => 1);
+    method _build_hwdir {
+	my $league = $self->league->id;
+	my $leaguedir = $self->league->leagues . "/" . $league;
+	my $basename = shift->league->yaml->{hw} || "exams";
+	my $hwdir = $leaguedir . '/' . $basename;
+    }
 
 =head3 rounds
 
@@ -493,8 +494,10 @@ Running total homework scores of the league as percentages of the totalMax to th
 		my $league = $self->league->id;
 		my $totalMax = $self->totalMax;
 		my $idtotals = $self->homework;
-		+{ map { $_ => min( 100, 100 * $idtotals->{$_} / $totalMax )
-				|| 0 } keys %$idtotals };
+		my %percent = map {
+		    $_ => min( 100, 100 * $idtotals->{$_} / $totalMax )
+				|| 0 } keys %$idtotals;
+		return \%percent;
 	}
 
 }
@@ -893,7 +896,7 @@ The file system location of the file with the quiz questions and answers for the
 =cut
 
     method compQuizfile ( Str $round ) {
-	my $config = $self->compConfig($round);
+	my $config = $self->config('CompComp', $round);
 	return $config->{text};
     }
 
@@ -920,7 +923,7 @@ The topic of the quiz in the given CompComp round for the given table.
 =cut
 
     method compTopic ( Str $round, Str $table ) {
-	my $config = $self->compConfig($round);
+	my $config = $self->config('CompComp', $round);
 	my $activity = $config->{activity};
 	for my $topic ( keys %$activity ) {
 	    my $forms = $activity->{$topic};
@@ -938,7 +941,7 @@ The form of the quiz in the given CompComp round for the given table.
 =cut
 
     method compForm ( Str $round, Str $table ) {
-	my $config = $self->compConfig($round);
+	my $config = $self->config('CompComp', $round);
 	my $activity = $config->{activity};
 	for my $topic ( keys %$activity ) {
 	    my $forms = $activity->{$topic};
@@ -970,7 +973,7 @@ Ids in array, in White, Black role order
     method idsbyCompRole ( Str $round, Str $table ) {
 	my $members = $self->league->members;
 	my %namedMembers = map { $_->{name} => $_ } @$members;
-	my $config = $self->compConfig( $round );
+	my $config = $self->config( "CompComp", $round );
 	my $pair = $config->{pair}->{$table};
 	my @idsbyRole = @$pair{qw/White Black/};
 	return \@idsbyRole;
@@ -1616,12 +1619,13 @@ The directory where the exams are.
 
 =cut
 
-	has 'examdirs' => (is => 'ro', isa => 'Str', lazy_build => 1);
-	method _build_examdirs {
-		my $league = $self->league->id;
-		my $data = $self->league->yaml;
-		my $examdirs = $data->{exams} || "$league/exams"
-	}
+    has 'examdirs' => (is => 'ro', isa => 'Str', lazy_build => 1);
+    method _build_examdirs {
+	my $league = $self->league->id;
+	my $leaguedir = $self->league->leagues . "/" . $league;
+	my $basename = shift->league->yaml->{jigsaw} || "exams";
+	my $examdirs = $leaguedir .'/' . $basename;
+    }
 
 =head3 examids
 
@@ -1766,13 +1770,14 @@ A hash ref of the ids of the players and their total score on exams, expressed a
 
 =cut
 
-	has 'examPercent' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
-	method _build_examPercent {
-		my $grades = $self->examResultsasPercent;
-		+{ map { my $numbers=$grades->{$_};
-			$_ => sum(@$numbers)/@{$numbers} }
-					keys %$grades };
-	}
+    has 'examPercent' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+    method _build_examPercent {
+	my $grades = $self->examResultsasPercent;
+	my %totals = map {
+		my $numbers=$grades->{$_};
+		$_ => sum(@$numbers)/@{$numbers} } keys %$grades;
+	return \%totals;
+    }
 
 }
 
