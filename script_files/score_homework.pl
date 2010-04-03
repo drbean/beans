@@ -33,5 +33,5 @@ $p{exercise} = $exercise;
 
 my %g = map { $_ => $p{$_} >= $two? 2: $p{$_} > $one? 1: 0 } keys %m;
 
-print Dump \%g;
 print Dump \%p;
+print Dump \%g;
