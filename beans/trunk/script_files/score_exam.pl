@@ -30,7 +30,7 @@ for my $group ( keys %$groups ) {
 			$codedvalue->[$n++] = { map {
 				$option->[$_] => $_ } 0..$#$option };
 		}
-		else { $codedvalue->[$n++] = { True => 1, False => 0 }; }
+		else { $codedvalue->[$n++] = { True => 'T', False => 'F' }; }
 	}
 	my $idsbyRole = $grades->idsbyRole( $exam, $group );
 	my $responses = $grades->responses( $exam, $group );
@@ -49,7 +49,7 @@ for my $group ( keys %$groups ) {
 				die "Right answer on question " . ($n+1) .
 					" in " . $topic . $form . " quiz?";
 			}
-			$score++ if $myanswer == $theanswer;
+			$score++ if $myanswer eq $theanswer;
 		}
 		$response->{letters}->{$group}->{$id} = $score;
 		$response->{letters}->{$group}->{story} =
