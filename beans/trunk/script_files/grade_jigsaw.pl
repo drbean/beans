@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Last Edit: 2009 12月 07, 22時21分27秒
+# Last Edit: 2010  3月 30, 14時27分32秒
 # $Id: /dic/branches/ctest/grade 1160 2007-03-29T09:31:06.466606Z greg  $
 
 use strict;
@@ -11,15 +11,17 @@ use List::Util qw/max min sum/;
 
 use Text::Template;
 use IO::All;
-use YAML qw/ LoadFile DumpFile /;
+use YAML qw/ LoadFile Dump DumpFile /;
+# use Grades;
 
+# my $league = League->new
 my @yaml = glob "*.yaml";
 
 my @examfiles = grep m/^round.yaml$/, @yaml;
 die "too many examfiles" if $#examfiles;
 my $examfile = $examfiles[0];
 my $exam = LoadFile( $examfile );
-my $league = LoadFile( "../league.yaml" );
+my $league = LoadFile( "../../league.yaml" );
 my @members = @{$league->{member}};
 my %ids = map { $_->{name} => $_->{id} } @members;
 my %names = map { $_->{id} => $_->{name} } @members;
@@ -28,10 +30,7 @@ my $sixtypercentScore = $exam->{pass};
 my $topGrade = $league->{examMax};
 my $totalQuestions = $exam->{questions}->[0];
 
-my @examinees = map {
-	my $group = $_;
-	map { $groups->{$group}->{$_} } keys %{$groups->{$group}}
-						} keys %$groups;
+my @examinees = map { @{ $groups->{$_} } } keys %$groups;
 my $absentees;
 $absentees = $league->{absent} if $league->{absent}; 
 push @$absentees, @{$exam->{absent}} if $exam->{absent};
@@ -45,8 +44,9 @@ my $scorefile = "scores.yaml";
 my $scoresheet = LoadFile $scorefile;
 
 my %groupName = map {
-	my $group = $_;
-	map { $groups->{$group}->{$_} => $group } keys %{$groups->{$group}};
+	my $groupId = $_;
+	my $members = $groups->{$groupId};
+	map { $_ => $groupId } @$members;
 						} keys %$groups;
 my $gradesheets = $league->{$exam};
 
@@ -77,7 +77,8 @@ my $questions2grade = sub {
 
 foreach my $group ( keys %$groups )
 {
-	my %group =  %{$groups->{$group}}; 
+	my $members = $groups->{$group};
+	my %group; @group{ 'A' .. 'D' } =  @$members; 
 	my $letters = $scoresheet->{letters}->{$group};
 	my $chinese = $scoresheet->{Chinese}->{$group};
 	my $story = $scoresheet->{letters}->{$group}->{story};
@@ -85,7 +86,7 @@ foreach my $group ( keys %$groups )
 	my @assistantPlayers;
 	my (@noexam, $groupGrade);
 	my $totalScore = 0;
-	foreach my $player ( values %group )
+	foreach my $player ( @$members )
 	{
 		my $playerId = $ids{$player};
 		warn "$player has no id.\n" unless $playerId;
@@ -188,8 +189,7 @@ map
 		unless $points{$_} == 0;
 } values %ids;
 
-die "g.yaml already exists" if -e "g.yaml";
-DumpFile( "g.yaml", \%adjusted );
+print Dump \%adjusted;
 
 @{$pointsByPoints{$_}} = sort @{$pointsByPoints{$_}} foreach keys %pointsByPoints;
 @{$adjustedByGrades{$_}} = sort @{$adjustedByGrades{$_}}
