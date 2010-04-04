@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  3月 31, 11時28分35秒
+#Last Edit: 2010  4月 03, 20時13分08秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -646,7 +646,7 @@ The responses of the members of the given group in the given jigsaw (as an anon 
 
 =head3 jigsawGroups
 
-A hash ref of all the groups in the jigsaw and the names of members of the groups, keyed on groupnames. There may be duplicated names if one player did the activity twice as an 'assistant' for a group with not enough players, and missing names if a player did not do the quiz.
+A hash ref of all the groups in the given jigsaw and the names of members of the groups, keyed on groupnames. There may be duplicated names if one player did the activity twice as an 'assistant' for a group with not enough players, and missing names if a player did not do the quiz.
 
 =cut
 
