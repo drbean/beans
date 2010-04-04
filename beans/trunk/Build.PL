@@ -32,7 +32,7 @@ my $builder = Module::Build->new(
     create_makefile_pl => 'traditional',
     add_to_cleanup      => [ 'Grades-*' ],
 	script_files => [ qw( script_files/scantron.pl
-							script_files/score_exam.pl
+							script_files/score_jigsaw.pl
 							script_files/score_homework.pl
 							script_files/grade_jigsaw.pl
 							) ],
