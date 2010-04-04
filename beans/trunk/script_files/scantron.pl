@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # Created: 西元2010年04月04日 18時44分24秒
-# Last Edit: 2010  4月 04, 18時51分39秒
+# Last Edit: 2010  4月 04, 20時00分13秒
 # $Id$
 
 =head1 NAME
@@ -25,7 +25,7 @@ use Cwd; use File::Basename;
 
 =head1 SYNOPSIS
 
-scantron.pl -l emile -r 3
+scantron.pl -l emile -r 3 > exams/3/response.yaml
 
 =cut
 
@@ -61,3 +61,20 @@ for my $group ( keys %$groups ) {
 }
 $YAML::UseAliases = 0;
 print Dump $response;
+
+=head1 AUTHOR
+
+Dr Bean C<< <drbean at cpan, then a dot, (.), and org> >>
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2010 Dr Bean, all rights reserved.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+=cut
+
+# End of scantron.pl
+
+# vim: set ts=8 sts=4 sw=4 noet:
