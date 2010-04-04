@@ -1,5 +1,21 @@
 #!/usr/bin/perl
 
+# Created: 西元2010年04月04日 19時52分56秒
+# Last Edit: 2010  4月 04, 20時03分37秒
+# $Id$
+
+=head1 NAME
+
+score_jigsaw.pl - Convert individual responses to a total score correct
+
+=head1 VERSION
+
+Version 0.02
+
+=cut
+
+our $VERSION = '0.02';
+
 use strict;
 use warnings;
 
@@ -8,12 +24,24 @@ use File::Basename;
 use YAML qw/Bless Dump/;
 use Grades;
 
+=head1 SYNOPSIS
+
+score_jigsaw.pl -l emile -r 3 > exams/3/scores.yaml
+
+=cut
+
 my $answers = Grades::Script->new_with_options;
 my $id = $answers->league || basename( getcwd );
-my $exam = $answers->exam;
+my $exam = $answers->round;
 
 my $league = League->new( id => $id );
 my $grades = Grades->new( league => $league );
+
+=head1 DESCRIPTION
+
+Convert individual question answers by players in exams/3/response.yaml to total scores for individual players in exams/3/scores.yaml.
+
+=cut
 
 my $groups = $grades->jigsawGroups( $exam );
 
@@ -60,3 +88,20 @@ for my $group ( keys %$groups ) {
 }
 
 print Dump $response;
+
+=head1 AUTHOR
+
+Dr Bean C<< <drbean at cpan, then a dot, (.), and org> >>
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2010 Dr Bean, all rights reserved.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+=cut
+
+# End of score_jigsaw.pl
+
+# vim: set ts=8 sts=4 sw=4 noet:
