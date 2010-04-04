@@ -9,7 +9,7 @@ use Cwd; use File::Basename;
 
 my $scantron = Grades::Script->new_with_options;
 my $id = $scantron->league || basename( getcwd );
-my $exam = $scantron->exam;
+my $exam = $scantron->round;
 
 my $league = League->new( id => $id );
 my $grades = Grades->new( league => $league );
