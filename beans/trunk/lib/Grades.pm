@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  4月 03, 20時13分08秒
+#Last Edit: 2010  4月 05, 10時32分18秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -698,7 +698,7 @@ A array ref of all the players in the (sub)jigsaw who did the the activity twice
 =cut
 
 	method assistants (Str $location) {
-		my $round = $self->jigsawConfig( $location );
+		my $round = $self->config('Jigsaw', $location );
 		$round->{assistants};
 	}
 
@@ -746,16 +746,17 @@ An array ref of the group(s) to which the given name belonged in the given jigsa
 
 =head3 rawJigsawScores
 
-The individual scores on the quiz of each member of the given group, keyed on their roles, no, ids, from the file called 'scores.yaml' in the given jigsaw dir. If the scores in that file have a key which is a role, handle that, but, yes, the keys of the hashref returned here are the players' ids.
+The individual scores on the given quiz of each member of the given group, keyed on their roles, no, ids, from the file called 'scores.yaml' in the given jigsaw dir. If the scores in that file have a key which is a role, handle that, but, yes, the keys of the hashref returned here are the players' ids.
 
 =cut
 
-    method rawJigsawScores (Str $location, Str $group) {
+    method rawJigsawScores (Str $round, Str $group) {
         my $data;
-	try { $data = $self->inspect("$location/scores.yaml"); }
-	    catch { warn "No scores for $group group in $location jigsaw."; };
+	my $jigsaws = $self->jigsawdirs;
+	try { $data = $self->inspect( "$jigsaws/$round/scores.yaml"); }
+	    catch { warn "No scores for $group group in jigsaw $round."; };
 	my $groupdata = $data->{letters}->{$group};
-	my $ids       = $self->idsbyRole( $location, $group );
+	my $ids       = $self->idsbyRole( $round, $group );
 	my $roles     = $self->roles;
 	my @keys;
 	if (
