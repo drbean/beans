@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # Created: 西元2010年04月04日 18時44分24秒
-# Last Edit: 2010  4月 04, 20時00分13秒
+# Last Edit: 2010  4月 04, 21時14分18秒
 # $Id$
 
 =head1 NAME
@@ -18,6 +18,7 @@ our $VERSION = '0.02';
 
 use strict;
 use warnings;
+use List::MoreUtils qw/all/;
 
 use YAML qw/Bless Dump/;
 use Grades;
@@ -51,6 +52,7 @@ my $groups = $grades->jigsawGroups( $exam );
 my $response;
 for my $group ( keys %$groups ) {
 	my $idsbyRole = $grades->idsbyRole( $exam, $group);
+	warn "Only @$idsbyRole in $group," if not all { defined } @$idsbyRole;
 	my $qn = $grades->qn( $exam, $group );
 	my $groupresponse = $response->{$group};
 	my %questions; @questions{1..$qn } = ( undef ) x $qn;
