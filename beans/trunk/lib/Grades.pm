@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  4月 07, 22時08分10秒
+#Last Edit: 2010  4月 11, 20時15分53秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -10,7 +10,6 @@ use MooseX::Declare;
 package Grades::Script;
 use Moose;
 with 'MooseX::Getopt';
-
 
 has 'man' => (is => 'ro', isa => 'Bool');
 has 'help' => (is => 'ro', isa => 'Bool');
@@ -22,6 +21,7 @@ has 'exam' => ( metaclass => 'Getopt', is => 'ro', isa => 'Str',
 has 'round' => ( metaclass => 'Getopt', is => 'ro', isa => 'Str',
 		cmd_flag => 'r',);
 
+# letters2score.pl
 has 'exercise' => ( metaclass => 'Getopt', is => 'ro', isa => 'Str',
 		cmd_flag => 'x',);
 has 'one' => ( metaclass => 'Getopt', is => 'ro', isa => 'Str',
@@ -33,8 +33,6 @@ has 'weights' => (metaclass => 'Getopt', is => 'ro', isa => 'Str',
 		cmd_flag => 'w',);
 has 'player' => (metaclass => 'Getopt', is => 'ro', isa => 'Str',
 		cmd_flag => 'p',);
-# ignore --rcfile if requiring script in re.pl
-has 'rcfile' => ( is => 'ro', isa => 'Str' );
 
 package Grades;
 
@@ -293,6 +291,8 @@ The name is 'Bye'. The id is too, as a matter of fact.
     has 'name' => (is => 'ro', isa => 'Str', required => 1 );
 
 }
+
+
 =head2	GRADES CLASS
 
 =head2 Grades' Homework Methods
@@ -963,8 +963,6 @@ The number of questions in the given CompComp quiz for the given pair.
 
     method compqn ( Str $round, Str $table ) {
 	my $quiz = $self->compQuiz( $round, $table );
-	die "No quiz for table $table in round $round,"
-		    unless ref $quiz eq 'ARRAY';
 	return scalar @$quiz;
     }
 
@@ -1141,8 +1139,13 @@ The directory under which there are subdirectories containing data for the group
 
 =cut
 
-    has 'groupworkdirs' => (is => 'ro', isa => 'Str',
-	lazy => 1, default => sub { shift->league->yaml->{groupwork} } );
+    has 'groupworkdirs' => (is => 'ro', isa => 'Str', lazy_build => 1);
+    method _build_groupworkdirs {
+	my $league = $self->league->id;
+	my $leaguedir = $self->league->leagues . "/" . $league;
+	my $basename = shift->league->yaml->{groupwork} || "classwork";
+	my $groupworkdirs = $leaguedir .'/' . $basename;
+	}
 
 =head3 series
 
