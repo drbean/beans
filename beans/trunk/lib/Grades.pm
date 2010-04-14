@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  4月 11, 20時15分53秒
+#Last Edit: 2010  4月 14, 22時21分37秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -225,8 +225,9 @@ Dumps a YAML file
 
 =cut
 
-	method save (Str $file, HashRef $data) {
-		DumpFile $file, $data;
+    method save (Str $file, HashRef $data) {
+	try { DumpFile $file, $data }
+	    catch { warn "Couldn't save $data to $file," };
 	}
 
 }
