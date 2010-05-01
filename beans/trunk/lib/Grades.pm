@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  4月 14, 22時21分37秒
+#Last Edit: 2010  5月 01, 20時27分54秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -201,7 +201,7 @@ The id of the member with the given player name.
 	my @names = keys %ids;
 	my @ids = values %ids;
 	local $" = ', ';
-	warn @ids . " players named @names with ids: @ids," unless @ids==1;
+	warn @ids . " players named @names, with ids: @ids," unless @ids==1;
 	if ( @ids == 1 ) { return $ids[0] }
 	else { return $ids{$player}; }
       }
@@ -550,8 +550,8 @@ The topic of the quiz in the given jigsaw for the given group.
 
 =cut
 
-    method topic ( Str $location, Str $group ) {
-	my $config = $self->config('Jigsaw', $location);
+    method topic ( Str $jigsaw, Str $group ) {
+	my $config = $self->config($jigsaw);
 	my $activity = $config->{activity};
 	for my $topic ( keys %$activity ) {
 	    my $forms = $activity->{$topic};
@@ -569,8 +569,8 @@ The form of the quiz in the given jigsaw for the given group.
 
 =cut
 
-    method form ( Str $location, Str $group ) {
-	my $config = $self->config('Jigsaw', $location);
+    method form ( Str $jigsaw, Str $group ) {
+	my $config = $self->config($jigsaw);
 	my $activity = $config->{activity};
 	for my $topic ( keys %$activity ) {
 	    my $forms = $activity->{$topic};
@@ -588,8 +588,8 @@ The file system location of the file with the quiz questions and answers for the
 
 =cut
 
-    method quizfile ( Str $location ) {
-	my $config = $self->config('Jigsaw', $location);
+    method quizfile ( Str $jigsaw ) {
+	my $config = $self->config($jigsaw);
 	return $config->{text};
     }
 
@@ -599,13 +599,13 @@ The quiz questions (as an anon array) in the given jigsaw for the given group.
 
 =cut
 
-    method quiz ( Str $location, Str $group ) {
-	my $quizfile = $self->quizfile($location);
+    method quiz ( Str $jigsaw, Str $group ) {
+	my $quizfile = $self->quizfile($jigsaw);
 	my $activity;
 	try { $activity = $self->inspect( $quizfile ) }
 	    catch { warn "No $quizfile jigsaw content file" };
-	my $topic = $self->topic( $location, $group );
-	my $form = $self->form( $location, $group );
+	my $topic = $self->topic( $jigsaw, $group );
+	my $form = $self->form( $jigsaw, $group );
 	my $quiz = $activity->{$topic}->{jigsaw}->{$form}->{quiz};
     }
 
@@ -617,8 +617,8 @@ The options (as an anon array) to the given question in the given jigsaw for the
 
 =cut
 
-    method options ( Str $location, Str $group, Int $question ) {
-	my $quiz = $self->quiz( $location, $group );
+    method options ( Str $jigsaw, Str $group, Int $question ) {
+	my $quiz = $self->quiz( $jigsaw, $group );
 	my $options = $quiz->[$question]->{options};
 	return $options || '';
     }
@@ -629,8 +629,8 @@ The number of questions in the given jigsaw for the given group.
 
 =cut
 
-    method qn ( Str $location, Str $group ) {
-	my $quiz = $self->quiz( $location, $group );
+    method qn ( Str $jigsaw, Str $group ) {
+	my $quiz = $self->quiz( $jigsaw, $group );
 	return scalar @$quiz;
     }
 
@@ -641,9 +641,9 @@ The responses of the members of the given group in the given jigsaw (as an anon 
 =cut
 
 
-    method responses ( Str $round, Str $group ) {
+    method responses ( Str $jigsaw, Str $group ) {
 	my $jigsaws = $self->jigsawdirs;
-	my $responses = $self->inspect( "$jigsaws/$round/response.yaml" );
+	my $responses = $self->inspect( "$jigsaws/$jigsaw/response.yaml" );
 	return $responses->{$group};
     }
 
@@ -653,8 +653,8 @@ A hash ref of all the groups in the given jigsaw and the names of members of the
 
 =cut
 
-	method jigsawGroups (Str $location ) {
-		my $config = $self->config( 'Jigsaw', $location );
+	method jigsawGroups (Str $jigsaw ) {
+		my $config = $self->config( $jigsaw );
 		$config->{group};
 	}
 
@@ -664,8 +664,8 @@ An array (was hash ref) of the names of the members of the given group in the gi
 
 =cut
 
-	method jigsawGroupMembers (Str $location, Str $group) {
-		my $groups = $self->jigsawGroups( $location );
+	method jigsawGroupMembers (Str $jigsaw, Str $group) {
+		my $groups = $self->jigsawGroups( $jigsaw );
 		my $members = $groups->{$group};
 	}
 
@@ -686,10 +686,10 @@ Ids in array, in A-D role order
 =cut
 
 
-    method idsbyRole ( Str $location, Str $group ) {
+    method idsbyRole ( Str $jigsaw, Str $group ) {
 	my $members = $self->league->members;
 	my %namedMembers = map { $_->{name} => $_ } @$members;
-	my $namesbyRole = $self->jigsawGroupMembers( $location, $group );
+	my $namesbyRole = $self->jigsawGroupMembers( $jigsaw, $group );
 	my @idsbyRole = map { $namedMembers{$_}->{id} } @$namesbyRole;
 	return \@idsbyRole;
     }
@@ -700,8 +700,8 @@ A array ref of all the players in the (sub)jigsaw who did the the activity twice
 
 =cut
 
-	method assistants (Str $location) {
-		my $round = $self->config('Jigsaw', $location );
+	method assistants (Str $jigsaw) {
+		my $round = $self->config( $jigsaw );
 		$round->{assistants};
 	}
 
@@ -711,8 +711,8 @@ An hash ref of the roles of the members of the given group in the given jigsaw, 
 
 =cut
 
-	method jigsawGroupRole (Str $location, Str $group) {
-		my $members = $self->jigsawGroupMembers( $location, $group );
+	method jigsawGroupRole (Str $jigsaw, Str $group) {
+		my $members = $self->jigsawGroupMembers( $jigsaw, $group );
 		my %roles = reverse %$members;
 		return \%roles;
 	}
@@ -723,8 +723,8 @@ An hash ref of the roles of the members of the given group in the given jigsaw, 
 
 =cut
 
-	method id2jigsawGroupRole (Str $location, Str $group) {
-		my $member = $self->jigsawGroupMembers( $location, $group );
+	method id2jigsawGroupRole (Str $jigsaw, Str $group) {
+		my $member = $self->jigsawGroupMembers( $jigsaw, $group );
 		my %idedroles = map { $self->league->ided($member->{$_}) => $_ }
 						keys %$member;
 		return \%idedroles;
@@ -736,13 +736,12 @@ An array ref of the group(s) to which the given name belonged in the given jigsa
 
 =cut
 
-	method name2jigsawGroup (Str $location, Str $name) {
-		my $groups = $self->jigsawGroups( $location );
+	method name2jigsawGroup (Str $jigsaw, Str $name) {
+		my $groups = $self->jigsawGroups( $jigsaw );
 		my @memberships;
 		for my $id ( keys %$groups ) {
 			my $group = $groups->{$id};
-			my @members = values %$group;
-			push @memberships, $id if any { $_ eq $name } @members;
+			push @memberships, $id if any { $_ eq $name } @$group;
 		}
 		return \@memberships;
 	}
@@ -782,11 +781,11 @@ Points deducted for undesirable performance elements (ie Chinese use) on the qui
 
 =cut
 
-	method jigsawDeduction (Str $location, Str $group) {
-		my $data = $self->inspect( "$location/scores.yaml" );
-		try { $data = $self->inspect( "$location/scores.yaml" ); }
+	method jigsawDeduction (Str $jigsaw, Str $group) {
+		my $data = $self->inspect( "$jigsaw/scores.yaml" );
+		try { $data = $self->inspect( "$jigsaw/scores.yaml" ); }
 		    catch { warn
-			"Deductions for $group group in $location jigsaw?" };
+			"Deductions for $group group in $jigsaw jigsaw?" };
 		my $demerits = $data->{Chinese}->{$group};
 		return $demerits;
 	}
@@ -840,6 +839,7 @@ The comprehension question competition is a Swiss tournament regulated 2-partner
 role CompComp {
     use Try::Tiny;
     use List::MoreUtils qw/any/;
+    use Carp qw/carp/;
 
 =head3 compcompdirs
 
@@ -918,6 +918,8 @@ The compQuiz questions (as an anon array) in the given CompComp activity for the
 	my $topic = $self->compTopic( $round, $table );
 	my $form = $self->compForm( $round, $table );
 	my $quiz = $activity->{$topic}->{compcomp}->{$form}->{quiz};
+	carp "No $topic, $form quiz in $quizfile," unless $quiz;
+	return $quiz;
     }
 
 =head3 compTopic
@@ -936,6 +938,7 @@ The topic of the quiz in the given CompComp round for the given table.
 		return $topic if any { $_ eq $table } @$tables;
 	    }
 	}
+	carp "No quiz at $table table in round $round,";
     }
 
 =head3 compForm
@@ -954,6 +957,7 @@ The form of the quiz in the given CompComp round for the given table.
 		return $form if any { $_ eq $table } @$tables;
 	    }
 	}
+	carp "No quiz at $table table in round $round,";
     }
 
 =head3 compqn
@@ -1711,7 +1715,7 @@ A hash ref of the ids of the players and arrays of their results over the exam s
 	    my $max      = $self->examMax;
 	    for my $playerid ( @playerids ) {
 		my $result = $exam->{$playerid};
-		carp "No $id exam results for $playerid,"
+		carp "No exam $id results for $playerid,"
 		  unless defined $result;
 		croak "${playerid}'s $result greater than exam max, $max"
 		  if defined $result and $result > $max;
@@ -1794,8 +1798,10 @@ A hash ref of the ids of the players and their total score on exams, expressed a
 =head2 Grades' Core Methods
 =cut
 
-class Grades with Homework with CompComp with Groupwork with Classwork with Exams with Jigsaw {
-
+class Grades with Homework with CompComp with Groupwork with Classwork with Exams 
+{
+    with 'Jigsaw'
+	=> { -alias => { config => 'jigsaw_config' }, -excludes => 'config' };
 	use Carp;
 	use Grades::Types qw/Weights/;
 
