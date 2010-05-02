@@ -42,7 +42,7 @@ sub listing : Local {
             $c->stash->{player} = $player;
             $c->stash->{id}     = $playerId;
             my ( $weeks, @grades, $classwork );
-            if ( $league->approach eq "compwork" ) {
+            if ( $league->approach eq "CompComp" ) {
                 $weeks  = $work->conversations;
                 @grades = map {
                     {
@@ -101,7 +101,7 @@ sub raw : Local {
             $c->stash->{round}    = $round;
             $c->stash->{approach} = $approach;
             my $exercise;
-            if ( $approach eq "compwork" ) {
+            if ( $approach eq "CompComp" ) {
                 my $qns     = $work->correct($round);
                 my $correct = $qns->{$playerId};
                 my $someothers  = $work->opponents($round);
