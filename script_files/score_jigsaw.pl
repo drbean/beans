@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # Created: 西元2010年04月04日 19時52分56秒
-# Last Edit: 2010  4月 04, 20時03分37秒
+# Last Edit: 2010  4月 29, 10時41分27秒
 # $Id$
 
 =head1 NAME
@@ -21,6 +21,7 @@ use warnings;
 
 use Cwd;
 use File::Basename;
+use List::MoreUtils qw/any/;
 use YAML qw/Bless Dump/;
 use Grades;
 
@@ -53,12 +54,19 @@ for my $group ( keys %$groups ) {
 	my $form = $grades->form($exam, $group);
 	my ($codedvalue, $n);
 	for my $item ( @$quiz ) {
-		if ( $item->{option} ) {
-			my $option = $item->{option};
-			$codedvalue->[$n++] = { map {
-				$option->[$_] => $_ } 0..$#$option };
-		}
-		else { $codedvalue->[$n++] = { True => 'T', False => 'F' }; }
+	    my $answer = $item->{answer};
+	    if ( $item->{option} ) {
+		my $option = $item->{option};
+		die "Right answer for " . ($n+1) . "th item in $topic" .
+		    "$form quiz," unless any { $_ eq $answer } @$option;
+		$codedvalue->[$n++] = { map {
+			$option->[$_] => $_ } 0..$#$option };
+	    }
+	    elsif ( $answer eq 'True' or $answer eq 'False' ) {
+		$codedvalue->[$n++] = { True => 'T', False => 'F' } }
+	    else {
+		warn "Answer for " . ($n+1) . "th item in $topic$form quiz,";
+		$codedvalue->[$n++] = { Other => 'Other' } }
 	}
 	my $idsbyRole = $grades->idsbyRole( $exam, $group );
 	my $responses = $grades->responses( $exam, $group );
@@ -69,8 +77,8 @@ for my $group ( keys %$groups ) {
 			my $theanswer = $codedvalue->[$n]->{
 				$quiz->[$n]->{answer} };
 			unless ( defined $myanswer ) {
-				warn "${id}'s answer on question " . ($n+1) .
-					" in " . $topic . $form . " quiz?";
+				warn "$group, ${id}'s answer on question " .
+				    ($n+1) . " in $topic$form quiz?";
 				next;
 			}
 			unless ( defined $theanswer ) {
