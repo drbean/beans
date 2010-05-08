@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  5月 08, 16時06分27秒
+#Last Edit: 2010  5月 08, 16時19分58秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -781,14 +781,15 @@ Points deducted for undesirable performance elements (ie Chinese use) on the qui
 
 =cut
 
-	method jigsawDeduction (Str $jigsaw, Str $group) {
-		my $data = $self->inspect( "$jigsaw/scores.yaml" );
-		try { $data = $self->inspect( "$jigsaw/scores.yaml" ); }
-		    catch { warn
-			"Deductions for $group group in $jigsaw jigsaw?" };
-		my $demerits = $data->{Chinese}->{$group};
-		return $demerits;
-	}
+    method jigsawDeduction (Str $jigsaw, Str $group) {
+	my $data;
+	my $jigsaws = $self->jigsawdirs;
+	try { $data = $self->inspect( "$jigsaws/$jigsaw/scores.yaml" ); }
+	    catch { warn
+		"Deductions for $group group in $jigsaw jigsaw?" };
+	my $demerits = $data->{Chinese}->{$group};
+	return $demerits;
+}
 
 }
 
