@@ -1,47 +1,44 @@
 #!/usr/bin/perl
 
-# Last Edit: 2010  3月 30, 14時27分32秒
+# Last Edit: 2010  4月 05, 11時07分57秒
 # $Id: /dic/branches/ctest/grade 1160 2007-03-29T09:31:06.466606Z greg  $
 
 use strict;
 use warnings;
-
 
 use List::Util qw/max min sum/;
 
 use Text::Template;
 use IO::All;
 use YAML qw/ LoadFile Dump DumpFile /;
-# use Grades;
+use Grades;
+use Cwd; use File::Basename;
 
-# my $league = League->new
-my @yaml = glob "*.yaml";
+my $script = Grades::Script->new_with_options;
+my $id = $script->league || basename( getcwd );
+my $exam = $script->round;
 
-my @examfiles = grep m/^round.yaml$/, @yaml;
-die "too many examfiles" if $#examfiles;
-my $examfile = $examfiles[0];
-my $exam = LoadFile( $examfile );
-my $league = LoadFile( "../../league.yaml" );
-my @members = @{$league->{member}};
-my %ids = map { $_->{name} => $_->{id} } @members;
-my %names = map { $_->{id} => $_->{name} } @members;
-my $groups = $exam->{group};
-my $sixtypercentScore = $exam->{pass};
-my $topGrade = $league->{examMax};
-my $totalQuestions = $exam->{questions}->[0];
+my $league = League->new( id => $id );
+my $grades = Grades->new( league => $league );
+
+my $config = $grades->config('Jigsaw', $exam);
+my $members = $league->members;
+my %ids = map { $_->{name} => $_->{id} } @$members;
+my %names = map { $_->{id} => $_->{name} } @$members;
+my $groups = $grades->jigsawGroups( $exam );
+my $sixtypercentScore = $config->{pass};
+my $topGrade = $grades->examMax;
+my $totalQuestions = $config->{questions}->[0];
 
 my @examinees = map { @{ $groups->{$_} } } keys %$groups;
 my $absentees;
 $absentees = $league->{absent} if $league->{absent}; 
-push @$absentees, @{$exam->{absent}} if $exam->{absent};
+push @$absentees, @{$config->{absent}} if $config->{absent};
 my @absenteeIds = map { $ids{$_} } @$absentees;
 
-my $assistants = $exam->{assistant};
+my $assistants = $config->{assistant};
 $assistants = undef if grep m/No.*ne/i, @$assistants;
 my @assistantIds = map { $ids{$_} } @$assistants;
-
-my $scorefile = "scores.yaml";
-my $scoresheet = LoadFile $scorefile;
 
 my %groupName = map {
 	my $groupId = $_;
@@ -79,9 +76,9 @@ foreach my $group ( keys %$groups )
 {
 	my $members = $groups->{$group};
 	my %group; @group{ 'A' .. 'D' } =  @$members; 
-	my $letters = $scoresheet->{letters}->{$group};
-	my $chinese = $scoresheet->{Chinese}->{$group};
-	my $story = $scoresheet->{letters}->{$group}->{story};
+	my $score = $grades->rawJigsawScores( $exam, $group );
+	my $chinese = $score->{Chinese}->{$group};
+	my $story = $grades->topic($exam, $group) . $grades->form($exam, $group);
 	my %rolebearers = reverse %group;
 	my @assistantPlayers;
 	my (@noexam, $groupGrade);
@@ -92,11 +89,11 @@ foreach my $group ( keys %$groups )
 		warn "$player has no id.\n" unless $playerId;
 		my $role = $rolebearers{$player};
 		warn "$player has no role.\n" if not defined $role;
-		warn "$player has no letters.\n" if not defined
-							$letters->{$playerId};
+		warn "$player has no items\n" if not defined
+							$score->{$playerId};
 		my $personalScore = sum map
 			{
-				$letters->{$playerId}
+				$score->{$playerId}
 			} 0;
 		$totalScore += $personalScore;
 
@@ -158,19 +155,21 @@ foreach my $group ( keys %$groups )
 # @points{ @absenteeIds } = (0)x@absenteeIds;
 # push @{$pointsByPoints{0}}, "$names{$_} $_\\\\" foreach @absenteeIds;
 
+# =begin comment text
+
 my %adjusted = map
 	{
-	die "$_?" unless exists $points{$ids{$_}} && exists
-			$scoresheet->{Chinese}->{$groupName{$_}};
-	$ids{$_} => $points{$ids{$_}} - 
-			$scoresheet->{Chinese}->{$groupName{$_}}
+	die "$_?" unless exists $points{$ids{$_}} ;
+	# && exists $scoresheet->{Chinese}->{$groupName{$_}};
+	$ids{$_} => $points{$ids{$_}} ;
+	# - $scoresheet->{Chinese}->{$groupName{$_}}
 	} @examinees;
 @adjusted{@assistantIds} = map
 	{
 		my $assistant = $_;
 		my @adjusted =
-			map { die "$assistant Chinese: $assistantRecords{$assistant}->{$_}->{Chinese}?"
-				unless defined $assistantRecords{$assistant}->{$_}->{Chinese};
+			map { # die "$assistant Chinese: $assistantRecords{$assistant}->{$_}->{Chinese}?"
+			# unless defined $assistantRecords{$assistant}->{$_}->{Chinese};
 			my $totalScore = $assistantRecords{$assistant}->{$_}->{totalScore};
 			my $groupGrade = $questions2grade->($totalScore/4);
 			my $adjusted = $groupGrade -
@@ -210,8 +209,8 @@ my @adjustedReport = map
 my $report;
 $report->{id} = $league->{id};
 $report->{league} = $league->{league};
-$report->{week} = $exam->{week};
-$report->{round} = $exam->{round};
+$report->{week} = $config->{week};
+$report->{round} = $config->{round};
 $report->{indScores} = join '', @indReport;
 $report->{groupScores} = join '', @groupReport;
 $report->{points} = join '', @pointReport;
