@@ -96,33 +96,30 @@ sub raw : Local {
 	    do {
 		my $round = shift @$rounds;
 		my %report;
-		my $jigsaw = $work->examdirs;
-		$jigsaw .= "/$exam";
-		$jigsaw .= "/$round" if $round;
-		my $group = $work->name2jigsawGroup($jigsaw, $name )->[0];
+		my $group = $work->name2jigsawGroup($exam, $name )->[0];
 		$report{group} = $group;
-		$report{ids} = $work->idsbyRole( $jigsaw, $group );
-		my $topic = $work->topic( $jigsaw, $group );
+		$report{ids} = $work->idsbyRole( $exam, $group );
+		my $topic = $work->topic( $exam, $group );
 		$report{topic} = $topic;
-		my $form = $work->form( $jigsaw, $group );
+		my $form = $work->form( $exam, $group );
 		$report{form} = $form;
 		try {
-			my $quiz = $work->quiz( $jigsaw, $group );
+			my $quiz = $work->quiz( $exam, $group );
 			$report{quiz} = $quiz;
-			my $responses = $work->responses( $jigsaw, $group );
+			my $responses = $work->responses( $exam, $group );
 			$report{responses} = $responses;
 		}
 		    catch {
     $c->stash->{status_msg} = "No information available on $topic $form quiz";
 		    };
-		my $member = $work->jigsawGroupMembers( $jigsaw, $group );
-		my $rawscores = $work->rawJigsawScores( $jigsaw, $group );
-		my $role = $work->id2jigsawGroupRole( $jigsaw, $group );
+		my $member = $work->jigsawGroupMembers( $exam, $group );
+		my $rawscores = $work->rawJigsawScores( $exam, $group );
+		my $role = $work->id2jigsawGroupRole( $exam, $group );
 		my @scores = map { $rawscores->{$_} }
 		    sort { $role->{$a} cmp $role->{$b} } keys %$rawscores;
 		$report{scores} = \@scores;
 		$report{average} = sum( @scores ) / @scores;
-		$report{chinese} = $work->jigsawDeduction( $jigsaw, $group );
+		$report{chinese} = $work->jigsawDeduction( $exam, $group );
 		push @roundreports, \%report;
             } while @$rounds;
 	    $c->stash->{rounds} = \@roundreports;
