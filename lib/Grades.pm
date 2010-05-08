@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  5月 08, 16時19分58秒
+#Last Edit: 2010  5月 08, 16時22分34秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -724,10 +724,11 @@ An hash ref of the roles of the members of the given group in the given jigsaw, 
 =cut
 
 	method id2jigsawGroupRole (Str $jigsaw, Str $group) {
-		my $member = $self->jigsawGroupMembers( $jigsaw, $group );
-		my %idedroles = map { $self->league->ided($member->{$_}) => $_ }
-						keys %$member;
-		return \%idedroles;
+		my $members = $self->jigsawGroupMembers( $jigsaw, $group );
+		my @ids = map { $self->league->ided($_) } @$members;
+		my $roles = $self->roles;
+		my %id2role; @id2role{@ids} = @$roles;
+		return \%id2role;
 	}
 
 =head3 name2jigsawGroup
