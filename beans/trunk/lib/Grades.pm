@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  5月 01, 20時27分54秒
+#Last Edit: 2010  5月 08, 16時06分27秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -551,7 +551,7 @@ The topic of the quiz in the given jigsaw for the given group.
 =cut
 
     method topic ( Str $jigsaw, Str $group ) {
-	my $config = $self->config($jigsaw);
+	my $config = $self->config('Jigsaw', $jigsaw);
 	my $activity = $config->{activity};
 	for my $topic ( keys %$activity ) {
 	    my $forms = $activity->{$topic};
@@ -570,7 +570,7 @@ The form of the quiz in the given jigsaw for the given group.
 =cut
 
     method form ( Str $jigsaw, Str $group ) {
-	my $config = $self->config($jigsaw);
+	my $config = $self->config('Jigsaw', $jigsaw);
 	my $activity = $config->{activity};
 	for my $topic ( keys %$activity ) {
 	    my $forms = $activity->{$topic};
@@ -589,7 +589,7 @@ The file system location of the file with the quiz questions and answers for the
 =cut
 
     method quizfile ( Str $jigsaw ) {
-	my $config = $self->config($jigsaw);
+	my $config = $self->config('Jigsaw', $jigsaw);
 	return $config->{text};
     }
 
@@ -654,7 +654,7 @@ A hash ref of all the groups in the given jigsaw and the names of members of the
 =cut
 
 	method jigsawGroups (Str $jigsaw ) {
-		my $config = $self->config( $jigsaw );
+		my $config = $self->config('Jigsaw', $jigsaw );
 		$config->{group};
 	}
 
@@ -1798,10 +1798,10 @@ A hash ref of the ids of the players and their total score on exams, expressed a
 =head2 Grades' Core Methods
 =cut
 
-class Grades with Homework with CompComp with Groupwork with Classwork with Exams 
+class Grades with Homework with CompComp with Groupwork with Classwork with Exams with Jigsaw
 {
-    with 'Jigsaw'
-	=> { -alias => { config => 'jigsaw_config' }, -excludes => 'config' };
+#    with 'Jigsaw'
+#	=> { -alias => { config => 'jigsaw_config' }, -excludes => 'config' };
 	use Carp;
 	use Grades::Types qw/Weights/;
 
