@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  5月 08, 16時22分34秒
+#Last Edit: 2010  5月 12, 09時14分08秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -891,7 +891,7 @@ The tables with players according to their roles for the given round. In the 'pa
 =cut
 
     method tables ( Str $round ) {
-	my $config = $self->compConfig($round);
+	my $config = $self->config('CompComp', $round);
 	return $config->{pairs};
     }
 
@@ -926,7 +926,7 @@ The compQuiz questions (as an anon array) in the given CompComp activity for the
 
 =head3 compTopic
 
-The topic of the quiz in the given CompComp round for the given table.
+The topic of the quiz in the given CompComp round for the given table. Each table has one and only one quiz.
 
 =cut
 
@@ -940,12 +940,12 @@ The topic of the quiz in the given CompComp round for the given table.
 		return $topic if any { $_ eq $table } @$tables;
 	    }
 	}
-	carp "No quiz at $table table in round $round,";
+	carp "Topic? No quiz at $table table in round $round,";
     }
 
 =head3 compForm
 
-The form of the quiz in the given CompComp round for the given table.
+The form of the quiz in the given CompComp round for the given table. Each table has one and only one quiz.
 
 =cut
 
@@ -959,7 +959,7 @@ The form of the quiz in the given CompComp round for the given table.
 		return $form if any { $_ eq $table } @$tables;
 	    }
 	}
-	carp "No quiz at $table table in round $round,";
+	carp "Form? No quiz at $table table in round $round,";
     }
 
 =head3 compqn
@@ -1869,6 +1869,12 @@ A hashref of student ids and final grades.
 		\%grades;
 	}
 
+}
+
+class Activity {
+
+    method total ( $approach ) {
+	my $handler = $approach->new->total;}
 }
 
 no Moose;
