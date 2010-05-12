@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  5月 12, 09時14分08秒
+#Last Edit: 2010  5月 12, 09時24分11秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -941,6 +941,7 @@ The topic of the quiz in the given CompComp round for the given table. Each tabl
 	    }
 	}
 	carp "Topic? No quiz at $table table in round $round,";
+	return;
     }
 
 =head3 compForm
@@ -960,6 +961,7 @@ The form of the quiz in the given CompComp round for the given table. Each table
 	    }
 	}
 	carp "Form? No quiz at $table table in round $round,";
+	return;
     }
 
 =head3 compqn
