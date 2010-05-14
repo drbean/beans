@@ -133,7 +133,7 @@ subtype HomeworkResult,
 	as Value,
 	where { Num->check( $_ ) or m/transfer/i },
 	message {
-"Missing or non-numerical score or not string 'transfer'," };
+"Missing or non-numerical score or value not 'transfer'," };
 
 =head2 HomeworkRound
 
@@ -146,14 +146,14 @@ subtype HomeworkRound,
 	where { 
 	    my $play = $_;
 	    all {
-		    my $player = $_;
-		    PlayerId->check( $player ) and 
-		    HomeworkResult->check( $play->{$player} )
+		    m/topic/i or
+		    PlayerId->check( $_ ) and 
+		    HomeworkResult->check( $play->{$_} )
 	    }
 	    keys %$play;
 	},
 	message {
-"Problematic PlayerId or Homework Result," };
+"Problematic PlayerId or HomeworkResult or not 'topic' key," };
 
 =head2 HomeworkRounds
 
