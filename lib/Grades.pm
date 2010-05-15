@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  5月 12, 09時24分11秒
+#Last Edit: 2010  5月 15, 19時47分35秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -790,45 +790,45 @@ Points deducted for undesirable performance elements (ie Chinese use) on the qui
 		"Deductions for $group group in $jigsaw jigsaw?" };
 	my $demerits = $data->{Chinese}->{$group};
 	return $demerits;
-}
+    }
 
 }
 
 
 =head2 Grades' Classwork Methods
 
-Classwork is work done in class with everyone and the teacher present. The two classwork approaches are CompComp and Groupwork. Depending on the league's approach, the methods are 'delegated' to either CompComp or Groupwork.
+Classwork is work done in class with everyone and the teacher present. Two classwork approaches are CompComp and Groupwork. Others are possible. Depending on the league's approach accessor, the methods are delegated to the appropriate Approach object.
 
 =cut
 
-role Classwork {
+class Classwork {
 	use Grades::Types qw/Results/;
 
-=head3 classwork, classworkPercent
+=head3 approach
 
-Consume either Groupwork or Classwork's total, totalPercent methods as classwork, classworkPercent.
+Delegatee handling classwork_total, classworkPercent
 
 =cut
 
-    has 'classwork' => ( is => 'ro', isa => Results, lazy_build => 1 );
-    method _build_classwork {
-	my $approach = $self->league->approach;
-	if ( $approach eq 'CompComp' ) {
-	    return $self->totalcomp;
-	}
-    }
+    has 'approach' => ( is => 'ro', isa => 'Approach', required => 1,
+	    handles => [ 'dirs', 'classwork_total', 'classworkPercent' ] );
 
-    has 'classworkPercent' => ( is => 'ro', isa => Results, lazy_build => 1 );
-    method _build_classworkPercent {
-	my $approach = $self->league->approach;
-	if ( $approach eq 'CompComp' ) {
-	    return $self->compwork;
-	}
-	elsif ( $approach eq 'Groupwork' ) {
-	    return $self->groupworkPercent;
-	}
-    }
+}
 
+=head2 Classwork Approach
+
+Handles Classwork's classwork_total and classworkPercent methods. Calls the total or totalPercent methods of the class whose name is in the 'type' accessor.
+
+=cut
+
+class Approach {
+	has 'type' => ( is => 'ro', isa => 'Str', required => 1 );
+	method classwork_total {
+		my $total = $self->type->new->total;
+	}
+	method classworkPercent {
+		my $total = $self->type->new->totalPercent;
+	}
 }
 
 
@@ -838,10 +838,11 @@ The comprehension question competition is a Swiss tournament regulated 2-partner
 
 =cut
 
-role CompComp {
+class CompComp {
     use Try::Tiny;
     use List::MoreUtils qw/any/;
     use Carp qw/carp/;
+    use Grades::Types qw/Results/;
 
 =head3 compcompdirs
 
@@ -849,8 +850,8 @@ The directory under which there are subdirectories containing data for the CompC
 
 =cut
 
-    has 'compcompdirs' => (is => 'ro', isa => 'Str', lazy_build => 1 );
-    method _build_compcompdirs { 
+    has 'dirs' => (is => 'ro', isa => 'Str', lazy_build => 1 );
+    method _build_dirs { 
 	my $leaguedir = $self->league->leagues . "/" . $self->league->id;
 	my $compcompdir = $leaguedir .'/' . shift->league->yaml->{compcomp};
     }
@@ -1091,13 +1092,14 @@ The points of the players in the given conversation. 5 for a Bye, 1 for Late, 0 
     }
 
 
-=head3 totalcomp
+=head3 total
 
 The total over the conversations over the series.
 
 =cut
 
-    method totalcomp {
+    has 'total' => ( is => 'ro', isa => Results, lazy_build => 1 );
+    method _build_total {
 	my $rounds = $self->conversations;
 	my $members = $self->league->members;
 	my @ids = map { $_->{id} } @$members;
@@ -1114,13 +1116,14 @@ The total over the conversations over the series.
     }
 
 
-=head3 compwork
+=head3 totalPercent
 
 The total over the conversations over the series expressed as a percentage of the possible score. The average should be 80 percent if every player participates in every comp.
 
 =cut
 
-    method compwork {
+    has 'totalPercent' => ( is => 'ro', isa => Results, lazy_build => 1 );
+    method _build_totalPercent {
 	my $rounds = $self->conversations;
 	my $n = @$rounds;
 	my $totals = $self->totalcomp;
@@ -1134,12 +1137,12 @@ The total over the conversations over the series expressed as a percentage of th
 =head2 Grades' Groupwork Methods
 =cut
 
-role Groupwork {
+class Groupwork {
 	use List::Util qw/max min sum/;
 	use List::MoreUtils qw/any/;
 	use Carp;
 	use POSIX;
-	use Grades::Types qw/Beancans Card/;
+	use Grades::Types qw/Beancans Card Results/;
 	use Try::Tiny;
 
 =head3 groupworkdirs
@@ -1575,13 +1578,13 @@ Totals for the beancans over the given session. TODO Why '+=' in sessiontotal?
 		\%sessiontotal;
 	}
 
-=head3 groupworkPercent
+=head3 totalPercent
 
 Running totals for individual ids out of 100, over the whole series.
 
 =cut
-
-	method groupworkPercent {
+	has 'totalPercent' => ( is => 'ro', isa => Results, lazy_build => 1 );
+	method _build_totalPercent {
 		my $members = $self->league->members;
 		my $series = $self->series;
 		my (%grades);
@@ -1802,12 +1805,21 @@ A hash ref of the ids of the players and their total score on exams, expressed a
 =head2 Grades' Core Methods
 =cut
 
-class Grades with Homework with CompComp with Groupwork with Classwork with Exams with Jigsaw
+class Grades with Homework with Exams with Jigsaw
 {
 #    with 'Jigsaw'
 #	=> { -alias => { config => 'jigsaw_config' }, -excludes => 'config' };
 	use Carp;
 	use Grades::Types qw/Weights/;
+
+=head3 classwork
+
+An accessor for the object that handles classwork methods. Required at construction time.
+
+=cut
+
+	has 'classwork' => ( is => 'ro', isa => 'Classwork', required => 1,
+		handles => [ 'classwork_total', 'classworkPercent' ] );
 
 =head3 config
 
@@ -1871,12 +1883,6 @@ A hashref of student ids and final grades.
 		\%grades;
 	}
 
-}
-
-class Activity {
-
-    method total ( $approach ) {
-	my $handler = $approach->new->total;}
 }
 
 no Moose;
