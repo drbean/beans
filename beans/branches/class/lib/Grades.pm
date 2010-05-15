@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  5月 15, 19時47分35秒
+#Last Edit: 2010  5月 15, 20時24分22秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -850,8 +850,8 @@ The directory under which there are subdirectories containing data for the CompC
 
 =cut
 
-    has 'dirs' => (is => 'ro', isa => 'Str', lazy_build => 1 );
-    method _build_dirs { 
+    has 'compcompdirs' => (is => 'ro', isa => 'Str', lazy_build => 1 );
+    method _build_compcompdirs { 
 	my $leaguedir = $self->league->leagues . "/" . $self->league->id;
 	my $compcompdir = $leaguedir .'/' . shift->league->yaml->{compcomp};
     }
