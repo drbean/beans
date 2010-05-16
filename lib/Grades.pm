@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  5月 16, 13時36分27秒
+#Last Edit: 2010  5月 16, 19時20分23秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -845,6 +845,19 @@ All the weeks, or sessions or lessons for which grade data is being assembled fr
 	my $total = $type->new( league => $league )->all_weeks;
     }
 
+=head3 points
+
+Week-by-weeks, or session scores for the individual players in the league.
+
+=cut
+
+    method points (Str $week) {
+	my $league = $self->league;
+	my $type = $league->approach;
+	my $meta = $type->meta;
+	my $total = $type->new( league => $league )->points( $week );
+    }
+
 =head3 classwork_total
 
 Calls the pluginned approach's classwork_total.
@@ -940,7 +953,7 @@ The tables with players according to their roles for the given round. In the 'pa
 =cut
 
     method tables ( Str $round ) {
-	my $config = $self->config('CompComp', $round);
+	my $config = $self->config($round);
 	return $config->{pairs};
     }
 
@@ -951,7 +964,7 @@ The file system location of the file with the quiz questions and answers for the
 =cut
 
     method compQuizfile ( Str $round ) {
-	my $config = $self->config('CompComp', $round);
+	my $config = $self->config($round);
 	return $config->{text};
     }
 
@@ -980,7 +993,7 @@ The topic of the quiz in the given CompComp round for the given table. Each tabl
 =cut
 
     method compTopic ( Str $round, Str $table ) {
-	my $config = $self->config('CompComp', $round);
+	my $config = $self->config($round);
 	my $activity = $config->{activity};
 	for my $topic ( keys %$activity ) {
 	    my $forms = $activity->{$topic};
@@ -1000,7 +1013,7 @@ The form of the quiz in the given CompComp round for the given table. Each table
 =cut
 
     method compForm ( Str $round, Str $table ) {
-	my $config = $self->config('CompComp', $round);
+	my $config = $self->config($round);
 	my $activity = $config->{activity};
 	for my $topic ( keys %$activity ) {
 	    my $forms = $activity->{$topic};
@@ -1034,7 +1047,7 @@ Ids in array, in White, Black role order
     method idsbyCompRole ( Str $round, Str $table ) {
 	my $members = $self->league->members;
 	my %namedMembers = map { $_->{name} => $_ } @$members;
-	my $config = $self->config( "CompComp", $round );
+	my $config = $self->config( $round );
 	my $pair = $config->{pair}->{$table};
 	my @idsbyRole = @$pair{qw/White Black/};
 	return \@idsbyRole;
@@ -1148,7 +1161,7 @@ The total over the conversations over the series.
 
     has 'total' => ( is => 'ro', isa => Results, lazy_build => 1 );
     method _build_total {
-	my $rounds = $self->conversations;
+	my $rounds = $self->all_weeks;
 	my $members = $self->league->members;
 	my @ids = map { $_->{id} } @$members;
 	my $totals;
@@ -1172,7 +1185,7 @@ The total over the conversations over the series expressed as a percentage of th
 
     has 'totalPercent' => ( is => 'ro', isa => Results, lazy_build => 1 );
     method _build_totalPercent {
-	my $rounds = $self->conversations;
+	my $rounds = $self->all_weeks;
 	my $n = @$rounds;
 	my $totals = $self->total;
 	my %percentages = map { $_ => $totals->{$_} * 100 / (5*$n) } keys %$totals;
@@ -1480,16 +1493,6 @@ The points the beancans gained for the given week.
 		$self->beancansNotInCard($beancans, $card, $week);
 		$self->beancanDataOnCard($beancans, $card, $week);
 		+{ map { $_ => $card->{$_}->{merits} } keys %$beancans };
-	}
-
-=head3 points
-
-Another name for the merits the beancans gained for the given week.
-
-=cut
-
-	method points (Num $week) {
-		my $self->merits($week);
 	}
 
 =head3 absences
@@ -2019,6 +2022,31 @@ The players absent from each beancan in the given week.
 		$self->beancansNotInCard($beancans, $card, $week);
 		$self->beancanDataOnCard($beancans, $card, $week);
 		+{ map { $_ => $card->{$_}->{absent} } keys %$beancans };
+	}
+
+=head3 points
+
+The merits the beancans gained for the given week, except for those members who were absent, and who get zero. Keyed on player id.
+
+=cut
+
+	method points (Num $week) {
+	    my $members = $self->league->members;
+	    my %points;
+	    for my $member ( @$members ) {
+		my $name = $member->{name};
+		my $id = $member->{id};
+		my $beancan = $self->name2beancan( $week, $name );
+		my $absent = $self->absent($week)->{$beancan};
+		unless ( $absent and ref $absent eq 'ARRAY' ) {
+		    $points{$id} = $self->merits($week)->{$beancan}; 
+		}
+		else {
+		    $points{$id} = ( any { $name eq $_ } @$absent ) ?
+			2 : $self->merits($week)->{$beancan};
+		}
+	    }
+	    return \%points;
 	}
 
 =head3 grades4session
