@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  5月 16, 10時56分17秒
+#Last Edit: 2010  5月 16, 13時27分30秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -811,7 +811,8 @@ Delegatee handling classwork_total, classworkPercent
 =cut
 
     has 'approach' => ( is => 'ro', isa => 'Approach', required => 1,
-	    handles => [ 'dirs', 'classwork_total', 'classworkPercent' ] );
+	    handles => [ qw/
+		classwork_total classworkPercent / ] );
 
 }
 
@@ -830,6 +831,19 @@ The league (object) whose approach this is.
 =cut
 
     has 'league' => (is =>'ro', isa => 'League', required => 1 );
+
+=head3 all_weeks
+
+All the weeks, or sessions or lessons for which grade data is being assembled from for the grade component.
+
+=cut
+
+    method all_weeks {
+	my $league = $self->league;
+	my $type = $league->approach;
+	my $meta = $type->meta;
+	my $total = $type->new( league => $league )->all_weeks;
+    }
 
 =head3 classwork_total
 
@@ -890,15 +904,15 @@ The directory under which there are subdirectories containing data for the CompC
 	my $compcompdir = $leaguedir .'/' . shift->league->yaml->{compcomp};
     }
 
-=head3 conversations
+=head3 all_weeks
 
 The pair conversations over the series (semester). This method returns an arrayref of the numbers of the conversations, in numerical order, of the form, [1, 3 .. 7, 9, 10 .. 99 ]. Results are in sub directories of the same name, under compcompdirs.
 
 =cut
 
-    has 'conversations' =>
+    has 'all_weeks' =>
       ( is => 'ro', isa => 'Maybe[ArrayRef[Int]]', lazy_build => 1 );
-    method _build_conversations {
+    method _build_all_weeks {
         my $dir = $self->compcompdirs;
         my @subdirs = grep { -d } glob "$dir/*";
         [ sort { $a <=> $b } map m/^$dir\/(\d+)$/, @subdirs ];
@@ -1258,14 +1272,14 @@ The files containing classwork points (beans) awarded to beancans.
 		return $files;
 	}
 
-=head3 allweeks
+=head3 all_weeks
 
 The weeks (an array ref of integers) in which beans were awarded.
 
 =cut
 
-	has 'allweeks' => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
-	method _build_allweeks {
+	has 'all_weeks' => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
+	method _build_all_weeks {
 		my $files = $self->allfiles;
 		my $weeks = [ map { m|/(\d+)\.yaml$|; $1 } @$files ];
 		croak "No classwork weeks: @$weeks" unless @$weeks;
@@ -1280,7 +1294,7 @@ The last week in which beans were awarded.
 
 	has 'lastweek' => ( is => 'ro', isa => 'Int', lazy_build => 1 );
 	method _build_lastweek {
-		my $weeks = $self->allweeks;
+		my $weeks = $self->all_weeks;
 		max @$weeks;
 	}
 
@@ -1293,7 +1307,7 @@ The beans awarded to the beancans in the individual cards over the weeks of the 
 	has 'data' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 	method _build_data {
 		my $files = $self->allfiles;
-		my $weeks = $self->allweeks;
+		my $weeks = $self->all_weeks;
 		+{ map { $weeks->[$_] => $self->inspect( $files->[$_] ) }
 			0..$#$weeks };
 	}
@@ -1771,14 +1785,14 @@ The files containing classwork points (beans) awarded to beancans.
 		return $files;
 	}
 
-=head3 allweeks
+=head3 all_weeks
 
 The weeks (an array ref of integers) in which beans were awarded.
 
 =cut
 
-	has 'allweeks' => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
-	method _build_allweeks {
+	has 'all_weeks' => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
+	method _build_all_weeks {
 		my $files = $self->allfiles;
 		my $weeks = [ map { m|/(\d+)\.yaml$|; $1 } @$files ];
 		croak "No classwork weeks: @$weeks" unless @$weeks;
@@ -1793,7 +1807,7 @@ The last week in which beans were awarded.
 
 	has 'lastweek' => ( is => 'ro', isa => 'Int', lazy_build => 1 );
 	method _build_lastweek {
-		my $weeks = $self->allweeks;
+		my $weeks = $self->all_weeks;
 		max @$weeks;
 	}
 
@@ -1806,7 +1820,7 @@ The beans awarded to the beancans in the individual cards over the weeks of the 
 	has 'data' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 	method _build_data {
 		my $files = $self->allfiles;
-		my $weeks = $self->allweeks;
+		my $weeks = $self->all_weeks;
 		+{ map { $weeks->[$_] => $self->inspect( $files->[$_] ) }
 			0..$#$weeks };
 	}
@@ -2082,7 +2096,7 @@ Running totals for individual ids out of 100, over the whole series.
 	has 'totalPercent' => ( is => 'ro', isa => Results, lazy_build => 1 );
 	method _build_totalPercent {
 		my $members = $self->league->members;
-		my $weeks = $self->allweeks;
+		my $weeks = $self->all_weeks;
 		my $weeklyMax = $self->classMax;
 		my $totalMax = $weeklyMax * @$weeks;
 		my $grades = $self->total;
