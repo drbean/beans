@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  5月 16, 13時27分30秒
+#Last Edit: 2010  5月 16, 13時36分27秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -1480,6 +1480,16 @@ The points the beancans gained for the given week.
 		$self->beancansNotInCard($beancans, $card, $week);
 		$self->beancanDataOnCard($beancans, $card, $week);
 		+{ map { $_ => $card->{$_}->{merits} } keys %$beancans };
+	}
+
+=head3 points
+
+Another name for the merits the beancans gained for the given week.
+
+=cut
+
+	method points (Num $week) {
+		my $self->merits($week);
 	}
 
 =head3 absences
