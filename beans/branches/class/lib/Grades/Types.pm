@@ -8,7 +8,7 @@ use MooseX::Types -declare =>
 	[ qw/PlayerName PlayerNames AbsenteeNames PlayerId Member Members
 		Results
 		HomeworkResult HomeworkRound HomeworkRounds
-		Beancans Card
+		Beancans Card TortCard
 		Exam
 		Weights/ ];
 
@@ -219,7 +219,28 @@ subtype Card,
 		}
 		keys %card;
 	},
-	message { 'Probably undefined or non-numeric Merit, Absence, Tardy scores, or possibly illegal beancan,' };
+	message { 'Probably undefined or non-numeric Merit, Absence, Tardy scores, or possibly illegal beancan on Card,' };
+
+=head2 TortCard
+
+A hashref of classwork results for the lesson, where the keys are beancan names (Str) and for each beancan there are 'merits', and 'absences' keys, with an Int value for the first and AbsenteeNames for the second key.
+
+=cut
+
+subtype TortCard,
+	as HashRef,
+	where {
+		my %card = %$_;
+		delete $card{Absent};
+		all {
+			my $can = $_;
+			Str->check( $can ) and 
+			Int->check( $card{$can}->{merits} ) and
+			AbsenteeNames->check( $card{$can}->{absent} )
+		}
+		keys %card;
+	},
+	message { 'Probably an undefined or non-numeric Merit, or invalid AbsenteeNames, or possibly illegal beancan on TortCard,' };
 
 =head2 Exam
 
