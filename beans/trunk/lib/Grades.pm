@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  5月 15, 21時08分47秒
+#Last Edit: 2010  5月 16, 10時56分17秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -1169,6 +1169,11 @@ The total over the conversations over the series expressed as a percentage of th
 
 
 =head2 Grades' Groupwork Methods
+
+The idea of Cooperative Learning, giving individual members of a group all the same score, is that individuals are responsible for the behavior of the other members of the group. Absences and tardies of individual members can lower the scores of the members who are present.
+
+Also, grading to the curve is employed so that the average classwork grade over a session for each student is 80 percent.
+
 =cut
 
 class Groupwork {
@@ -1666,6 +1671,435 @@ Running totals for individual ids out of 100, over the whole series.
 	}
 
 }
+
+=head2 Grades' GroupworkNoFault Approach
+
+Unlike the Groupwork approach, GroupworkNoFault does not penalize members of a group who are present for the absence of other members who are not present or tardy. Instead the individual members not present get a grade of 0 for that class.
+
+Also, no scaling of the grades (a group's merits) takes place. 
+
+=cut
+
+class GroupworkNoFault {
+	use List::Util qw/max min sum/;
+	use List::MoreUtils qw/any/;
+	use Carp;
+	use POSIX;
+	use Grades::Types qw/Beancans TortCard PlayerNames Results/;
+	use Try::Tiny;
+
+=head3 league
+
+The league (object) which is doing groupwork.
+
+=cut
+
+	has 'league' => (is =>'ro', isa => 'League', required => 1,
+				handles => [ 'inspect' ] );
+
+=head3 classMax
+
+The maximum score possible in individual lessons for classwork.
+
+=cut
+
+	has 'classMax' => (is => 'ro', isa => 'Int', lazy => 1, required => 1,
+			default => sub { shift->league->yaml->{classMax} } );
+
+=head3 groupworkdirs
+
+The directory under which there are subdirectories containing data for the groupwork sessions.
+
+=cut
+
+    has 'groupworkdirs' => (is => 'ro', isa => 'Str', lazy_build => 1);
+    method _build_groupworkdirs {
+	my $league = $self->league->id;
+	my $leaguedir = $self->league->leagues . "/" . $league;
+	my $basename = shift->league->yaml->{groupwork} || "classwork";
+	my $groupworkdirs = $leaguedir .'/' . $basename;
+	}
+
+=head3 series
+
+The sessions over the series (semester) in which there was a different grouping (beancans) of players. Everyone in the same beancan for one session gets the same number of beans (classwork score.) This method returns an arrayref of the names of the sessions, in numerical order, of the form, [1, 3 .. 7, 9, 10 .. 99 ]. Results are in sub directories of the same name, under groupworkdirs.
+
+=cut
+
+    has 'series' =>
+      ( is => 'ro', isa => 'Maybe[ArrayRef[Int]]', lazy_build => 1 );
+    method _build_series {
+        my $dir = $self->groupworkdirs;
+        my @subdirs = grep { -d } glob "$dir/*";
+        [ sort { $a <=> $b } map m/^$dir\/(\d+)$/, @subdirs ];
+    }
+
+=head3 beancanseries
+
+The different beancans for each of the sessions in the series. In the directory for each session of the series, there is a file called beancans.yaml, containing mappings of a beancan name to a sequence of PlayerNames, the members of the beancan.
+
+=cut
+
+    has 'beancanseries' => ( is => 'ro', isa => Beancans, lazy_build => 1 );
+    method _build_beancanseries {
+	my $dir = $self->groupworkdirs;
+        my $series = $self->series;
+        my $league = $self->league->id;
+	my %beancans;
+	try { %beancans = 
+	    map { $_ => $self->inspect("$dir/$_/beancans.yaml") } @$series }
+		catch { local $" = ', ';
+		    warn "Missing beancans in $league $dir @$series sessions" };
+	return \%beancans;
+    }
+
+=head3 allfiles
+
+The files containing classwork points (beans) awarded to beancans. 
+
+=cut
+
+
+	has 'allfiles'  => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
+	method _build_allfiles {
+		my $dir = $self->groupworkdirs;
+		my $series = $self->series;
+		my $league = $self->league->id;
+		my $files = [ map { grep m|/(\d+)\.yaml$|,
+					glob "$dir/$_/*.yaml" } @$series ];
+		croak "${league}'s @$series files: @$files?" unless @$files;
+		return $files;
+	}
+
+=head3 allweeks
+
+The weeks (an array ref of integers) in which beans were awarded.
+
+=cut
+
+	has 'allweeks' => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
+	method _build_allweeks {
+		my $files = $self->allfiles;
+		my $weeks = [ map { m|/(\d+)\.yaml$|; $1 } @$files ];
+		croak "No classwork weeks: @$weeks" unless @$weeks;
+		return $weeks;
+	}
+
+=head3 lastweek
+
+The last week in which beans were awarded.
+
+=cut
+
+	has 'lastweek' => ( is => 'ro', isa => 'Int', lazy_build => 1 );
+	method _build_lastweek {
+		my $weeks = $self->allweeks;
+		max @$weeks;
+	}
+
+=head3 data
+
+The beans awarded to the beancans in the individual cards over the weeks of the series (semester.)
+
+=cut
+
+	has 'data' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+	method _build_data {
+		my $files = $self->allfiles;
+		my $weeks = $self->allweeks;
+		+{ map { $weeks->[$_] => $self->inspect( $files->[$_] ) }
+			0..$#$weeks };
+	}
+
+=head3 card
+
+Classwork beans for each beancan for the given week
+
+=cut
+
+	method card (Num $week) {
+		my $card = $self->data->{$week};
+		croak "Week $week card probably has undefined or non-numeric Merit, Absence, Tardy scores, or possibly illegal beancan."
+		    unless is_TortCard( $card );
+		return $card;
+	}
+
+=head3 beancans
+
+A hashref of all the beancans in a given session with the names of the members of each beancan. The number, composition and names of the beancans may change from one session of the series to the next.
+	
+Players in one beancan all get the same Groupwork grade for that session. The beancan members may be the same as the members of the class group, who work together in class, or may be individuals. Usually in a big class, the beancans will be the same as the groups, and in a small class they will be individuals.
+
+Players in the 'Absent' beancan all get a grade of 0 for the session.
+
+Rather than refactor the class to work with individuals rather than groups, and expand some methods (?) to fall back to league members if it finds them in the weekly files instead of groups, I decided to introduce another file, beancans.yaml, and change all variable and method names mentioning group to beancan.
+
+=cut 
+
+	method beancans (Str $session) { $self->beancanseries->{$session}; }
+
+=head3 active
+
+Given a session, returns the active beancans, ie all but the 'Absent' beancan.
+
+=cut
+
+	method active (Str $session) {
+		my $beancans = $self->beancans($session);
+		my %active = %$beancans;
+		delete $active{Absent};
+		return \%active;
+	}
+
+=head3 files
+
+Given a session, returns the files containing beans for the session of form, $session/\d+\.yaml$
+
+=cut
+
+	method files (Str $session) {
+		my $allfiles = $self->allfiles;
+		[ grep m|/$session/\d+\.yaml$|, @$allfiles ];
+	}
+
+=head3 weeks
+
+Given a session, returns the weeks (an array ref of integers) in which beans were awarded in the session.
+
+=cut
+
+	method weeks (Str $session) {
+		my $files = $self->files($session);
+		[ map { m|(\d+)\.yaml$|; $1 } @$files ];
+	}
+
+=head3 week2session
+
+	$Groupwork->week2session(15) # fourth
+
+Given the name of a week, return the name of the session it is in.
+
+=cut
+
+	method week2session (Num $week) {
+		my $sessions = $self->series;
+		my %sessions2weeks = map { $_ => $self->weeks($_) } @$sessions;
+		while ( my ($session, $weeks) = each %sessions2weeks ) {
+			return $session if any { $_ eq $week } @$weeks;
+		}
+		croak "Week $week in none of @$sessions sessions.\n";
+	}
+
+=head3 names2beancans
+
+A hashref of names of members of beancans (players) and the beancans they were members of in a given session.
+
+=cut
+
+	method names2beancans (Str $session) {
+		my $beancans = $self->beancans($session);
+		my %beancansreversed;
+		while ( my ($beancan, $names) = each %$beancans ) {
+			for my $name ( @$names ) {
+			croak
+	"$name in $beancan beancan and other beancan in $session session.\n"
+					if exists $beancansreversed{$name};
+				$beancansreversed{$name} = $beancan;
+			}
+		}
+		\%beancansreversed;
+	}
+
+=head3 name2beancan
+
+	$Groupwork->name2beancan( $week, $playername )
+
+Given the name of a player, the name of the beancan they were a member of in the given week.
+
+=cut
+
+	method name2beancan (Num $week, Str $name) {
+		croak "Week $week?" unless defined $week;
+		my $session = $self->week2session($week);
+		my $beancans = $self->beancans($session);
+		my @names; push @names, @$_ for values %$beancans;
+		my @name2beancans;
+		while ( my ($beancan, $names) = each %$beancans ) {
+			push @name2beancans, $beancan for grep /^$name$/, @$names;
+		}
+		croak "$name not in exactly one beancan in $session session.\n"
+					unless @name2beancans == 1;
+		shift @name2beancans;
+	}
+
+=head3 beancansNotInCard
+
+	$Groupwork->beancansNotInCard( $beancans, $card, 3)
+
+Test all beancans, except Absent, exist in the beancans listed on the card for the week.
+
+=cut
+
+	method beancansNotInCard (HashRef $beancans, HashRef $card, Num $week) {
+		my %common; $common{$_}++ for keys %$beancans, keys %$card;
+		my @notInCard = grep { $common{$_} != 2 and $_ ne 'Absent' }
+						keys %$beancans;
+		croak "@notInCard beancans not in week $week data" if
+					@notInCard;
+	}
+
+=head3 beancanDataOnCard
+
+	$Groupwork->beancansNotInCard( $beancans, $card, 3)
+
+Test all of the beancans, except Absent, have all the points due them for the week. Duplicates the check done by the TortCard type.
+
+=cut
+
+	method beancanDataOnCard (HashRef $beancans, HashRef $card, Num $week) {
+		my @noData = grep { my $beancan = $card->{$_};
+			$_ ne 'Absent' and ( 
+				not defined $beancan->{merits} or 
+					 $beancan->{absent} and not
+					 is_PlayerNames( $beancan->{absent} )
+				    ) }
+				keys %$beancans;
+		croak "@noData beancans missing data in week $week" if @noData;
+	}
+
+=head3 merits
+
+The points the beancans gained for the given week.
+
+=cut
+
+	method merits (Num $week) {
+		my $session = $self->week2session($week);
+		my $beancans = $self->active($session);
+		my $card = $self->card($week);
+		$self->beancansNotInCard($beancans, $card, $week);
+		$self->beancanDataOnCard($beancans, $card, $week);
+		+{ map { $_ => $card->{$_}->{merits} } keys %$beancans };
+	}
+
+=head3 absent
+
+The players absent from each beancan in the given week.
+
+=cut
+
+	method absent (Num $week) {
+		my $session = $self->week2session($week);
+		my $beancans = $self->active($session);
+		my $card = $self->card($week);
+		$self->beancansNotInCard($beancans, $card, $week);
+		$self->beancanDataOnCard($beancans, $card, $week);
+		+{ map { $_ => $card->{$_}->{absent} } keys %$beancans };
+	}
+
+=head3 grades4session
+
+Totals for the beancans over the given session.
+
+=cut
+
+    method grades4session (Str $session) {
+	my $weeks = $self->weeks($session);
+	my $beancans = $self->beancans($session);
+	my %tally;
+	for my $week ( @$weeks ) {
+	    my $grade = $self->merits($week);
+	    my $absent = $self->absent($week);
+	    for my $can ( keys %$beancans ) {
+		my $members = $beancans->{$can};
+		if ( $can =~ m/absent/i ) {
+		    my @missing = @$members;
+			$tally{$_} = 0 for @missing;
+			next;
+		}
+		carp "$can not in week $week Groupwork"
+			unless defined $grade->{$can};
+		my $absent = $self->absent($week)->{$can};
+		for my $member ( @$members ) {
+		    $tally{$member} += $grade->{$can}
+			unless any { $member eq $_ } @$absent;
+		}
+	    }
+	}
+	\%tally;
+    }
+
+=head3 total
+
+Totals for individual ids, over the whole series.
+
+=cut
+
+    has 'total' => ( is => 'ro', isa => Results, lazy_build => 1 );
+    method _build_total {
+	my $members = $self->league->members;
+	my $series = $self->series;
+	my (%grades);
+	for my $session ( @$series ) {
+	    my %presentMembers;
+	    my $can = $self->names2beancans($session);
+	    my $grade = $self->grades4session($session);
+	    for my $member ( @$members ) {
+		my $name = $member->{name};
+		my $id = $member->{id};
+		my $beancan = $can->{$member->{name}};
+		if ( defined $beancan ) {
+		    my $grade = $grade->{$name};
+		    carp $member->{name} .
+			" not in session $session"
+			unless defined $grade;
+		    $grades{$id} += $grade;
+		} else {
+		    carp $member->{name} .
+		    "'s beancan in session $session?"
+		}
+	    }
+	}
+	for my $member ( @$members ) {
+	    my $id = $member->{id};
+	    if ( exists $grades{$id} ) {
+		$grades{$id} = min( 100, $grades{$id} );
+	    }
+	    else {
+		my $name = $member->{name};
+		carp "$name $id Groupwork?";
+		$grades{$id} = 0;
+	    }
+	}
+	\%grades;
+    }
+
+=head3 totalPercent
+
+Running totals for individual ids out of 100, over the whole series.
+
+=cut
+	has 'totalPercent' => ( is => 'ro', isa => Results, lazy_build => 1 );
+	method _build_totalPercent {
+		my $members = $self->league->members;
+		my $weeks = $self->allweeks;
+		my $weeklyMax = $self->classMax;
+		my $totalMax = $weeklyMax * @$weeks;
+		my $grades = $self->total;
+		my $series = $self->series;
+		my %percent;
+		for my $member ( @$members ) {
+		    my $id = $member->{id};
+		    my $score = 100 * $grades->{$id} / $totalMax ;
+		    warn "$member->{name}: ${id}'s classwork score of $score"
+			if $score > 100;
+		    $percent{$id} = $score;
+		}
+		return \%percent;
+	}
+
+}
+
 
 =head2 Grades' Exams Methods
 =cut
