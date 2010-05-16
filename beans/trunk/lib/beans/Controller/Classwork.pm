@@ -44,28 +44,15 @@ sub listing : Local {
             $c->stash->{player} = $player;
             $c->stash->{id}     = $playerId;
             my ( $weeks, @grades, $classwork );
-            if ( $league->approach eq "CompComp" ) {
-                $weeks  = $approach->all_weeks;
-                @grades = map {
-                    {
-                        name => $_,
-                        grade =>
-                          $work->sprintround( $work->points($_)->{$playerId} )
-                    }
-                } @$weeks;
-                $classwork = $work->compwork->{$playerId};
-            }
-            else {
-                $weeks = $approach->all_weeks;
-                for my $week (@$weeks) {
-                    my $group = $work->name2beancan( $week, $player );
-                    my $grade =
-                      $work->sprintround( $work->work2grades($week)->{$group} );
-                    push @grades, { name => $week, grade => $grade };
-                }
-                $classwork = $work->groupworkPercent->{$playerId};
-            }
-            $classwork           = $work->sprintround($classwork);
+	    $weeks  = $approach->all_weeks;
+	    @grades = map {
+		{
+		    name => $_,
+		    grade =>
+		      $work->sprintround( $approach->points($_)->{$playerId} )
+		}
+	    } @$weeks;
+	    $classwork = $approach->classwork_total->{$playerId};
             $c->stash->{percent} = $classwork;
             $c->stash->{weeks}   = \@grades;
             $c->stash->{raw} =
@@ -94,7 +81,6 @@ sub raw : Local {
     my $approach = Approach->new( league => $league );
     my $class = Classwork->new( approach => $approach );
     my $work   = Grades->new( league => $league, classwork => $class  );
-    $league->approach->meta->apply($work);
     if ( $league and $league->is_member($playerId) ) {
         my $player = Player->new( league => $league, id => $playerId );
         if ( $playerName eq $player->name ) {
@@ -106,7 +92,7 @@ sub raw : Local {
             $c->stash->{approach} = $approach;
             my $exercise;
             if ( $approach eq "CompComp" ) {
-                my $qns     = $work->correct($round);
+                my $qns     = $approach->correct($round);
                 my $correct = $qns->{$playerId};
                 my $someothers  = $work->opponents($round);
                 my $otherid = $someothers->{$playerId};
