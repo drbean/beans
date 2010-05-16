@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  5月 15, 20時24分22秒
+#Last Edit: 2010  5月 15, 20時22分51秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -822,13 +822,22 @@ Handles Classwork's classwork_total and classworkPercent methods. Calls the tota
 =cut
 
 class Approach {
-	has 'type' => ( is => 'ro', isa => 'Str', required => 1 );
-	method classwork_total {
-		my $total = $self->type->new->total;
-	}
-	method classworkPercent {
-		my $total = $self->type->new->totalPercent;
-	}
+    has 'type' => ( is => 'ro', isa => 'Str', required => 1 );
+
+=head3 league
+
+The league (object) whose grades these are.
+
+=cut
+
+    has 'league' => (is =>'ro', isa => 'League', required => 1 );
+
+    method classwork_total {
+	    my $total = $self->type->new->total;
+    }
+    method classworkPercent {
+	    my $total = $self->type->new->totalPercent;
+    }
 }
 
 
@@ -843,6 +852,15 @@ class CompComp {
     use List::MoreUtils qw/any/;
     use Carp qw/carp/;
     use Grades::Types qw/Results/;
+
+=head3 league
+
+The league (object) whose grades these are.
+
+=cut
+
+	has 'league' => (is =>'ro', isa => 'League', required => 1,
+				handles => [ 'inspect' ] );
 
 =head3 compcompdirs
 
