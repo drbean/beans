@@ -34,7 +34,9 @@ sub listing : Local {
     my $player   = $params->{player} || $c->request->args->[2];
     my $league   = League->new(
 		leagues => $c->config->{leagues}, id => $leagueId );
-    my $work     = Grades->new( league => $league );
+    my $approach = Approach->new( league => $league );
+    my $class = Classwork->new( approach => $approach );
+    my $work   = Grades->new( league => $league, classwork => $class  );
     if ( $league and $league->is_member($playerId) ) {
         my $playerobj = Player->new( league => $league, id => $playerId );
         if ( $player eq $playerobj->name ) {
@@ -43,7 +45,7 @@ sub listing : Local {
             $c->stash->{id}     = $playerId;
             my ( $weeks, @grades, $classwork );
             if ( $league->approach eq "CompComp" ) {
-                $weeks  = $work->conversations;
+                $weeks  = $approach->all_weeks;
                 @grades = map {
                     {
                         name => $_,
@@ -54,7 +56,7 @@ sub listing : Local {
                 $classwork = $work->compwork->{$playerId};
             }
             else {
-                $weeks = $work->allweeks;
+                $weeks = $approach->all_weeks;
                 for my $week (@$weeks) {
                     my $group = $work->name2beancan( $week, $player );
                     my $grade =
@@ -89,7 +91,9 @@ sub raw : Local {
     my $round      = $c->request->args->[3];
     my $league   = League->new(
 		leagues => $c->config->{leagues}, id => $leagueId );
-    my $work       = Grades->new( league => $league );
+    my $approach = Approach->new( league => $league );
+    my $class = Classwork->new( approach => $approach );
+    my $work   = Grades->new( league => $league, classwork => $class  );
     $league->approach->meta->apply($work);
     if ( $league and $league->is_member($playerId) ) {
         my $player = Player->new( league => $league, id => $playerId );
@@ -161,7 +165,9 @@ sub demerits : Local {
 	my $round =                      $c->request->args->[3];
 	my $league   = League->new(
 		leagues => $c->config->{leagues}, id => $leagueId );
-	my $work = Grades->new( league => $league );
+	my $approach = Approach->new( league => $league );
+	my $class = Classwork->new( approach => $approach );
+	my $work   = Grades->new( league => $league, classwork => $class  );
 	$league->approach->meta->apply($work);
 	if ( $league and $league->is_member($playerId) )
 	{
