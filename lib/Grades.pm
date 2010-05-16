@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  5月 15, 20時22分51秒
+#Last Edit: 2010  5月 15, 21時08分47秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -822,21 +822,37 @@ Handles Classwork's classwork_total and classworkPercent methods. Calls the tota
 =cut
 
 class Approach {
-    has 'type' => ( is => 'ro', isa => 'Str', required => 1 );
 
 =head3 league
 
-The league (object) whose grades these are.
+The league (object) whose approach this is.
 
 =cut
 
     has 'league' => (is =>'ro', isa => 'League', required => 1 );
 
+=head3 classwork_total
+
+Calls the pluginned approach's classwork_total.
+
+=cut
+
     method classwork_total {
-	    my $total = $self->type->new->total;
+	my $league = $self->league;
+	my $type = $league->approach;
+	my $total = $type->new( league => $league )->total;
     }
+
+=head3 classworkPercent
+
+Calls the pluginned approach's classworkPercent.
+
+=cut
+
     method classworkPercent {
-	    my $total = $self->type->new->totalPercent;
+	my $league = $self->league;
+	my $type = $league->approach;
+	my $total = $type->new( league => $league )->totalPercent;
     }
 }
 
@@ -855,7 +871,7 @@ class CompComp {
 
 =head3 league
 
-The league (object) whose grades these are.
+The league (object) which is doing CompComp.
 
 =cut
 
@@ -1144,7 +1160,7 @@ The total over the conversations over the series expressed as a percentage of th
     method _build_totalPercent {
 	my $rounds = $self->conversations;
 	my $n = @$rounds;
-	my $totals = $self->totalcomp;
+	my $totals = $self->total;
 	my %percentages = map { $_ => $totals->{$_} * 100 / (5*$n) } keys %$totals;
 	return \%percentages;
     }
@@ -1162,6 +1178,15 @@ class Groupwork {
 	use POSIX;
 	use Grades::Types qw/Beancans Card Results/;
 	use Try::Tiny;
+
+=head3 league
+
+The league (object) which is doing groupwork.
+
+=cut
+
+	has 'league' => (is =>'ro', isa => 'League', required => 1,
+				handles => [ 'inspect' ] );
 
 =head3 groupworkdirs
 
