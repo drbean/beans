@@ -4,10 +4,10 @@ use strict;
 use base 'Catalyst::View::TT';
 use Template::Stash;
 
-$Template::Stash::LIST_OPS->{coded} = sub {
+$Template::Stash::LIST_OPS->{decoded} = sub {
 	my $list = shift;
 	my %hash;
-	@hash{ @$list } = ( 0 .. $#$list );
+	@hash{ 0 .. $#$list } = ( @$list );
 	return \%hash if $list;
 	};
 

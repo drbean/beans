@@ -12,13 +12,13 @@
 [% FOREACH n IN [ 0 .. round.quiz.max ] %]
   [% r = n + 1 %]
   [% item = round.quiz.$n %]
-    [% IF item.option %] [% codevalue = item.option.coded %]
-    [% ELSE %][% codevalue = { True => 1, False => 0 } %] [% END %]
+    [% IF item.option %] [% codevalue = item.option.decoded %]
+    [% ELSE %][% codevalue = { '1' => 'True', '0' => 'False', T => 'True', F => 'False' } %] [% END %]
     <tr align=center>
     <td>[% item.question %]
     <td>[% theanswer = item.answer %][% theanswer %]
     [% FOREACH id IN round.ids %]
-    <td>[% IF round.responses.$id.$r == codevalue.$theanswer %]o [% ELSE %]X [% END %]
+    <td>[% IF codevalue.${round.responses.$id.$r} == theanswer %]o [% ELSE %]X [% END %]
     [% END %]
   </tr>
 [% END -%]
