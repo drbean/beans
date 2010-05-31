@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  5月 16, 19時20分23秒
+#Last Edit: 2010  5月 28, 11時56分20秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -812,7 +812,7 @@ Delegatee handling classwork_total, classworkPercent
 
     has 'approach' => ( is => 'ro', isa => 'Approach', required => 1,
 	    handles => [ qw/
-		classwork_total classworkPercent / ] );
+		points classwork_total classworkPercent / ] );
 
 }
 
@@ -2348,7 +2348,8 @@ An accessor for the object that handles classwork methods. Required at construct
 =cut
 
 	has 'classwork' => ( is => 'ro', isa => 'Classwork', required => 1,
-		handles => [ 'classwork_total', 'classworkPercent' ] );
+		handles => [ 'points',
+		    'classwork_total', 'classworkPercent' ] );
 
 =head3 config
 
