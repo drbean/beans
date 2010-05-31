@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Last Edit: 2010  4月 05, 11時07分57秒
+# Last Edit: 2010  5月 21, 21時22分41秒
 # $Id: /dic/branches/ctest/grade 1160 2007-03-29T09:31:06.466606Z greg  $
 
 use strict;
@@ -19,7 +19,9 @@ my $id = $script->league || basename( getcwd );
 my $exam = $script->round;
 
 my $league = League->new( id => $id );
-my $grades = Grades->new( league => $league );
+my $approach = Approach->new( league => $league );
+my $classwork = Classwork->new( approach => $approach );
+my $grades = Grades->new( league => $league, classwork => $classwork );
 
 my $config = $grades->config('Jigsaw', $exam);
 my $members = $league->members;
