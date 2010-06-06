@@ -13,7 +13,11 @@
     <td>[% id %]</td>
     <td></td>
 [% FOREACH exercise IN exercises -%]
-    <td>[% exercise.score %]</a>
+    <td>[% IF exercise.score.keys %]
+        [% FOREACH key IN exercise.score.keys %]
+	    [% exercise.score.$key %] [% key %]
+	[% END %]
+        [% ELSE %][% exercise.score %][% END %]</a>
 [% END -%]
     [% IF exercises.size > 1 %]<td>[% total %]</td>[% END %]
     <td>[% grade %]</td>
