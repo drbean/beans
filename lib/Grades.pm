@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  6月 18, 17時14分38秒
+#Last Edit: 2010  6月 18, 17時15分01秒
 #$Id$
 
 our $VERSION = 0.08;
