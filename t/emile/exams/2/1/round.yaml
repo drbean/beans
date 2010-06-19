@@ -1,19 +1,18 @@
 ---
 round: Exam 2 (Part1)
 week: 9
-file: t/emile/activities.yaml
-texts:
+text: t/emile/activities.yaml
 questions:
   - 10
 pass: 5
 assistant:
 group:
   Brown:
-    A: Emile
-    B: Rousseau
-    C: Sophie
-    D: Therese
+    - Emile
+    - Rousseau
+    - Sophie
+    - Therese
 activity:
-  Brown:
-    topic: internet
-    form : 1
+  internet:
+    1:
+      - Brown

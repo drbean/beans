@@ -1,7 +1,7 @@
 ---
 round: Exam 1 (Part2)
 week: 4
-file: t/emile/activities.yaml
+text: t/emile/activities.yaml
 questions:
   - 9
 pass: 5
@@ -9,11 +9,11 @@ assistant:
 absent:
 group:
   Brown:
-    A: Emile
-    B: Rousseau
-    C: Sophie
-    D: Therese
+    - Emile
+    - Rousseau
+    - Sophie
+    - Therese
 activity:
-  Brown:
-    topic: internet
-    form : 1
+  internet:
+    1:
+      - Brown
