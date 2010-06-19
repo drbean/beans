@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  6月 18, 17時15分01秒
+#Last Edit: 2010  6月 19, 19時03分53秒
 #$Id$
 
 our $VERSION = 0.08;
@@ -515,6 +515,7 @@ The jigsaw is a cooperative learning activity where all the players in a group g
 role Jigsaw {
     use List::MoreUtils qw/any all/;
     use Try::Tiny;
+    use Moose::Autobox;
 
 =head3 jigsawdirs
 
@@ -713,7 +714,8 @@ An hash ref of the roles of the members of the given group in the given jigsaw, 
 
 	method jigsawGroupRole (Str $jigsaw, Str $group) {
 		my $members = $self->jigsawGroupMembers( $jigsaw, $group );
-		my %roles = reverse %$members;
+		my %roles;
+		@roles{ @$members } = $self->roles->flatten;
 		return \%roles;
 	}
 
