@@ -1,10 +1,5 @@
 blib*
-Makefile
-Makefile.old
 Build
 _build*
 pm_to_blib*
-*.tar.gz
-.lwpcookies
-Bean-Counter-*
-cover_db
+Grades-*
