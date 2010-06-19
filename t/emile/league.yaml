@@ -2,10 +2,10 @@
 id: emile
 league: Rousseau Cram School
 field: Prestentialism
-hw: t/emile/homework
+hw: homework
 compcomp: comp
-groupwork: t/emile/classwork
-exams: t/emile/exams
+groupwork: classwork
+exams: exams
 examMax: 15
 hwMax: 2
 member:
