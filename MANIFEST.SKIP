@@ -1,3 +1,4 @@
+Makefile.PL
 lib/beans.pm
 lib/beans/Controller/beans.pm
 lib/beans/Controller/Classwork.pm
