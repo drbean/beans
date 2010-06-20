@@ -1,4 +1,9 @@
 ---
+version: 0.11
+date: 日  6月 20 14:35:38 CST 2010
+changes:
+  - Catalyst's Makefile.PL confusing cpantesters
+---
 version: 0.10
 date: 六  6月 19 18:03:17 CST 2010
 changes:
