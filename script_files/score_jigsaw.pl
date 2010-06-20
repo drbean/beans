@@ -1,20 +1,14 @@
 #!/usr/bin/perl
 
 # Created: 西元2010年04月04日 19時52分56秒
-# Last Edit: 2010  5月 21, 21時19分37秒
+# Last Edit: 2010  6月 19, 19時40分33秒
 # $Id$
 
 =head1 NAME
 
 score_jigsaw.pl - Convert individual responses to a total score correct
 
-=head1 VERSION
-
-Version 0.02
-
 =cut
-
-our $VERSION = '0.02';
 
 use strict;
 use warnings;

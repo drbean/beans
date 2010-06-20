@@ -1,7 +1,5 @@
 package Grades::Types;
 
-our $VERSION = 0.06;
-
 use List::MoreUtils qw/all/;
 
 use MooseX::Types -declare =>
