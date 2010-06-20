@@ -1,20 +1,14 @@
 #!/usr/bin/perl
 
 # Created: 西元2010年04月04日 18時44分24秒
-# Last Edit: 2010  5月 31, 13時30分26秒
+# Last Edit: 2010  6月 19, 19時42分09秒
 # $Id$
 
 =head1 NAME
 
 scantron.pl - Generate .yaml file to enter group's responses to jigsaw questions
 
-=head1 VERSION
-
-Version 0.02
-
 =cut
-
-our $VERSION = '0.02';
 
 use strict;
 use warnings;
