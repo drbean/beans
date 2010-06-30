@@ -1,0 +1,117 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use List::Util qw/sum/;
+use YAML qw/LoadFile DumpFile/;
+use IO::All;
+
+use Getopt::Long;
+use Pod::Usage;
+
+my $man = 0;
+my $help = 0;
+my ($league, $name);
+
+GetOptions (
+	"league=s" => \$league, "name=s" => \$name,
+	'help|?' => \$help, man => \$man) or pod2usage(2);
+pod2usage(1) if $help;
+pod2usage(-exitstatus => 0, -verbose => 2) if $man;
+
+die "League: ?" unless $league;
+die "Name: ?" unless $name;
+my $class = LoadFile "/home/greg/$league/league.yaml"
+					or die "No league with this name: $!";
+my @members = @{$class->{member}};
+my %ids = map { $_->{name} => $_->{id} } @members;
+my %names = map { $_->{id} => $_->{name} } @members;
+
+my $id = $ids{$name};
+($names{$id} eq $name) or 
+	die "Check name & id. No player with this id and name exists in $league league.";
+
+my @allseries = @{$class->{series}};
+
+my %lineups;
+map { $lineups{$_} = LoadFile "/home/greg/$league/$_/teams.yaml" } @allseries;
+
+my $beanbag = LoadFile "/home/greg/$league/beanbag.yaml" 
+					or die "No $league/beans.yaml: $!";
+
+my $beantotal = 0;
+format STDOUT_TOP = 
+                        Beans
+-------------------------------------------------------------------------
+.
+
+foreach my $season ( @allseries ) 
+{
+	my (@beantrail, $beancount);
+	foreach my $drop ( @$beanbag )
+	{ 
+		next unless $drop->{series} eq $season;
+		my $team = $drop->{team};
+		if (grep m/^$name$/, @{$lineups{$season}{$team}})
+		{	$beancount += $drop->{beans};
+			push @beantrail, $drop->{beans} . ": " . $drop->{name};
+		}
+	}
+
+	no warnings;
+	format STDOUT =
+@<<<<<<<<<< @<<<<<<<<<<< @<<<<<<<<< @<<<<<<<<< @<<<<<<<<< @<<<<<<<<< @<<<<<<<<< 
+$season . ':',   @beantrail
+.
+	write;
+	use warnings;
+	$beantotal += $beancount if $beancount;
+}
+
+
+print "-----\nTotal: $beantotal\n";
+
+
+__END__
+
+=head1 NAME
+
+checkbeans - A beantrail of individual's bean collecting
+
+=head1 SYNOPSIS
+
+beans [options] 
+
+Options:
+
+--help            This help message
+
+--man            A man page
+
+--name Momotaro	Name of person whose beans are being analyzed
+--league m/j	The league to which the member belongs
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-name>
+
+Name of person whose beans are being analyzed
+
+=item B<-league>
+
+The league to which the member belongs (eg m/j)
+
+=back
+
+=head1 DESCRIPTION
+
+B<checkbeans> analyzes how some students don't do any work, but get high bean totals.
+
+The configuration file, class.yaml, contains series, members fields.
+
+TODO Somehow include the team name too, not just the series and person who handled the beans
+
+=cut

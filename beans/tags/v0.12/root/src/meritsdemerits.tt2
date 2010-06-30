@@ -1,0 +1,29 @@
+[% # Provide a title to root/lib/site/header -%]
+[% META title = 'Absences and Tardies (Lateness)' -%]
+
+<h2>[% league %] League</h2>
+[% IF approach == 'compwork' %]
+<h3>Conversation: [% round %]</h3>
+<table>
+<tr align=center><td colspan=3>Self <td colspan=3>Opponent
+<tr align=center><th>Name <th>ID <th>Correct <th>Correct <th>ID <th>Name
+  <tr align=center>
+    <td>[% player %]
+    <td>[% id %]
+    <td>[% exercise.correct %]
+    <td>[% exercise.othercorrect %]
+    <td>[% exercise.otherid %]
+    <td>[% exercise.othername %]
+[% ELSE %]
+<h3>Week: [% round %]</h3>
+<h4>Group: [% exercise.beancan %] </h4>
+<h4>Members: [% FOREACH member IN exercise.members %][% member %] [% END %]
+<table>
+<tr align=center><th>Absences <th>Tardies
+  <tr align=center>
+    <td>[% exercise.absences %]
+    <td>[% exercise.tardies %]
+[% END -%]
+  </tr>
+</table>
+

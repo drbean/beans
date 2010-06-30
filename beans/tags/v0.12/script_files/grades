@@ -1,0 +1,159 @@
+#!/usr/bin/perl
+
+package main;
+
+use strict;
+use warnings;
+
+use List::Util qw/sum min max/;
+use List::MoreUtils qw/any all/;
+use IO::All;
+use IO::Handle;
+use Pod::Usage;
+use Cwd;
+
+use lib 'lib';
+use Bean;
+
+run () unless caller;
+
+sub run {
+	my $script = Script->new_with_options( league => getcwd );
+	pod2usage(1) if $script->help;
+	pod2usage(-exitstatus => 0, -verbose => 2) if $script->man;
+	my $leagueId = $script->league;
+	my $league = League->new( leagueId => $leagueId ) or die 
+		"No $leagueId league: $!";
+	my $grades = Grades->new( league => $league, script => $script );
+	my $hw = $grades->homework;
+	my $classwork = $grades->classwork;
+	my $exams = $grades->examResults;
+	my $weights = $grades->weights;
+	my $total = sum @$weights;
+	die "No weighting, classwork=>20, homework=>20, exams=>60?" unless
+							$total == 10 || $total == 100;
+	open REP, '>-' or die 'STDOUT? $!'; 
+	my @format_top = qw/'' TOP1 TOP2 TOP3 TOP4/;
+	my $examN = $grades->examdirs;
+	my $examMax = $grades->examMax;
+	my @formats = qw/'' EXAM1 EXAM2 EXAM3 EXAM4/;
+	REP->format_top_name($format_top[@$examN]);
+	REP->format_name($formats[@$examN]);
+	my $members = $league->members;
+	my $absentees = $league->absentees;
+	foreach my $member ( @$members ) 
+	{
+		our $id = $member->{id};
+		our $name = $member->{name};
+		next if @$absentees and any { $_ eq $name } @$absentees;
+		our $homework = min 100, $league->sprintround($hw->{$id}) || 0;
+		our $classwork = min 100,
+				$league->sprintround($classwork->{$id}) || 0;
+		my $exams =  $exams->{$id};
+		die
+"${name} ${id}'s hw: $homework, class: $classwork, exam: $exams grade?"
+			unless defined $homework and defined $classwork and
+				$exams and ref $exams eq 'ARRAY';
+		our $examGrades = $league->sprintround($exams);
+		my $examGrade = sum(@$exams)/@$exams;
+		our $grade = ( $classwork*$weights->[0] +
+			$homework*$weights->[1] +
+			$examGrade*(100/$examMax)*$weights->[2] ) / $total;
+		$grade = $league->sprintround($grade);
+		warn "$id: classwork $classwork, homework $homework, exams $examGrade"
+			unless ( defined $classwork and defined $homework and 
+					defined $examGrade );
+my $examMax = $class->{examMax};
+my @weights = $weights? split m/,|\s+/, $weights:
+			( $class->{weights}->{classwork},
+			$class->{weights}->{homework},
+			$class->{weights}->{exams} );
+my $total = sum @weights;
+die "No weighting, classwork=>20, homework=>20, exams=>60?" unless
+						$total == 10 || $total == 100;
+my $examMax = $class->{examMax};
+my @weights = $weights? split m/,|\s+/, $weights:
+			( $class->{weights}->{classwork},
+			$class->{weights}->{homework},
+			$class->{weights}->{exams} );
+my $total = sum @weights;
+die "No weighting, classwork=>20, homework=>20, exams=>60?" unless
+						$total == 10 || $total == 100;
+
+		write REP;
+	}
+
+	close REP;
+}
+
+format TOP1 = 
+                          Grades
+                                               Exams
+Name        ID      Classwork    Homework  I             Total???
+-------------------------------------------------------------------------
+.
+format TOP2 = 
+                          Grades
+                                               Exams
+Name        ID      Classwork    Homework  I  II         Total???
+-------------------------------------------------------------------------
+.
+format TOP3 = 
+                          Grades
+                                           Exams
+Name        ID      Classwork    Homework   I    II   III   Total???
+-------------------------------------------------------------------------
+.
+format TOP4 =
+                          Grades
+                                               Exams
+Name        ID      Classwork    Homework      I  II  III  Final  Total
+-------------------------------------------------------------------------
+.
+our ($name, $id, $classwork, $homework, $examGrades, $grade);
+format EXAM1 =
+@<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<<<<   @<<          @<<
+$name,      $id,        $classwork,  $homework, @$examGrades, $grade
+.
+format EXAM2 =
+@<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<<<<   @<<  @<<       @<<
+$name,      $id,        $classwork,  $homework, @$examGrades, $grade
+.
+format EXAM3 =
+@<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<<<<   @<<  @<<  @<<    @<<
+$name,      $id,        $classwork,  $homework, @$examGrades, $grade
+.
+format EXAM4 =
+@<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<<<<   @<<  @<<  @<<  @<<    @<<
+$name,      $id,        $classwork,  $homework, @$examGrades, $grade
+.
+
+__END__
+
+=head1 NAME
+
+grades - Calculate sum of beans/5, hw, exams and print a report.
+
+=head1 SYNOPSIS
+
+grades -l m/j
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--man> A man page
+
+=item B<--help> This help message
+
+=item B<--league> The league to which the report belongs, a path from the present working directory to the directory in which league.yaml exists.
+
+=back
+
+=head1 DESCRIPTION
+
+B<grades> totals scores that students have earned for classwork, homework and exams. It adds the total beans (divided by 5) to homework, midterm and final scores and outputs the grade so far.
+
+Beans (ie, classwork) are in classwork.yaml. Homework is in $hw/cumulative.yaml. (Use B<hwtotal> to write this.) Exam scores are in $exams/g.yaml. $hw, $exams are in ./league.yaml.
+
+=cut

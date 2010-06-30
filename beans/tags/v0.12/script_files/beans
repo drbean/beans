@@ -1,0 +1,172 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use List::Util qw/sum/;
+use YAML qw/LoadFile DumpFile/;
+use IO::All;
+
+use Getopt::Long;
+use Pod::Usage;
+
+my $man = 0;
+my $help = 0;
+my ($id, $league, $name, $season, $team, $newbeans);
+
+GetOptions (
+	"league=s" => \$league, "id=i" => \$id,
+	"name=s" => \$name, "beans=i" => \$newbeans,
+	"team=s" => \$team, "season=s" => \$season,
+	'help|?' => \$help, man => \$man) or pod2usage(2);
+pod2usage(1) if $help;
+pod2usage(-exitstatus => 0, -verbose => 2) if $man;
+
+die "League: ?" unless $league;
+die "Season: ?" unless $season;
+die "Beans: $newbeans?" unless $newbeans =~ m/^-?\d+$/;
+my $class = LoadFile "/home/greg/$league/league.yaml"
+					or die "No league with this name: $!";
+my @members = @{$class->{member}};
+my %ids = map { $_->{name} => $_->{id} } @members;
+my %names = map { $_->{id} => $_->{name} } @members;
+
+($ids{$name} eq $id) && ($names{$id} eq $name) or 
+		die "Check name & id. No player with this id and name exists in $league league.";
+
+my @allseries = @{$class->{series}};
+unless (grep m/$season/, @allseries)
+{
+	die "No $season series in $league league: series is one of: @allseries";
+}
+
+my $teams = LoadFile "/home/greg/$league/$season/teams.yaml";
+unless (grep m/$team/, keys %$teams)
+{
+	my @teamNames = keys %$teams;
+	die "No $team Team in $league league: $name\'s team is one of: @teamNames.";
+}
+
+my %lineups;
+map { $lineups{$_} = LoadFile "/home/greg/$league/$_/teams.yaml" } @allseries;
+
+my $teamMembers = $teams->{$team};
+grep m/^$name$/, @$teamMembers or die "$name: $id not a member of $team team.";
+
+my $beanbag;
+if (-e "/home/greg/$league/beanbag.yaml")
+{
+	$beanbag = LoadFile "/home/greg/$league/beanbag.yaml";
+	DumpFile( "/home/greg/$league/beanbag.yaml.bak", $beanbag );
+}
+else { $beanbag = []; }
+my $time = localtime();
+push @$beanbag, {
+	date => $time, name => $name, id => $id,
+	team =>, $team, series => $season, beans => $newbeans };
+DumpFile( "/home/greg/$league/beanbag.yaml", $beanbag );
+
+my $beans;
+if (-e "/home/greg/$league/beans.yaml")
+{
+	$beans = LoadFile "/home/greg/$league/beans.yaml";
+	DumpFile( "/home/greg/$league/beans.yaml.bak", $beans );
+}
+
+format STDOUT_TOP = 
+                            Beans
+                        Today  Total
+-------------------------------------------------------------------------
+.
+
+foreach my $partner ( @$teamMembers ) 
+{
+	my $id = $ids{$partner};
+	my $beancount = sum map
+	{ 
+		my $drop = $_;
+		my $series = $drop->{series};
+		my $group = $drop->{team};
+		$drop->{beans} if grep m/^$partner$/, 
+						@{$lineups{$series}{$group}};
+	} @$beanbag;
+
+	format STDOUT =
+@<<<<<<<<<< @<<<<<<<<<  @<<<<<  @<<<<< 
+$partner,   $id,       $newbeans, $beancount
+.
+	write;
+	$beans->{$partner} = $beancount;
+}
+
+my $log = io "/home/greg/$league/beans.log";
+localtime() . " $name $id, $team in $season redeemed $newbeans.\n" >> $log;
+
+DumpFile ("/home/greg/$league/beans.yaml", $beans);
+
+__END__
+
+=head1 NAME
+
+beans - Add classwork beans to team's record and show grade standing
+
+=head1 SYNOPSIS
+
+beans [options] 
+
+Options:
+
+--help            This help message
+
+--man            A man page
+
+--id 9598457	Id of person claiming these beans to be theirs
+
+--name Momotaro	Name of person claiming these beans to be theirs
+
+--session first	The part of the semester in which the beans were won
+
+--team Gray	The team to which the claimant belongs
+
+--league m/j	The league to which the claimant belongs
+
+--beans 75	Number of beans they are asking to be recorded 
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-id>
+
+Id of person claiming these beans to be theirs.
+
+=item B<-name>
+
+Name of person claiming these beans to be theirs.
+
+=item B<-league>
+
+The league to which the redeemer belongs
+
+=item B<-session>
+
+The session in which the beans were won.
+
+=item B<-team>
+
+The team to which the claimant belongs.
+
+=item B<-beans>
+
+Number of beans they are asking to be recorded.
+
+=back
+
+=head1 DESCRIPTION
+
+B<beans> tallies beans that students have earned for classwork and are redeeming and stores them in beans.yaml as a total, logging their entry in beans.log. The separate script, B<grades> adds the total (divided by 5) to homework, midterm and final scores and outputs the grade so far.
+
+The configuration file, league.yaml, contains series, members fields.
+The $session/teams.yaml files contain team memberships. The files, beanbag.yaml and beans.yaml need to exist.
+
+=cut

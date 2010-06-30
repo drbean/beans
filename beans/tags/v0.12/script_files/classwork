@@ -1,0 +1,446 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use lib 'lib';
+use Bean;
+use List::Util qw/sum min max/;
+use List::MoreUtils qw/none any/;
+use POSIX;
+use IO::All;
+use IO::Handle;
+
+use Pod::Usage;
+use Cwd;
+
+run() unless caller;
+
+sub run {
+	my $script = Script->new_with_options( league => getcwd );
+	pod2usage(1) if $script->help;
+	pod2usage(-exitstatus => 0, -verbose => 2) if $script->man;
+	my $leagueId = $script->league;
+	my $league = League->new( leagueId => $leagueId ) or
+		die "No $leagueId league: $!";
+	my $classwork = Classwork->new( league => $league );
+	my $series = $classwork->series;
+	our $totalweeks = $classwork->allweeks;
+	my $lastweek = $classwork->lastweek;
+	my $leaguemembers = $league->members;
+	my $absentees = $league->absentees;
+	my (%groupscores, %indscores, %indwork, %averagescore);
+	for my $session ( @$series )
+	{
+		my $groups = $classwork->beancans($session);
+		die "$session session, groups not arrayed.\n"
+			if any { ref($_) ne 'ARRAY' } values %$groups;
+		my $members2groups = $classwork->names2beancans($session);
+		for my $leaguemember ( @$leaguemembers ) {
+			my $name = $leaguemember->name;
+			next if @$absentees and any { $_ eq $name } @$absentees;
+			warn "$session session, $name in no beancan.\n" unless
+				$members2groups->{$name};
+		}
+		my $weeks = $classwork->weeks($session);
+		my $payout = $classwork->payout($session);
+		our %averagework;
+		for my $week ( @$weeks )
+		{
+			my $work = $classwork->meritDemerit($week);
+			my $logwork = $classwork->logwork($week);
+			my $totalwork = sum values %$work;
+			$groupscores{$week} = $classwork->work2grades($week);
+			while ( my ($group, $names) = each %$groups ) {
+				$indscores{$week}{$_} =
+					$groupscores{$week}{$group} for @$names;
+				$indwork{$week}{$_} =
+					$work->{$group} for @$names;
+			}
+			$averagework{$week} = $league->sprintround($totalwork /
+								keys %$groups);
+			$averagescore{$week} = 
+				sum( values %{$groupscores{$week}} )
+						/ keys %$groups ;
+		}
+	}
+
+	our $target = $league->sprintround( sum @averagescore{@$totalweeks} );
+my @format_top = qw/'' TOP1 TOP2 TOP3 TOP4 TOP5 TOP6 TOP7 TOP8 TOP9 TOP10 TOP11 TOP12 TOP13/;
+my @formats = qw/'' WEEKS1 WEEKS2 WEEKS3 WEEKS4 WEEKS5 WEEKS6 WEEKS7 WEEKS8 WEEKS9 WEEKS10 WEEKS11 WEEKS12 WEEKS13/;
+my @format_total = qw/'' TOTAL1 TOTAL2 TOTAL3 TOTAL4 TOTAL5 TOTAL6 TOTAL7 TOTAL8 TOTAL9 TOTAL10 TOTAL11 TOTAL12 TOTAL13/;
+my @format_top = qw/'' TOP1 TOP2 TOP3 TOP4 TOP5 TOP6 TOP7 TOP8 TOP9 TOP10 TOP11 TOP12 TOP13/;
+my @formats = qw/'' WEEKS1 WEEKS2 WEEKS3 WEEKS4 WEEKS5 WEEKS6 WEEKS7 WEEKS8 WEEKS9 WEEKS10 WEEKS11 WEEKS12 WEEKS13/;
+my @format_total = qw/'' TOTAL1 TOTAL2 TOTAL3 TOTAL4 TOTAL5 TOTAL6 TOTAL7 TOTAL8 TOTAL9 TOTAL10 TOTAL11 TOTAL12 TOTAL13/;
+
+	open REP, '>-' or die 'STDOUT? $!'; 
+	our @romans = qw/'' I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII/;
+	my @format_top = qw/'' TOP1 TOP2 TOP3 TOP4 TOP5 TOP6 TOP7 TOP8 TOP9 TOP10 TOP11 TOP12 TOP13 TOP14 TOP15 TOP16 TOP17 TOP18/;
+	my @formats = qw/'' WEEKS1 WEEKS2 WEEKS3 WEEKS4 WEEKS5 WEEKS6 WEEKS7 WEEKS8 WEEKS9 WEEKS10 WEEKS11 WEEKS12 WEEKS13 WEEKS14 WEEKS15 WEEKS16 WEEKS17 WEEKS18/;
+	my @format_total = qw/'' TOTAL1 TOTAL2 TOTAL3 TOTAL4 TOTAL5 TOTAL6 TOTAL7 TOTAL8 TOTAL9 TOTAL10 TOTAL11 TOTAL12 TOTAL13 TOTAL14 TOTAL15 TOTAL16 TOTAL17 TOTAL18/;
+
+	REP->format_top_name($format_top[@$totalweeks]);
+	REP->format_name($formats[@$totalweeks]);
+	my %classworktotals;
+
+	my $id = $script->player && $league->is_member($script->player)?
+				$script->player: undef;
+	my $members = $id ? 
+		[ Player->new( id => $id, league => $league ) ]:
+		$league->members;
+	foreach my $member ( @$members ) 
+	{
+		our $name = $member->name;
+		our $id = $member->id;
+		my $lastpoints = $indwork{$lastweek}{$name};
+		my @missing;
+		my @grades = ();
+		for my $week ( @$totalweeks) {
+			my $score = $indscores{$week}{$name};
+			push @missing, $week if not defined $score and not any
+				{ $_ eq $name } @$absentees;
+			push @grades, $score;
+		}
+		warn "${name}'s grade missing for weeks @romans[@missing]" if @missing;
+		my $total = sum @grades;
+		$classworktotals{$id} = $total;
+		our @roundedgrades = $league->sprintround(@grades);
+		our $roundedtotal = $league->sprintround($total);
+		$grades[-1] = "$grades[-1] ($lastpoints)" if $lastpoints;
+		write REP;
+	}
+	print REP "\n";
+	REP->format_name($format_total[@$totalweeks]);
+	write REP;
+	close REP;
+	my $oldclassworktotals = $league->input("$leagueId/classwork.yaml");
+	$league->save("$leagueId/classwork.yaml.bak", $oldclassworktotals);
+	$league->save("$leagueId/classwork.yaml", \%classworktotals);
+}
+
+our (@romans, $totalweeks);
+format TOP1 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<<       @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP2 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<< @<<<       @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP3 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP4 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP5 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP6 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP7 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP8 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP9 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP10 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP11 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP12 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP13 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP14 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP15 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP16 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP17 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+format TOP18 =
+             $class->{league} Classwork
+                    Weeks: Grade(Merits/Demerits)
+@<<<        @<<         @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<<<<<<<<<<<
+'Name', 'ID', @romans[@$totalweeks], 'Total Classwork'
+-------------------------------------------------------------------------
+.
+our ($name, $id, @roundedgrades, $roundedtotal);
+format WEEKS1 =
+@<<<<<<<<<< @<<<<<<<<<  @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+format WEEKS2 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+format WEEKS3 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+format WEEKS4 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+format WEEKS5 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+format WEEKS6 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+format WEEKS7 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+format WEEKS8 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+format WEEKS9 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+format WEEKS10 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+format WEEKS11 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+format WEEKS12 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+format WEEKS13 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+format WEEKS14 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+format WEEKS15 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+format WEEKS16 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+format WEEKS17 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+format WEEKS18 =
+@<<<<<<<<<< @<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<<<   @<<
+$name,  $id,	@roundedgrades, $roundedtotal
+.
+
+our (%averagework, $target);
+format TOTAL1 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+format TOTAL2 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+format TOTAL3 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+format TOTAL4 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+format TOTAL5 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+format TOTAL6 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+format TOTAL7 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+format TOTAL8 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+format TOTAL9 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+format TOTAL10 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+format TOTAL11 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+format TOTAL12 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+format TOTAL13 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+format TOTAL14 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+format TOTAL15 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+format TOTAL16 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+format TOTAL17 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+format TOTAL18 =
+@<<<<<<<<<<<<<<<<<<<<<  @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<< @<<<      @<<<<
+'Average Merits/Demerits',  @averagework{@$totalweeks},            $target
+.
+
+__END__
+
+=head1 NAME
+
+grades - Calculate sum of beans/5, hw, exams and print a report.
+
+=head1 SYNOPSIS
+
+classwork -l m/j -w 14
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--man> A man page
+
+=item B<--help> This help message
+
+=item B<--league> The league to which the report belongs, a path from the present working directory to the directory in which league.yaml exists.
+
+=item B<--weeks> The number of weeks that class work was graded. To allow total expected/average score of 80, per student. (Is this necessary? Shouldn't the number of \d+.yaml files be equal to that number?)
+
+=back
+
+=head1 DESCRIPTION
+
+B<classwork> totals scores that students have earned for classwork in their groups. It records the total classwork score to date and stores it in $league/beans.yaml. It converts the points given in class to a a score, so the average per week is 80/number of weeks, and outputs a report of the weekly results to class.tmp.
+
+The points given by the teacher are log-scaled to prevent active students from taking all hte points.
+
+Individuals rather than group scores are used based on names in $session/individuals.yaml of form: 
+
+Chanel:
+  - Chanel
+Cliff:
+  - Cliff
+
+Students who were absent for the whole of the session should not be included. This inflates the scores of the other students, by raising the payout.
+
+Weekly scores are in \d+.yaml, where \d+ is the week, and are of form:
+
+Chanel: 3
+  merits  : 1
+  absences: 0
+  tardies : 1
+Cliff:
+  merits  : 1
+  absences: 0
+  tardies : 1
+
+=cut
