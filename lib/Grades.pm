@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  7月 02, 15時31分48秒
+#Last Edit: 2010  7月 02, 15時32分23秒
 #$Id$
 
 use MooseX::Declare;
@@ -2049,9 +2049,28 @@ The merits the beancans gained for the given week, except for those members who 
 	    return \%points;
 	}
 
+=head3 sessionMerits
+
+The merits the beancans gained for the given session, with the Absent beancan getting zero. Keyed on beancan.
+
+=cut
+
+    method sessionMerits (Num $session) {
+	my $weeks = $self->weeks($session);
+	my $beancans = $self->beancans($session);
+	my %merits;
+	for my $week ( @$weeks ) {
+	    my $merits = $self->merits($week);
+	    $merits->{Absent} = 0;
+	    $merits{$_} += $merits->{$_} for keys %$beancans;
+	}
+	$merits{Absent} = 0;
+	return \%merits;
+    }
+
 =head3 grades4session
 
-Totals for the beancans over the given session.
+Totals for the beancans over the given session, keyed on individual names.
 
 =cut
 
