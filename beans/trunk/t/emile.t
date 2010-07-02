@@ -10,9 +10,7 @@ use lib 'lib';
 use Grades;
 
 my $l = League->new( leagues => 't', id => 'emile' );
-my $approach = Approach->new( league => $l );
-my $classwork = Classwork->new( approach => $approach );
-my $g = Grades->new( league => $l, classwork => $classwork );
+my $g = Grades->new({ league => $l });
 
 # groupwork
 
