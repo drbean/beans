@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # Created: 西元2010年04月04日 19時52分56秒
-# Last Edit: 2010  6月 19, 19時40分33秒
+# Last Edit: 2010  7月 02, 09時13分14秒
 # $Id$
 
 =head1 NAME
@@ -30,9 +30,7 @@ my $id = $answers->league || basename( getcwd );
 my $exam = $answers->round;
 
 my $league = League->new( id => $id );
-my $approach = Approach->new( league => $league );
-my $classwork = Classwork->new( approach => $approach );
-my $grades = Grades->new( league => $league, classwork => $classwork );
+my $grades = Grades->new({ league => $league });
 
 =head1 DESCRIPTION
 
