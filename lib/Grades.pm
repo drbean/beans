@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  6月 20, 15時05分30秒
+#Last Edit: 2010  7月 02, 15時31分13秒
 #$Id$
 
 use MooseX::Declare;
@@ -2332,6 +2332,7 @@ A hash ref of the ids of the players and their total score on exams, expressed a
 
 
 =head2 Grades' Core Methods
+
 =cut
 
 class Grades with Homework with Exams with Jigsaw
@@ -2340,6 +2341,22 @@ class Grades with Homework with Exams with Jigsaw
 #	=> { -alias => { config => 'jigsaw_config' }, -excludes => 'config' };
 	use Carp;
 	use Grades::Types qw/Weights/;
+
+=head3 BUILDARGS
+
+Have Moose find out the classwork approach the league has adopted and create an object of that approach for the classwork accessor. This is preferable to requiring the user to create the object and pass it at construction time.
+
+=cut
+
+    around BUILDARGS => sub {
+	my $orig = shift;
+	my $class = shift;
+	my $league = $_->{league};
+	my $approach = $league->approach;
+	my $classwork = Classwork->new( approach => $approach );
+	$_->{classwork} = $classwork;
+	return ($class->$orig(@_));
+    };
 
 =head3 classwork
 
