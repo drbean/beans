@@ -8,6 +8,17 @@ lib/beans/Controller/Root.pm
 lib/beans/Model
 lib/beans/View/TT.pm
 
+script_files/beans
+script_files/beans_cgi.pl
+script_files/beans_create.pl
+script_files/beans_fastcgi.pl
+script_files/beans_server.pl
+script_files/beans_test.pl
+script_files/checkbeans
+script_files/cumulative
+script_files/grades
+script_files/hwtotal
+
 t/01app.t
 t/controller_Homework.t
 t/view_TT.t
