@@ -1,0 +1,20 @@
+[% # Provide a title to root/lib/site/header -%]
+[% META title = 'Classwork scores' -%]
+
+<table>
+<tr><th>Class</th><th>Name</th><th>ID</th>
+<th>Weeks:</th>[% FOREACH week IN weeks %]
+    <th>[% week.name %]</th>[% END %]
+<th>Grade</th></tr>
+  <tr>
+    <td>[% league %]</td>
+    <td>[% player %]</td>
+    <td>[% id %]</td>
+    <td></td>
+[% FOREACH week IN weeks -%]
+    <td><a href="[% raw _ '/' _ week.name %]">[% week.grade %]</a>
+[% END -%]
+    <td>[% percent %]</td>
+  </tr>
+</table>
+
