@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # Created: 西元2010年04月04日 18時44分24秒
-# Last Edit: 2010  6月 19, 19時42分09秒
+# Last Edit: 2010  7月 02, 09時13分05秒
 # $Id$
 
 =head1 NAME
@@ -36,9 +36,7 @@ Makes it easy to transfer from paper subject/quiztopicform.tex quiz form, to exa
 =cut
 
 my $league = League->new( id => $id );
-my $approach = Approach->new( league => $league );
-my $classwork = Classwork->new( approach => $approach );
-my $grades = Grades->new( league => $league, classwork => $classwork );
+my $grades = Grades->new({ league => $league });
 
 my $members = $league->members;
 
