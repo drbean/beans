@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  7月 02, 15時31分13秒
+#Last Edit: 2010  7月 02, 15時31分48秒
 #$Id$
 
 use MooseX::Declare;
@@ -2348,15 +2348,14 @@ Have Moose find out the classwork approach the league has adopted and create an 
 
 =cut
 
-    around BUILDARGS => sub {
-	my $orig = shift;
-	my $class = shift;
-	my $league = $_->{league};
-	my $approach = $league->approach;
-	my $classwork = Classwork->new( approach => $approach );
-	$_->{classwork} = $classwork;
-	return ($class->$orig(@_));
-    };
+    around BUILDARGS (ClassName $class: HashRef $args) {
+        my $league = $args->{league} or die "$args->{league} league?";
+        my $approach = Approach->new( league => $league ) or die "approach?";
+        my $classwork = Classwork->new( approach => $approach ) or die "classwork?";
+        $args->{classwork} = $classwork;
+        return $class->$orig({ league => $league, classwork => $classwork });
+    }
+    # around BUILDARGS(@args) { $self->$orig(@args) }
 
 =head3 classwork
 
