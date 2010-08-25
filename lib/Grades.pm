@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  7月 02, 15時32分23秒
+#Last Edit: 2010 Aug 24, 10:57:34 PM
 #$Id$
 
 use MooseX::Declare;
@@ -812,7 +812,9 @@ Delegatee handling classwork_total, classworkPercent
 
     has 'approach' => ( is => 'ro', isa => 'Approach', required => 1,
 	    handles => [ qw/
-		points classwork_total classworkPercent / ] );
+		series beancans
+		all_weeks points
+		classwork_total classworkPercent / ] );
 
 }
 
@@ -831,6 +833,30 @@ The league (object) whose approach this is.
 =cut
 
     has 'league' => (is =>'ro', isa => 'League', required => 1 );
+
+=head3 series
+
+The sessions over the series in which there were different groupings of players.
+
+=cut
+
+    method series {
+	my $league = $self->league;
+	my $type = $league->approach;
+	my $total = $type->new( league => $league )->series;
+    }
+
+=head3 beancans
+
+The different groups in a session and the players in each group.
+
+=cut
+
+    method beancans (Int $session) {
+	my $league = $self->league;
+	my $type = $league->approach;
+	my $total = $type->new( league => $league )->beancans( $session );
+    }
 
 =head3 all_weeks
 
@@ -2383,7 +2409,8 @@ An accessor for the object that handles classwork methods. Required at construct
 =cut
 
 	has 'classwork' => ( is => 'ro', isa => 'Classwork', required => 1,
-		handles => [ 'points',
+		handles => [ 'series', 'beancans',
+			    'points', 'all_weeks',
 		    'classwork_total', 'classworkPercent' ] );
 
 =head3 config
