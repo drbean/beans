@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 Aug 24, 10:57:34 PM
+#Last Edit: 2010 Aug 25, 12:24:20 PM
 #$Id$
 
 use MooseX::Declare;
@@ -980,7 +980,7 @@ The tables with players according to their roles for the given round. In the 'pa
 
     method tables ( Str $round ) {
 	my $config = $self->config($round);
-	return $config->{pairs};
+	return $config->{pair};
     }
 
 =head3 compQuizfile
