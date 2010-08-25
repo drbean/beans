@@ -890,7 +890,7 @@ The comprehension question competition is a Swiss tournament regulated 2-partner
 
 =cut
 
-class CompComp {
+class CompComp extends Approach {
     use Try::Tiny;
     use List::MoreUtils qw/any/;
     use Carp qw/carp/;
@@ -1203,7 +1203,7 @@ Also, grading to the curve is employed so that the average classwork grade over 
 
 =cut
 
-class Groupwork {
+class Groupwork extends Approach {
 	use List::Util qw/max min sum/;
 	use List::MoreUtils qw/any/;
 	use Carp;
@@ -1707,7 +1707,7 @@ Also, no scaling of the grades (a group's merits) takes place.
 
 =cut
 
-class GroupworkNoFault {
+class GroupworkNoFault extends Approach {
 	use List::Util qw/max min sum/;
 	use List::MoreUtils qw/any/;
 	use Carp;
