@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 Aug 25, 12:24:20 PM
+#Last Edit: 2010 Aug 25, 10:50:25 PM
 #$Id$
 
 use MooseX::Declare;
@@ -82,7 +82,7 @@ The path to the league directory.
 =cut
 
 	has 'leagues' => (is => 'ro', isa => 'Str', required => 1, lazy => 1,
-	    default => '/home/drbean/class' );
+	    default => '/home/greg/class' );
 
 =head3 id
 
@@ -974,7 +974,7 @@ The round.yaml file with data about the CompComp activity for the given conversa
 
 =head3 tables
 
-The tables with players according to their roles for the given round. In the 'pairs' mapping in the config file.
+The tables with players according to their roles for the given round. In the 'pair' mapping in the config file.
 
 =cut
 
@@ -1077,6 +1077,20 @@ Ids in array, in White, Black role order
 	my $pair = $config->{pair}->{$table};
 	my @idsbyRole = @$pair{qw/White Black/};
 	return \@idsbyRole;
+    }
+
+=head3 scores
+
+The scores of the members of the given pair in the given round (as an anon hash keyed on the ids of the members). In a file in the CompComp round directory called 'result.yaml'.
+
+=cut
+
+
+    method scores ( Str $round, Str $table ) {
+	my $comp = $self->compcompdirs;
+	my $file = "$comp/$round/result.yaml";
+	my $results = $self->inspect( $file );
+	return $results->{$table};
     }
 
 =head3 compResponses
