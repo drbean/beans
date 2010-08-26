@@ -9,9 +9,15 @@ activity:
       - men
       - women
 pair:
-  men:
-    Black: 34113
-    White: 1
-  women:
-    Black: S09413
+  0:
     White: 222
+    Black: 1
+  1:
+    White: 34113
+    Black: S09413
+#  men:
+#    Black: 34113
+#    White: 1
+#  women:
+#    Black: S09413
+#    White: 222
