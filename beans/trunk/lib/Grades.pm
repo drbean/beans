@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 Aug 25, 10:50:25 PM
+#Last Edit: 2010  8月 30, 16時47分33秒
 #$Id$
 
 use MooseX::Declare;
@@ -1081,16 +1081,16 @@ Ids in array, in White, Black role order
 
 =head3 scores
 
-The scores of the members of the given pair in the given round (as an anon hash keyed on the ids of the members). In a file in the CompComp round directory called 'result.yaml'.
+The scores at the tables of the tournament in the given round (as an anon hash keyed on the ids of the members). In a file in the CompComp round directory called 'result.yaml'.
 
 =cut
 
 
-    method scores ( Str $round, Str $table ) {
+    method scores ( Str $round ) {
 	my $comp = $self->compcompdirs;
 	my $file = "$comp/$round/result.yaml";
 	my $results = $self->inspect( $file );
-	return $results->{$table};
+	return $results;
     }
 
 =head3 compResponses
