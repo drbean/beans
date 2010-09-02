@@ -12,18 +12,23 @@ member:
   - id: S09413
     name: Sophie
     rating: 500
+    password: so
   - id: 34113
     name: Emile
     rating: 1500
+    password: em
   - id: 1
     name: Rousseau
     rating: 3500
+    password: ro
   - id: 222
     name: Therese
     rating: 1500
+    password: th
   - id: 223
     name: therese
     rating: 1500
+    password: th
 absent:
   - None
 series:
