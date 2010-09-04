@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  8月 30, 16時47分33秒
+#Last Edit: 2010  9月 04, 17時45分12秒
 #$Id$
 
 use MooseX::Declare;
@@ -82,7 +82,7 @@ The path to the league directory.
 =cut
 
 	has 'leagues' => (is => 'ro', isa => 'Str', required => 1, lazy => 1,
-	    default => '/home/greg/class' );
+	    default => '/home/drbean/class' );
 
 =head3 id
 
