@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  9月 19, 17時39分16秒
+#Last Edit: 2010  9月 19, 17時40分40秒
 #$Id$
 
 use MooseX::Declare;
@@ -1109,7 +1109,7 @@ The scores at the tables of the tournament in the given round (as an anon hash k
 
     method scores ( Str $round ) {
 	my $comp = $self->compcompdirs;
-	my $file = "$comp/$round/result.yaml";
+	my $file = "$comp/$round/scores.yaml";
 	my $results = $self->inspect( $file );
 	return $results;
     }
