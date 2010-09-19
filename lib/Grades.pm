@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  9月 04, 17時45分12秒
+#Last Edit: 2010  9月 19, 17時39分16秒
 #$Id$
 
 use MooseX::Declare;
@@ -974,13 +974,34 @@ The round.yaml file with data about the CompComp activity for the given conversa
 
 =head3 tables
 
-The tables with players according to their roles for the given round. In the 'pair' mapping in the config file.
+The tables with players according to their roles for the given round, as an array ref. In the 'activities' mapping in the config file. Not ordered by table name or number.
+
+activities:
+  drbean:
+    1:
+      - White: N9661748
+        Black: U9714127
+  novak:
+    1:
+      - White: N9532037
+        Black: U9714111
+      - White: V9731066
+        Black: V9810423
 
 =cut
 
     method tables ( Str $round ) {
 	my $config = $self->config($round);
-	return $config->{pair};
+	my $activities = $config->{activity};
+	my @pairs;
+	for my $key ( keys %$activities ) {
+	    my $topic = $activities->{$key};
+	    for my $form ( keys %$topic ) {
+		my $pairs = $topic->{$form};
+		push @pairs, @$pairs;
+	    }
+	}
+	return \@pairs;
     }
 
 =head3 compQuizfile
