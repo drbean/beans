@@ -130,6 +130,6 @@ is_deeply( $g->examids, [ 1 .. 4 ], 'examids' );
 
 # compcomp
 
-my $c = CompComp->new( league => $l );
+my $c = Compcomp->new( league => $l );
 is( $c->compcompdirs, 't/emile/comp', 'compcompdirs' );
 is_deeply( $c->all_weeks, [ 1..2 ], 'conversations' );
