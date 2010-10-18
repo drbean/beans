@@ -91,8 +91,8 @@ sub raw : Local {
             $c->stash->{round}    = $round;
             $c->stash->{approach} = $approach;
             my $exercise;
-            if ( $league->approach eq "CompComp" ) {
-		my $comp = CompComp->new( league => $league );
+            if ( $league->approach eq "Compcomp" ) {
+		my $comp = Compcomp->new( league => $league );
                 my $qns     = $comp->correct($round);
                 my $correct = $qns->{$playerId};
                 my $someothers  = $comp->opponents($round);
