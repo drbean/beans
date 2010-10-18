@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010  9月 19, 17時40分40秒
+#Last Edit: 2010 10月 17, 12時22分54秒
 #$Id$
 
 use MooseX::Declare;
@@ -55,7 +55,7 @@ Grades - A collocation of homework, classwork and exams
 
 An alternative to a spreadsheet for grading students, using YAML files and scripts. The students are the players in a league ( class.) See the README and example emile league in t/emile in the distribution for the layout of the league directory in which homework, classwork and exam scores are recorded.
 
-Grades are a collocation of Classwork, Homework and Exams roles, but the Classwork role 'delegates' its methods to one of a number of approaches, each of which has a 'total' and 'totalPercent' method. Current approaches, or forms of curriculum, include CompComp, Groupwork and Jigsaw.
+Grades are a collocation of Classwork, Homework and Exams roles, but the Classwork role 'delegates' its methods to one of a number of approaches, each of which has a 'total' and 'totalPercent' method. Current approaches, or forms of curriculum, include Compcomp, Groupwork and Jigsaw.
 
 Keywords: gold stars, token economies, bean counter
 
@@ -74,6 +74,7 @@ class League {
 	use List::MoreUtils qw/any/;
 	use Grades::Types qw/PlayerName PlayerNames Members/;
 	use Try::Tiny;
+	use Carp;
 
 =head3 leagues
 
@@ -133,7 +134,7 @@ The field of the league (class). What is the subject or description, the area of
 
 =head3 approach
 
-The style of classwork competition, eg CompComp, or Groupwork. This is the name of the class (think OOP) to which 'classwork' and other methods are delegated.
+The style of classwork competition, eg Compcomp, or Groupwork. This is the name of the class (think OOP) to which 'classwork' and other methods are delegated.
 
 =cut
 
@@ -199,7 +200,7 @@ The id of the member with the given player name.
 	my @names = keys %ids;
 	my @ids = values %ids;
 	local $" = ', ';
-	warn @ids . " players named @names, with ids: @ids," unless @ids==1;
+	carp @ids . " players named @names, with ids: @ids," unless @ids==1;
 	if ( @ids == 1 ) { return $ids[0] }
 	else { return $ids{$player}; }
       }
@@ -213,7 +214,7 @@ Loads a YAML file.
     method inspect (Str $file) {
 	my ($warning, $data);
 	try { $data = LoadFile $file }
-	    catch { warn "Couldn't open $file," };
+	    catch { carp "Couldn't open $file," };
 	return $data;
 	}
 
@@ -797,7 +798,7 @@ Points deducted for undesirable performance elements (ie Chinese use) on the qui
 
 =head2 Grades' Classwork Methods
 
-Classwork is work done in class with everyone and the teacher present. Two classwork approaches are CompComp and Groupwork. Others are possible. Depending on the league's approach accessor, the methods are delegated to the appropriate Approach object.
+Classwork is work done in class with everyone and the teacher present. Two classwork approaches are Compcomp and Groupwork. Others are possible. Depending on the league's approach accessor, the methods are delegated to the appropriate Approach object.
 
 =cut
 
@@ -910,13 +911,13 @@ Calls the pluginned approach's classworkPercent.
 }
 
 
-=head2 Grades' CompComp Methods
+=head2 Grades' Compcomp Methods
 
 The comprehension question competition is a Swiss tournament regulated 2-partner conversation competition where players try to understand more of their opponent's information than their partners understand of theirs.
 
 =cut
 
-class CompComp extends Approach {
+class Compcomp extends Approach {
     use Try::Tiny;
     use List::MoreUtils qw/any/;
     use Carp qw/carp/;
@@ -924,7 +925,7 @@ class CompComp extends Approach {
 
 =head3 league
 
-The league (object) which is doing CompComp.
+The league (object) which is doing Compcomp.
 
 =cut
 
@@ -933,7 +934,7 @@ The league (object) which is doing CompComp.
 
 =head3 compcompdirs
 
-The directory under which there are subdirectories containing data for the CompComp rounds.
+The directory under which there are subdirectories containing data for the Compcomp rounds.
 
 =cut
 
@@ -959,7 +960,7 @@ The pair conversations over the series (semester). This method returns an arrayr
 
 =head3 config
 
-The round.yaml file with data about the CompComp activity for the given conversation (directory.)
+The round.yaml file with data about the Compcomp activity for the given conversation (directory.)
 
 =cut
 
@@ -968,7 +969,7 @@ The round.yaml file with data about the CompComp activity for the given conversa
 	my $file = "$comp/$round/round.yaml";
         my $config;
 	try { $config = $self->inspect($file) }
-	    catch { warn "No config file for CompComp round $round at $file" };
+	    catch { warn "No config file for Compcomp round $round at $file" };
 	return $config;
     }
 
@@ -1006,7 +1007,7 @@ activities:
 
 =head3 compQuizfile
 
-The file system location of the file with the quiz questions and answers for the given CompComp activity.
+The file system location of the file with the quiz questions and answers for the given Compcomp activity.
 
 =cut
 
@@ -1017,7 +1018,7 @@ The file system location of the file with the quiz questions and answers for the
 
 =head3 compQuiz
 
-The compQuiz questions (as an anon array) in the given CompComp activity for the given table.
+The compQuiz questions (as an anon array) in the given Compcomp activity for the given table.
 
 =cut
 
@@ -1025,7 +1026,7 @@ The compQuiz questions (as an anon array) in the given CompComp activity for the
 	my $quizfile = $self->compQuizfile($round);
 	my $activity;
 	try { $activity = $self->inspect( $quizfile ) }
-	    catch { warn "No $quizfile CompComp content file" };
+	    catch { warn "No $quizfile Compcomp content file" };
 	my $topic = $self->compTopic( $round, $table );
 	my $form = $self->compForm( $round, $table );
 	my $quiz = $activity->{$topic}->{compcomp}->{$form}->{quiz};
@@ -1035,7 +1036,7 @@ The compQuiz questions (as an anon array) in the given CompComp activity for the
 
 =head3 compTopic
 
-The topic of the quiz in the given CompComp round for the given table. Each table has one and only one quiz.
+The topic of the quiz in the given Compcomp round for the given table. Each table has one and only one quiz.
 
 =cut
 
@@ -1055,7 +1056,7 @@ The topic of the quiz in the given CompComp round for the given table. Each tabl
 
 =head3 compForm
 
-The form of the quiz in the given CompComp round for the given table. Each table has one and only one quiz.
+The form of the quiz in the given Compcomp round for the given table. Each table has one and only one quiz.
 
 =cut
 
@@ -1075,7 +1076,7 @@ The form of the quiz in the given CompComp round for the given table. Each table
 
 =head3 compqn
 
-The number of questions in the given CompComp quiz for the given pair.
+The number of questions in the given Compcomp quiz for the given pair.
 
 =cut
 
@@ -1102,7 +1103,7 @@ Ids in array, in White, Black role order
 
 =head3 scores
 
-The scores at the tables of the tournament in the given round (as an anon hash keyed on the ids of the members). In a file in the CompComp round directory called 'result.yaml'.
+The scores at the tables of the tournament in the given round (as an anon hash keyed on the ids of the members). In a file in the Compcomp round directory called 'result.yaml'.
 
 =cut
 
@@ -1116,7 +1117,7 @@ The scores at the tables of the tournament in the given round (as an anon hash k
 
 =head3 compResponses
 
-The responses of the members of the given pair in the given round (as an anon hash keyed on the ids of the members). In a file in the CompComp round directory called 'response.yaml'.
+The responses of the members of the given pair in the given round (as an anon hash keyed on the ids of the members). In a file in the Compcomp round directory called 'response.yaml'.
 
 =cut
 
@@ -2450,7 +2451,7 @@ An accessor for the object that handles classwork methods. Required at construct
 
 =head3 config
 
-The possible grades config files. Including Jigsaw, CompComp.
+The possible grades config files. Including Jigsaw, Compcomp.
 
 =cut
 
