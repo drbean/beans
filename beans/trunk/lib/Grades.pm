@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 10月 17, 12時22分54秒
+#Last Edit: 2010 10月 22, 12時06分00秒
 #$Id$
 
 use MooseX::Declare;
@@ -1136,9 +1136,13 @@ The ids of opponents of the players in the given conversation.
 =cut
 
     method opponents ( Str $round ) {
-	my $comp = $self->compcompdirs;
-	my $file = "$comp/$round/opponent.yaml";
-	my $opponents = $self->inspect( $file );
+	my $tables = $self->tables( $round );
+	my %opponent;
+	for my $table ( @$tables ) {
+	    $opponent{$table->{White}} = $table->{Black};
+	    $opponent{$table->{Black}} = $table->{White};
+	}
+	return \%opponent;
     }
 
 
@@ -1150,8 +1154,14 @@ The number of questions correct in the given conversation.
 
     method correct ( Str $round ) {
 	my $comp = $self->compcompdirs;
-	my $file = "$comp/$round/correct.yaml";
-	my $correct = $self->inspect( $file );
+	my $file = "$comp/$round/scores.yaml";
+	my $tables = $self->inspect( $file );
+	my %correct;
+	for my $table ( keys %$tables ) {
+	    my $scores = $tables->{$table};
+	    @correct{keys %$scores} = values %$scores;
+	}
+	return \%correct;
     }
 
 
@@ -1162,16 +1172,18 @@ The points of the players in the given conversation. 5 for a Bye, 1 for Late, 0 
 =cut
 
     method points ( Str $round ) {
+	my $config = $self->config( $round );
 	my $opponents = $self->opponents( $round );
 	my $correct = $self->correct( $round );
 	my $points;
 	for my $player ( keys %$opponents ) {
-	    if ( $opponents->{$player} =~ m/bye/i ) {
+	    if ( $config->{bye} and $config->{bye} eq  $player ) {
 		$points->{$player} = 5;
 		next;
 	    }
-	    if ( $opponents->{$player} =~ m/late/i ) {
-		$points->{$player} = 1;
+	    if ( $config->{late} ) {
+		my $late = $config->{late};
+		$points->{$player} = 1 if any { $_ eq $player } @$late;
 		next;
 	    }
 	    if ( $opponents->{$player} =~ m/unpaired/i ) {
@@ -1193,7 +1205,7 @@ The points of the players in the given conversation. 5 for a Bye, 1 for Late, 0 
 	    die "No $player quiz card in round $round?" unless exists
 		$correct->{$player};
 	    my $ourcorrect = $correct->{$player};
-	    die "No $other card against $player?" unless
+	    die "No $other card against $player in round $round?" unless
 		exists $correct->{$other};
 	    my $theircorrect = $correct->{$other};
 	    if ( not defined $ourcorrect ) {
