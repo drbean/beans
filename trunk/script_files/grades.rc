@@ -1,0 +1,13 @@
+#!/usr/bin/perl
+
+use IO::All;
+use YAML qw/LoadFile DumpFile/;
+use Cwd;
+
+$_REPL->load_plugin('DumpHistory');
+
+(my $dir = getcwd) =~ s/^.*\/([^\/]*)$/$1/;
+use Grades;
+my $l = League->new( leagues => '/home/greg/beans/t', id => $dir );
+my $g = Grades->new({ league => $l });
+my %m = map { $_->{id} => $_ } @{ $l->members };
