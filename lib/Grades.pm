@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 10月 22, 12時06分00秒
+#Last Edit: 2010 10月 25, 13時01分04秒
 #$Id$
 
 use MooseX::Declare;
@@ -2443,8 +2443,8 @@ Have Moose find out the classwork approach the league has adopted and create an 
 
     around BUILDARGS (ClassName $class: HashRef $args) {
         my $league = $args->{league} or die "$args->{league} league?";
-        my $approach = Approach->new( league => $league ) or die "approach?";
-        my $classwork = Classwork->new( approach => $approach ) or die "classwork?";
+        my $approach = $league->approach or die "approach?";
+        my $classwork = $approach->new( league => $league ) or die "classwork?";
         $args->{classwork} = $classwork;
         return $class->$orig({ league => $league, classwork => $classwork });
     }
@@ -2456,7 +2456,7 @@ An accessor for the object that handles classwork methods. Required at construct
 
 =cut
 
-	has 'classwork' => ( is => 'ro', isa => 'Classwork', required => 1,
+	has 'classwork' => ( is => 'ro', isa => 'Approach', required => 1,
 		handles => [ 'series', 'beancans',
 			    'points', 'all_weeks',
 		    'classwork_total', 'classworkPercent' ] );
