@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 10月 25, 13時01分04秒
+#Last Edit: 2010 10月 25, 13時11分04秒
 #$Id$
 
 use MooseX::Declare;
@@ -2265,7 +2265,8 @@ The directory where the exams are.
     method _build_examdirs {
 	my $league = $self->league->id;
 	my $leaguedir = $self->league->leagues . "/" . $league;
-	my $basename = shift->league->yaml->{jigsaw} || "exams";
+	my $basename = $self->league->yaml->{jigsaw} ||
+			$self->league->yaml->{exams} || "exams";
 	my $examdirs = $leaguedir .'/' . $basename;
     }
 
