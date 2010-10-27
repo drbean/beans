@@ -36,9 +36,7 @@ sub listing : Local {
     my $player   = $params->{player} || $c->request->args->[2];
     my $league   = League->new(
 		leagues => $c->config->{leagues}, id => $leagueId );
-    my $approach = Approach->new( league => $league );
-    my $class = Classwork->new( approach => $approach );
-    my $work   = Grades->new( league => $league, classwork => $class  );
+    my $work   = Grades->new({ league => $league });
     if ( $league and $league->is_member($playerId) ) {
         my $playerobj = Player->new( league => $league, id => $playerId );
         if ( $player eq $playerobj->name ) {
@@ -85,9 +83,7 @@ sub raw : Local {
     my $exam       = $c->request->args->[3];
     my $league   = League->new(
 		leagues => $c->config->{leagues}, id => $leagueId );
-    my $approach = Approach->new( league => $league );
-    my $class = Classwork->new( approach => $approach );
-    my $work   = Grades->new( league => $league, classwork => $class  );
+    my $work   = Grades->new({ league => $league });
     if ( $league and $league->is_member($playerId) ) {
         my $player = Player->new( league => $league, id => $playerId );
         if ( $name eq $player->name ) {
