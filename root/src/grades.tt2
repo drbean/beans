@@ -5,15 +5,15 @@
   <tr><td>League:</td><td>
   <select name="league" size="[% leagues.size %]">
 
-<option value="GL00012">GL00012日語文共同學制虛擬班二 中級英文聽說訓練</option>
-<option value="GL00027">GL00027日語文共同學制虛擬班二 中級英文聽說訓練</option>
-<option value="FLA0018">FLA0018夜應外大學二甲 英語會話</option>
-<option value="FLA0027">FLA0027夜應外大學四甲 英語演說</option>
-<option value="MIA0009">MIA0009日資管大學二甲 商用英文實務英文聽說訓練</option>
-<option value="BMA0076">BMA0076日經管大學二甲 商用英文實務</option>
-<option value="BMA0077">BMA0077日經管大學二乙 商用英文實務</option>
-<option value="FLA0031">FLA0031夜應外大學二甲 西洋通俗文化</option>
-<option value="beans/t/emile">The Rousseau School of Prestentialism</option>
+<option value="GL00006">GL00006日語文共同學制虛擬班二 中級英文聽說訓練</option>
+<option value="GL00013">GL00013日語文共同學制虛擬班二 中級英文聽說訓練</option>
+<option value="MIA0014">MIA0014日資管大學二甲 商用英文實務(一)</option>
+<option value="BMA0071">BMA0071日經管大學二甲 商用英文實務(一)</option>
+<option value="FLA0030">FLA0030夜應外大學三甲 英文會話(三)</option>
+<option value="FLA0014">FLA0014夜應外大學二甲 英文會話(一)</option>
+<option value="FLA0017">FLA0017夜應外大學二甲 跨文化溝通</option>
+<option value="CLA0023">CLA0023日華文大學二甲 英文聽力及會話(一)</option>
+<option value="beans/t/emile">The Rousseau School of Pretentialism</option>
 
   </select></td></tr>
   <tr><td>Id:</td><td><input type="text" name="id"></td></tr>
