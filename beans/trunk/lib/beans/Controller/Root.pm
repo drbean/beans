@@ -86,9 +86,7 @@ sub listing : Local {
     my $playerId = $params->{id};
     my $league   = League->new(
 		leagues => $c->config->{leagues}, id => $leagueId );
-	my $approach = Approach->new( league => $league );
-	my $class = Classwork->new( approach => $approach );
-    my $grades   = Grades->new( league => $league, classwork => $class  );
+    my $grades   = Grades->new({ league => $league });
     if ( $league and $league->is_member($playerId) ) {
         my $playerobj = Player->new( league => $league, id => $playerId );
         if ( $player eq $playerobj->name ) {

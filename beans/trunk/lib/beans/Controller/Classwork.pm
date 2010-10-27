@@ -34,26 +34,25 @@ sub listing : Local {
     my $player   = $params->{player} || $c->request->args->[2];
     my $league   = League->new(
 		leagues => $c->config->{leagues}, id => $leagueId );
-    my $approach = Approach->new( league => $league );
-    my $class = Classwork->new( approach => $approach );
-    my $work   = Grades->new( league => $league, classwork => $class  );
+    my $work   = Grades->new({ league => $league });
+    my $classwork = $work->classwork;
     if ( $league and $league->is_member($playerId) ) {
         my $playerobj = Player->new( league => $league, id => $playerId );
         if ( $player eq $playerobj->name ) {
             $c->stash->{league} = $leagueId;
             $c->stash->{player} = $player;
             $c->stash->{id}     = $playerId;
-            my ( $weeks, @grades, $classwork );
-	    $weeks  = $approach->all_weeks;
+            my ( $weeks, @grades, $totals );
+	    $weeks  = $classwork->all_weeks;
 	    @grades = map {
 		{
 		    name => $_,
 		    grade =>
-		      $work->sprintround( $approach->points($_)->{$playerId} )
+		      $work->sprintround( $classwork->points($_)->{$playerId} )
 		}
 	    } @$weeks;
-	    $classwork = $approach->classwork_total->{$playerId};
-            $c->stash->{percent} = $classwork;
+	    $totals = $classwork->total->{$playerId};
+            $c->stash->{percent} = $totals;
             $c->stash->{weeks}   = \@grades;
             $c->stash->{raw} =
               $c->uri_for_action( 'classwork/raw', $leagueId, $playerId,
@@ -78,18 +77,16 @@ sub raw : Local {
     my $round      = $c->request->args->[3];
     my $league   = League->new(
 		leagues => $c->config->{leagues}, id => $leagueId );
-    my $approach = Approach->new( league => $league );
-    my $class = Classwork->new( approach => $approach );
-    my $work   = Grades->new( league => $league, classwork => $class  );
+    my $work   = Grades->new({ league => $league });
+    my $classwork = $work->classwork;
     if ( $league and $league->is_member($playerId) ) {
         my $player = Player->new( league => $league, id => $playerId );
         if ( $playerName eq $player->name ) {
-            my $approach = $league->approach;
             $c->stash->{league}   = $leagueId;
             $c->stash->{player}   = $playerName;
             $c->stash->{id}       = $playerId;
             $c->stash->{round}    = $round;
-            $c->stash->{approach} = $approach;
+            $c->stash->{approach} = $league->approach;
             my $exercise;
             if ( $league->approach eq "Compcomp" ) {
 		my $comp = Compcomp->new( league => $league );
