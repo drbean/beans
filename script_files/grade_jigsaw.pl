@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Last Edit: 2010 10月 19, 09時06分21秒
+# Last Edit: 2010 10月 26, 14時45分41秒
 # $Id: /dic/branches/ctest/grade 1160 2007-03-29T09:31:06.466606Z greg  $
 
 use strict;
@@ -207,8 +207,8 @@ my @adjustedReport = map
 		sort {$a<=>$b} keys %adjustedByGrades;
 
 my $report;
-$report->{id} = $league->{id};
-$report->{league} = $league->{league};
+$report->{id} = $league->id;
+$report->{league} = $league->name;
 $report->{week} = $config->{week};
 $report->{round} = $config->{round};
 $report->{indScores} = join '', @indReport;
