@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 10月 25, 13時11分04秒
+#Last Edit: 2010 10月 27, 12時15分46秒
 #$Id$
 
 use MooseX::Declare;
@@ -849,15 +849,17 @@ The sessions over the series in which there were different groupings of players.
 
 =head3 beancans
 
-The different groups in a session and the players in each group.
+A hashref of all the beancans in a given session with the names of the members of each beancan. The number, composition and names of the beancans may change from one session of the series to the next.
+	
+Players in one beancan all get the same Groupwork grade for that session. The beancan members may be the same as the members of the class group, who work together in class, or may be individuals. Usually in a big class, the beancans will be the same as the groups, and in a small class they will be individuals.
 
-=cut
+Players in the 'Absent' beancan all get a grade of 0 for the session.
 
-    method beancans (Int $session) {
-	my $league = $self->league;
-	my $type = $league->approach;
-	my $total = $type->new( league => $league )->beancans( $session );
-    }
+Rather than refactor the class to work with individuals rather than groups, and expand some methods (?) to fall back to league members if it finds them in the weekly files instead of groups, I decided to introduce another file, beancans.yaml, and change all variable and method names mentioning group to beancan.
+
+=cut 
+
+	method beancans (Str $session) { $self->beancanseries->{$session}; }
 
 =head3 all_weeks
 
@@ -922,15 +924,6 @@ class Compcomp extends Approach {
     use List::MoreUtils qw/any/;
     use Carp qw/carp/;
     use Grades::Types qw/Results/;
-
-=head3 league
-
-The league (object) which is doing Compcomp.
-
-=cut
-
-	has 'league' => (is =>'ro', isa => 'League', required => 1,
-				handles => [ 'inspect' ] );
 
 =head3 compcompdirs
 
@@ -1285,15 +1278,6 @@ class Groupwork extends Approach {
 	use Grades::Types qw/Beancans Card Results/;
 	use Try::Tiny;
 
-=head3 league
-
-The league (object) which is doing groupwork.
-
-=cut
-
-	has 'league' => (is =>'ro', isa => 'League', required => 1,
-				handles => [ 'inspect' ] );
-
 =head3 groupworkdirs
 
 The directory under which there are subdirectories containing data for the groupwork sessions.
@@ -1411,20 +1395,6 @@ Classwork beans for each beancan for the given week
 		    unless is_Card( $card );
 		return $card;
 	}
-
-=head3 beancans
-
-A hashref of all the beancans in a given session with the names of the members of each beancan. The number, composition and names of the beancans may change from one session of the series to the next.
-	
-Players in one beancan all get the same Groupwork grade for that session. The beancan members may be the same as the members of the class group, who work together in class, or may be individuals. Usually in a big class, the beancans will be the same as the groups, and in a small class they will be individuals.
-
-Players in the 'Absent' beancan all get a grade of 0 for the session.
-
-Rather than refactor the class to work with individuals rather than groups, and expand some methods (?) to fall back to league members if it finds them in the weekly files instead of groups, I decided to introduce another file, beancans.yaml, and change all variable and method names mentioning group to beancan.
-
-=cut 
-
-	method beancans (Str $session) { $self->beancanseries->{$session}; }
 
 =head3 active
 
@@ -1788,15 +1758,6 @@ class GroupworkNoFault extends Approach {
 	use POSIX;
 	use Grades::Types qw/Beancans TortCard PlayerNames Results/;
 	use Try::Tiny;
-
-=head3 league
-
-The league (object) which is doing groupwork.
-
-=cut
-
-	has 'league' => (is =>'ro', isa => 'League', required => 1,
-				handles => [ 'inspect' ] );
 
 =head3 classMax
 
