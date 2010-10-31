@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 10月 27, 12時15分46秒
+#Last Edit: 2010 10月 27, 15時41分11秒
 #$Id$
 
 use MooseX::Declare;
@@ -826,6 +826,7 @@ Handles Classwork's classwork_total and classworkPercent methods. Calls the tota
 =cut
 
 class Approach {
+	use Grades::Types qw/Beancans/;
 
 =head3 league
 
@@ -845,6 +846,25 @@ The sessions over the series in which there were different groupings of players.
 	my $league = $self->league;
 	my $type = $league->approach;
 	my $total = $type->new( league => $league )->series;
+    }
+
+=head3 beancanseries
+
+The different beancans for each of the sessions in the series. In the directory for each session of the series, there is a file called beancans.yaml, containing mappings of a beancan name to a sequence of PlayerNames, the members of the beancan.
+
+=cut
+
+    has 'beancanseries' => ( is => 'ro', isa => Beancans, lazy_build => 1 );
+    method _build_beancanseries {
+	my $dir = $self->groupworkdirs;
+        my $series = $self->series;
+        my $league = $self->league->id;
+	my %beancans;
+	try { %beancans = 
+	    map { $_ => $self->inspect("$dir/$_/beancans.yaml") } @$series }
+		catch { local $" = ', ';
+		    warn "Missing beancans in $league $dir @$series sessions" };
+	return \%beancans;
     }
 
 =head3 beancans
@@ -1275,7 +1295,7 @@ class Groupwork extends Approach {
 	use List::MoreUtils qw/any/;
 	use Carp;
 	use POSIX;
-	use Grades::Types qw/Beancans Card Results/;
+	use Grades::Types qw/Card Results/;
 	use Try::Tiny;
 
 =head3 groupworkdirs
@@ -1304,25 +1324,6 @@ The sessions over the series (semester) in which there was a different grouping 
         my $dir = $self->groupworkdirs;
         my @subdirs = grep { -d } glob "$dir/*";
         [ sort { $a <=> $b } map m/^$dir\/(\d+)$/, @subdirs ];
-    }
-
-=head3 beancanseries
-
-The different beancans for each of the sessions in the series. In the directory for each session of the series, there is a file called beancans.yaml, containing mappings of a beancan name to a sequence of PlayerNames, the members of the beancan.
-
-=cut
-
-    has 'beancanseries' => ( is => 'ro', isa => Beancans, lazy_build => 1 );
-    method _build_beancanseries {
-	my $dir = $self->groupworkdirs;
-        my $series = $self->series;
-        my $league = $self->league->id;
-	my %beancans;
-	try { %beancans = 
-	    map { $_ => $self->inspect("$dir/$_/beancans.yaml") } @$series }
-		catch { local $" = ', ';
-		    warn "Missing beancans in $league $dir @$series sessions" };
-	return \%beancans;
     }
 
 =head3 allfiles
@@ -1756,7 +1757,7 @@ class GroupworkNoFault extends Approach {
 	use List::MoreUtils qw/any/;
 	use Carp;
 	use POSIX;
-	use Grades::Types qw/Beancans TortCard PlayerNames Results/;
+	use Grades::Types qw/TortCard PlayerNames Results/;
 	use Try::Tiny;
 
 =head3 classMax
@@ -1794,25 +1795,6 @@ The sessions over the series (semester) in which there was a different grouping 
         my $dir = $self->groupworkdirs;
         my @subdirs = grep { -d } glob "$dir/*";
         [ sort { $a <=> $b } map m/^$dir\/(\d+)$/, @subdirs ];
-    }
-
-=head3 beancanseries
-
-The different beancans for each of the sessions in the series. In the directory for each session of the series, there is a file called beancans.yaml, containing mappings of a beancan name to a sequence of PlayerNames, the members of the beancan.
-
-=cut
-
-    has 'beancanseries' => ( is => 'ro', isa => Beancans, lazy_build => 1 );
-    method _build_beancanseries {
-	my $dir = $self->groupworkdirs;
-        my $series = $self->series;
-        my $league = $self->league->id;
-	my %beancans;
-	try { %beancans = 
-	    map { $_ => $self->inspect("$dir/$_/beancans.yaml") } @$series }
-		catch { local $" = ', ';
-		    warn "Missing beancans in $league $dir @$series sessions" };
-	return \%beancans;
     }
 
 =head3 allfiles
