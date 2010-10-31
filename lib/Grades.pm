@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 10月 31, 09時25分50秒
+#Last Edit: 2010 10月 30, 20時10分28秒
 #$Id$
 
 use MooseX::Declare;
@@ -1156,11 +1156,11 @@ The points of the players in the given conversation. 5 for a Bye, 1 for Late, 0 
 	my $opponents = $self->opponents( $round );
 	my $correct = $self->correct( $round );
 	my $points;
+	my $byer = $config->{bye};
+	if ( $byer and $self->league->is_member($byer) ) {
+	    $points->{$byer} = 5;
+	}
 	for my $player ( keys %$opponents ) {
-	    if ( $config->{bye} and $config->{bye} eq  $player ) {
-		$points->{$player} = 5;
-		next;
-	    }
 	    if ( $config->{late} ) {
 		my $late = $config->{late};
 		$points->{$player} = 1 if any { $_ eq $player } @$late;
