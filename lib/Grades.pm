@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 10月 30, 20時10分28秒
+#Last Edit: 2010 11月 01, 09時31分46秒
 #$Id$
 
 use MooseX::Declare;
@@ -955,7 +955,7 @@ The round.yaml file with data about the Compcomp activity for the given conversa
 
 =head3 tables
 
-The tables with players according to their roles for the given round, as an array ref. In the 'activities' mapping in the config file. Not ordered by table name or number.
+The tables with players according to their roles for the given round, as an array ref. In the 'activities' mapping in the config file. Ordered by table number.
 
 activities:
   drbean:
