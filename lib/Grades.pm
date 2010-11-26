@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 11月 23, 14時02分58秒
+#Last Edit: 2010 11月 23, 14時04分04秒
 #$Id$
 
 use MooseX::Declare;
@@ -1216,22 +1216,22 @@ The points of the players in the given conversation. 5 for a Bye, 1 for Late, 0 
 	if ( $byer and $self->league->is_member($byer) ) {
 	    $points->{$byer} = 5;
 	}
-	for my $player ( keys %$opponents ) {
-	    if ( $config->{late} ) {
-		my $late = $config->{late};
-		$points->{$player} = 1 if any { $_ eq $player } @$late;
-		next;
+	my $late; $late = $config->{late} if exists $config->{late};
+	PLAYER: for my $player ( keys %$opponents ) {
+	    if ( any { $_ eq $player } @$late ) {
+		$points->{$player} = 1;
+		next PLAYER;
 	    }
 	    if ( $opponents->{$player} =~ m/unpaired/i ) {
 		$points->{$player} = 0;
-		next;
+		next PLAYER;
 	    }
 	    if ( $opponents->{$player} =~ m/transfer/i ) {
 		my $oldleagueId = $self->league->transfer->{$player};
 		my $oldleague = League->new( id => $oldleagueId );
 		my $oldgrades = Grades->new( league => $oldleague );
 		$points->{$player} = $oldgrades->points($round)->{$player};
-		next;
+		next PLAYER;
 	    }
 	    my $other = $opponents->{$player};
 	    my $alterego = $opponents->{$other};
@@ -1246,15 +1246,15 @@ The points of the players in the given conversation. 5 for a Bye, 1 for Late, 0 
 	    my $theircorrect = $correct->{$other};
 	    if ( not defined $ourcorrect ) {
 		$points->{$player} = 0;
-		next;
+		next PLAYER;
 	    }
 	    if ( $correct->{$player} !~ m/^\d+$/ ) {
 		$points->{$player} = 1;
-		next;
+		next PLAYER;
 	    }
 	    if ( not defined $theircorrect ) {
 		$points->{$player} = 5;
-		next;
+		next PLAYER;
 	    }
 	    $points->{$player} = $ourcorrect > $theircorrect? 5:
 				$ourcorrect < $theircorrect? 3: 4
