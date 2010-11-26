@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # Created: 西元2010年04月04日 18時44分24秒
-# Last Edit: 2010  7月 02, 09時13分05秒
+# Last Edit: 2010 11月 17, 11時17分52秒
 # $Id$
 
 =head1 NAME
@@ -49,6 +49,7 @@ for my $group ( keys %$groups ) {
 	warn "Only @$idsbyRole in $group," if not all { defined } @$idsbyRole;
 	my $form = $grades->topic( $exam, $group ) .
 			$grades->form( $exam, $group );
+	die "$group group's topic, form in ${id}'s Exam $exam?" unless $form;
 	push @{ $formorder{$form} }, $group;
 	my $qn = $grades->qn( $exam, $group );
 	my $groupresponse = $response->{$group};
