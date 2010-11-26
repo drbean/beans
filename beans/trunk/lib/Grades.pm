@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 11月 23, 14時00分26秒
+#Last Edit: 2010 11月 23, 14時02分21秒
 #$Id$
 
 use MooseX::Declare;
@@ -1006,6 +1006,47 @@ The file system location of the file with the quiz questions and answers for the
     method compQuizfile ( Str $round ) {
 	my $config = $self->config($round);
 	return $config->{text};
+    }
+
+=head3 compQuizSelection
+
+The comp quiz topics and their associated forms attempted by groups in the round, as the keys of an undef hashref.
+
+=cut
+
+    method compQuizSelection ( Str $round ) {
+	my $config = $self->config($round);
+	my $activity = $config->{activity};
+	my $selection;
+	for my $topic ( keys %$activity ) {
+	    my $forms = $activity->{$topic};
+	    for my $form ( keys %$forms ) {
+		$selection->{$topic}->{$form} = undef;
+	    }
+	}
+	return $selection;
+    }
+
+=head3 compQuizAttempted
+
+Returns the comp quiz topics and their associated forms attempted by the given group in the round, as an arrayref of hashrefs keyed on 'topic' and 'form'.
+
+=cut
+
+    method compQuizAttempted ( Str $round, Str $table ) {
+	my $config = $self->config($round);
+	my $activities = $config->{activity};
+	my $selection = $self->compQuizSelection;
+	my $attempted;
+	for my $topic ( keys %$selection ) {
+	    my $forms = $selection->{$topic};
+	    for my $form ( keys %$forms ) {
+		my $tables = $activities->{$topic}->{$form};
+		push @$attempted, { topic => $topic, form => $form }
+		    if any { $table == $_ } @$tables;
+	    }
+	}
+	return $attempted;
     }
 
 =head3 compQuiz
