@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 11月 26, 10時40分56秒
+#Last Edit: 2010 11月 26, 10時47分09秒
 #$Id$
 
 use MooseX::Declare;
@@ -1190,6 +1190,8 @@ The ids of opponents of the players in the given conversation.
 	    $opponent{$table->{White}} = $table->{Black};
 	    $opponent{$table->{Black}} = $table->{White};
 	}
+	my $byer = $self->byer( $round );
+	$opponent{ $byer } = 'bye' if $byer;
 	my $league = $self->league;
 	my $members = $league->members;
 	$opponent{$_->{id}} ||= 'unpaired' for @$members;
@@ -1227,12 +1229,13 @@ The points of the players in the given conversation. 5 for a Bye, 1 for Late, 0 
 	my $opponents = $self->opponents( $round );
 	my $correct = $self->correct( $round );
 	my $points;
-	my $byer = $config->{bye};
-	if ( $byer and $self->league->is_member($byer) ) {
-	    $points->{$byer} = 5;
-	}
 	my $late; $late = $config->{late} if exists $config->{late};
+	my $byer = $self->byer( $round );
 	PLAYER: for my $player ( keys %$opponents ) {
+	    if ( $byer and $player eq $byer ) {
+		$points->{$player} = 5;
+		next PLAYER;
+	    }
 	    if ( any { $_ eq $player } @$late ) {
 		$points->{$player} = 1;
 		next PLAYER;
