@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 11月 23, 13時58分55秒
+#Last Edit: 2010 11月 23, 14時00分26秒
 #$Id$
 
 use MooseX::Declare;
@@ -982,7 +982,16 @@ activities:
 	    my $topic = $activities->{$key};
 	    for my $form ( keys %$topic ) {
 		my $pairs = $topic->{$form};
-		push @pairs, @$pairs;
+		for my $pair ( @$pairs ) {
+		    my @players = values %$pair;
+		    my @roles = keys %$pair;
+		    push @pairs, $pair unless
+			any { my @previous = values %$_;
+			    any { my $player=$_;
+				any { $player eq $_ } @previous
+			    } @players
+			} @pairs;
+		}
 	    }
 	}
 	return \@pairs;
