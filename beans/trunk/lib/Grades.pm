@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 11月 23, 14時02分21秒
+#Last Edit: 2010 11月 23, 14時02分58秒
 #$Id$
 
 use MooseX::Declare;
@@ -1175,6 +1175,9 @@ The ids of opponents of the players in the given conversation.
 	    $opponent{$table->{White}} = $table->{Black};
 	    $opponent{$table->{Black}} = $table->{White};
 	}
+	my $league = $self->league;
+	my $members = $league->members;
+	$opponent{$_->{id}} ||= 'unpaired' for @$members;
 	return \%opponent;
     }
 
