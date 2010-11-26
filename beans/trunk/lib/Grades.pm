@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 11月 23, 14時06分10秒
+#Last Edit: 2010 11月 23, 14時07分27秒
 #$Id$
 
 use MooseX::Declare;
@@ -1351,7 +1351,7 @@ The sessions over the series (semester) in which there was a different grouping 
 
 =head3 beancanseries
 
-The different beancans for each of the sessions in the series. In the directory for each session of the series, there is a file called beancans.yaml, containing mappings of a beancan name to a sequence of PlayerNames, the members of the beancan.
+The different beancans for each of the sessions in the series. In the directory for each session of the series, there is a file called beancans.yaml, containing mappings of a beancan name to a sequence of PlayerNames, the members of the beancan. If beancans.yaml cannot be found, a file called groups.yaml is used instead. TODO There are 2 identical methods called beancanseries.
 
 =cut
 
@@ -1360,9 +1360,11 @@ The different beancans for each of the sessions in the series. In the directory 
 	my $dir = $self->groupworkdirs;
         my $series = $self->series;
         my $league = $self->league->id;
+	my $beancanfile = "$dir/$_/beancans.yaml";
+	my $file = -e $beancanfile? $beancanfile: "$dir/$_/groups.yaml";
 	my %beancans;
 	try { %beancans = 
-	    map { $_ => $self->inspect("$dir/$_/beancans.yaml") } @$series }
+	    map { $_ => $self->inspect( $file ) } @$series }
 		catch { local $" = ', ';
 		    warn "Missing beancans in $league $dir @$series sessions" };
 	return \%beancans;
