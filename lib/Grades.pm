@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 11月 23, 13時55分30秒
+#Last Edit: 2010 11月 23, 13時57分58秒
 #$Id$
 
 use MooseX::Declare;
@@ -529,7 +529,7 @@ The directory where the jigsaws are.
     method _build_jigsawdirs {
 	my $league = $self->league->id;
 	my $leaguedir = $self->league->leagues . "/" . $league;
-	my $basename = shift->league->yaml->{jigsaw} || "exams";
+	my $basename = shift->league->yaml->{jigsaw} || "exam";
 	my $jigsawdir = $leaguedir .'/' . $basename;
 	}
 
