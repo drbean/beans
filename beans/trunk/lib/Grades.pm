@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 11月 23, 14時10分03秒
+#Last Edit: 2010 11月 24, 11時21分51秒
 #$Id$
 
 use MooseX::Declare;
@@ -409,8 +409,8 @@ Given a round, returns a hashref of the raw scores for that round, keyed on the 
 		my $hwdir = $self->hwdir;
 		my $files = $self->roundfiles->{$round};
 		my @ex = map m/^$hwdir\/$round([_.]\w+)\.yaml$/, @$files;
-		+{ map { substr($_,1) =>
-			$self->inspect( "$hwdir/$round$_.yaml" ) } @ex };
+		my $results = $self->inspect("$hwdir/$round.yaml");
+		return { $results->{exercise} => $results->{points} };
 	}
 
 =head3 hwforid
