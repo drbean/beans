@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 10月 30, 20時10分28秒
+#Last Edit: 2010 11月 23, 13時55分30秒
 #$Id$
 
 use MooseX::Declare;
@@ -371,7 +371,10 @@ A hashref of the homework grades for players in the league for each round.
 	method _build_hwbyround {
 		my $hwdir = $self->hwdir;
 		my $rounds = $self->rounds;
-		+{ map { $_ => $self->inspect( "$hwdir/$_.yaml" ) } @$rounds };
+		my %results =
+		    map { $_ => $self->inspect("$hwdir/$_.yaml") } @$rounds;
+		my %grades = map { $_ => $results{$_}{grade} } @$rounds;
+		return \%grades;
 	}
 
 =head3 roundMax
