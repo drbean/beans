@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 11月 26, 10時37分25秒
+#Last Edit: 2010 11月 26, 10時40分56秒
 #$Id$
 
 use MooseX::Declare;
@@ -1161,6 +1161,21 @@ The responses of the members of the given pair in the given round (as an anon ha
 	my $responses = $self->inspect( $file );
 	return $responses->{$table};
     }
+
+
+=head3 byer
+
+The id of the player with the Bye, or the empty string.
+
+=cut
+
+    method byer ( Str $round ) {
+	my $config = $self->config( $round );
+	my $byer = $config->{bye};
+	return $byer if $byer;
+	return '';
+    }
+
 
 =head3 opponents
 
