@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 11月 23, 14時04分04秒
+#Last Edit: 2010 11月 23, 14時06分10秒
 #$Id$
 
 use MooseX::Declare;
@@ -1296,7 +1296,7 @@ The total over the conversations over the series expressed as a percentage of th
     has 'totalPercent' => ( is => 'ro', isa => Results, lazy_build => 1 );
     method _build_totalPercent {
 	my $rounds = $self->all_weeks;
-	my $n = @$rounds;
+	my $n = scalar @$rounds;
 	my $totals = $self->total;
 	my %percentages = map { $_ => $totals->{$_} * 100 / (5*$n) } keys %$totals;
 	return \%percentages;
