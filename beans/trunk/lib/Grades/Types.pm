@@ -144,14 +144,25 @@ subtype HomeworkRound,
 	where { 
 	    my $play = $_;
 	    all {
-		    m/topic/i or
-		    PlayerId->check( $_ ) and 
-		    HomeworkResult->check( $play->{$_} )
+		    my $value = $play->{$_};
+		    m/exercise/i and Str->check( $value ) or
+		    m/cutpoints/i or
+		    m/cutpoints/i and all { my $cutpoint = $value->{$_};
+			m/one/i and Num->check( $cutpoint ) or
+			m/two/i and Num->check( $cutpoint )
+					  } keys %$value or
+		    m/grade/ and Results->check( $value ) or
+		    m/points/ and all { my $points  = $value->{$_};
+			PlayerId->check( $_ ) and all { my $work = $value->{$_};
+			    m/letters/i or
+			    m/questions/i and Num->check( $work )
+						     } keys %$points
+				      } keys %$value
 	    }
 	    keys %$play;
 	},
 	message {
-"Problematic PlayerId or HomeworkResult or not 'topic' key," };
+"Problematic PlayerId or HomeworkResult," };
 
 =head2 HomeworkRounds
 
@@ -168,7 +179,7 @@ subtype HomeworkRounds,
 			Int->check( $round ) and
 			    HomeworkRound->check( $results->{$round} )
 		    } keys %$results;
-		return 0 unless $test or not defined $test;
+		return 1 if $test or not defined $test;
 	},
 	message {
 "Impossible round number or PlayerId, or missing or non-numerical score," };
