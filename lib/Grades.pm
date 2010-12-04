@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 11月 29, 14時03分01秒
+#Last Edit: 2010 12月 03, 08時53分06秒
 #$Id$
 
 use MooseX::Declare;
@@ -303,7 +303,8 @@ role Homework {
 	use List::Util qw/min sum/;
 	use Scalar::Util qw/looks_like_number/;
 	use Carp;
-    use Grades::Types qw/PlayerId HomeworkResult HomeworkRound HomeworkRounds/;
+    use Grades::Types qw/PlayerId HomeworkResult HomeworkRound HomeworkRounds
+	RoundsResults/;
 
 =head3 hwdir
 
@@ -367,7 +368,7 @@ A hashref of the homework grades for players in the league for each round.
 
 =cut
 
-	has 'hwbyround', (is => 'ro', isa => "RoundsResults", lazy_build => 1);
+	has 'hwbyround', (is => 'ro', isa => RoundsResults, lazy_build => 1);
 	method _build_hwbyround {
 		my $hwdir = $self->hwdir;
 		my $rounds = $self->rounds;
