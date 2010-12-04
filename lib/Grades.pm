@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 12月 03, 08時53分06秒
+#Last Edit: 2010 12月 04, 19時28分21秒
 #$Id$
 
 use MooseX::Declare;
@@ -437,7 +437,7 @@ Given a player's id, returns an array ref of the player's hw scores.
             elsif ( defined $grade and $grade =~ m/transfer/i ) {
                 my $oldleagueId = $self->league->transfer->{$id};
                 my $league   = League->new( id => $oldleagueId );
-                my $grades   = Grades->new( league => $league );
+                my $grades   = Grades->new({ league => $league });
                 my $transfergrade    = $grades->hwbyround->{$round}->{$id};
                 warn
 "$id transfered from $oldleagueId league but no homework there in round $round"
