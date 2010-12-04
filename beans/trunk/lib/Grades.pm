@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 12月 04, 20時17分21秒
+#Last Edit: 2010 12月 04, 20時38分34秒
 #$Id$
 
 use MooseX::Declare;
@@ -1178,6 +1178,19 @@ The id of the player with the Bye, or the empty string.
     }
 
 
+=head3 transfer
+
+An array ref of the ids of the players who were playing in another league in the round.
+
+=cut
+
+    method transfer ( Str $round ) {
+	my $config = $self->config( $round );
+	my $transfers = $config->{transfer} || '';
+	return $transfers;
+    }
+
+
 =head3 opponents
 
 The ids of opponents of the players in the given conversation.
@@ -1193,6 +1206,9 @@ The ids of opponents of the players in the given conversation.
 	}
 	my $byer = $self->byer( $round );
 	$opponent{ $byer } = 'bye' if $byer;
+	my $transfers = $self->transfer( $round );
+	@opponent{ @$transfers } = ( 'transfer' ) x @$transfers
+	   if ( $transfers and ref( $transfers ) eq 'ARRAY' );
 	my $league = $self->league;
 	my $members = $league->members;
 	$opponent{$_->{id}} ||= 'unpaired' for @$members;
