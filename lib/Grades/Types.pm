@@ -5,7 +5,9 @@ use List::MoreUtils qw/all/;
 use MooseX::Types -declare =>
 	[ qw/PlayerName PlayerNames AbsenteeNames PlayerId Member Members
 		Results
-		HomeworkResult HomeworkRound HomeworkRounds
+		HomeworkResult
+		HomeworkPoints Cutpoints HomeworkWork HomeworkWorks
+		HomeworkRound HomeworkRounds RoundsResults
 		Beancans Card TortCard
 		Exam
 		Weights/ ];
@@ -103,7 +105,7 @@ subtype Members,
 
 =head2 Results
 
-A number for each playerId.
+A number or the string 'transfer' for each playerId.
 
 =cut
 
@@ -113,8 +115,9 @@ subtype Results,
 	    my $results = $_;
 	    all {
 		my $player = $_;
-		PlayerId->check( $player ) and 
-		Num->check( $results->{$player} )
+		PlayerId->check( $player ) and (
+		Num->check( $results->{$player} ) or
+		$results->{$player} =~ m/transfer/i )
 	    }
 	    keys %$results;
 	},
@@ -133,6 +136,67 @@ subtype HomeworkResult,
 	message {
 "Missing or non-numerical score or value not 'transfer'," };
 
+=head2 Cutpoints
+
+'one', 'two' cutpoints with the numerical value
+
+=cut
+
+subtype Cutpoints,
+	as HashRef,
+	where {
+	    my $cutpoint = $_;
+	    all {
+		( m/one/i or m/two/i ) and
+		Num->check( $cutpoint->{$_} )
+		} keys %$_
+	      },
+	message {
+"Missing 'one', 'two' cutpoints with numerical value," };
+
+=head2 HomeworkPoints
+
+A number or undef.
+
+=cut
+
+subtype HomeworkPoints, as Maybe[Num];
+
+=head2 HomeworkWork
+
+'letters' and 'questions' and the number of each. But letters might be undef.
+
+=cut
+
+subtype HomeworkWork,
+	as HashRef,
+	where {
+	    my $work = $_;
+	    all {
+		( m/letters/i or m/questions/i ) and
+		HomeworkPoints->check( $work->{$_} )
+		} keys %$work
+	      },
+	message {
+"Missing 'letters', 'questions' and HomeworkPoints," };
+
+=head2 HomeworkWorks
+
+HomeworkWork of all players.
+
+=cut
+
+subtype HomeworkWorks,
+	as HashRef,
+	where {
+	    my $points = $_;
+	    all { 
+		PlayerId->check( $_ ) and HomeworkWork->check( $points->{$_} )
+		} keys %$points
+	      },
+	message {
+"Missing players and their points," };
+
 =head2 HomeworkRound
 
 A hashref of PlayerId keys and HomeworkResult values.
@@ -146,38 +210,29 @@ subtype HomeworkRound,
 	    all {
 		    my $value = $play->{$_};
 		    m/exercise/i and Str->check( $value ) or
-		    m/cutpoints/i or
-		    m/cutpoints/i and all { my $cutpoint = $value->{$_};
-			m/one/i and Num->check( $cutpoint ) or
-			m/two/i and Num->check( $cutpoint )
-					  } keys %$value or
+		    m/cutpoints/i and Cutpoints->check( $value ) or
 		    m/grade/ and Results->check( $value ) or
-		    m/points/ and all { my $points  = $value->{$_};
-			PlayerId->check( $_ ) and all { my $work = $value->{$_};
-			    m/letters/i or
-			    m/questions/i and Num->check( $work )
-						     } keys %$points
-				      } keys %$value
-	    }
+		    m/points/ and HomeworkWorks->check( $value )
+		}
 	    keys %$play;
 	},
 	message {
-"Problematic PlayerId or HomeworkResult," };
+"Problematic homework round file," };
 
-=head2 HomeworkRounds
+=head2 RoundsResults
 
-A hashref of the homework keyed on the round (an Int.) For each round, the keys are PlayerId, and the values are scores, or Num.
+A hashref of the homework grades keyed on the round (an Int.) For each round, the keys are PlayerId, and the values are scores, or Num.
 
 =cut
 
-subtype HomeworkRounds,
+subtype RoundsResults,
 	as HashRef,
 	where { 
 		my $results = $_;
 		my $test = all {
 			my $round = $_;
 			Int->check( $round ) and
-			    HomeworkRound->check( $results->{$round} )
+			    Results->check( $results->{$round} )
 		    } keys %$results;
 		return 1 if $test or not defined $test;
 	},
