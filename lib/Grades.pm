@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 11月 26, 10時47分09秒
+#Last Edit: 2010 11月 29, 13時54分50秒
 #$Id$
 
 use MooseX::Declare;
@@ -1885,13 +1885,14 @@ The different beancans for each of the sessions in the series. In the directory 
 	my $dir = $self->groupworkdirs;
         my $series = $self->series;
         my $league = $self->league->id;
-	my $beancanfile = "$dir/$_/beancans.yaml";
-	my $file = -e $beancanfile? $beancanfile: "$dir/$_/groups.yaml";
 	my %beancans;
-	try { %beancans = 
-	    map { $_ => $self->inspect( $file ) } @$series }
+	for my $round ( @$series ) {
+	    my $beancanfile = "$dir/$round/beancans.yaml";
+	    my $file = -e $beancanfile? $beancanfile: "$dir/$round/groups.yaml";
+	    try { $beancans{$round} = $self->inspect( $file ) }
 		catch { local $" = ', ';
-		    warn "Missing beancans in $league $dir @$series sessions" };
+		    warn "Missing beancans in $league $dir round $round," };
+	}
 	return \%beancans;
     }
 
