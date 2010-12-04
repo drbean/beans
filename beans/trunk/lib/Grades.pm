@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 12月 04, 19時31分24秒
+#Last Edit: 2010 12月 04, 20時17分21秒
 #$Id$
 
 use MooseX::Declare;
@@ -1249,7 +1249,8 @@ The points of the players in the given conversation. 5 for a Bye, 1 for Late, 0 
 		my $oldleagueId = $self->league->transfer->{$player};
 		my $oldleague = League->new( id => $oldleagueId );
 		my $oldgrades = Grades->new({ league => $oldleague });
-		$points->{$player} = $oldgrades->points($round)->{$player};
+		my $oldclasswork = $oldgrades->classwork;
+		$points->{$player} = $oldclasswork->points($round)->{$player};
 		next PLAYER;
 	    }
 	    my $other = $opponents->{$player};
