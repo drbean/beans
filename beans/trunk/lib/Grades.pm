@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 11月 29, 13時54分50秒
+#Last Edit: 2010 11月 29, 14時03分01秒
 #$Id$
 
 use MooseX::Declare;
@@ -367,7 +367,7 @@ A hashref of the homework grades for players in the league for each round.
 
 =cut
 
-	has 'hwbyround', (is => 'ro', isa => HomeworkRounds, lazy_build => 1);
+	has 'hwbyround', (is => 'ro', isa => "RoundsResults", lazy_build => 1);
 	method _build_hwbyround {
 		my $hwdir = $self->hwdir;
 		my $rounds = $self->rounds;
