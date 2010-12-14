@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 12月 04, 20時38分34秒
+#Last Edit: 2010 12月 14, 08時58分59秒
 #$Id$
 
 use MooseX::Declare;
@@ -1180,7 +1180,7 @@ The id of the player with the Bye, or the empty string.
 
 =head3 transfer
 
-An array ref of the ids of the players who were playing in another league in the round.
+An array ref of the ids of the players who were playing in another league in the round, or the empty string.
 
 =cut
 
@@ -1249,12 +1249,12 @@ The points of the players in the given conversation. 5 for a Bye, 1 for Late, 0 
 	my $late; $late = $config->{late} if exists $config->{late};
 	my $byer = $self->byer( $round );
 	PLAYER: for my $player ( keys %$opponents ) {
-	    if ( $byer and $player eq $byer ) {
-		$points->{$player} = 5;
-		next PLAYER;
-	    }
 	    if ( any { $_ eq $player } @$late ) {
 		$points->{$player} = 1;
+		next PLAYER;
+	    }
+	    if ( $byer and $player eq $byer ) {
+		$points->{$player} = 5;
 		next PLAYER;
 	    }
 	    if ( $opponents->{$player} =~ m/unpaired/i ) {
