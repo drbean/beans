@@ -287,7 +287,7 @@ subtype Card,
 
 =head2 TortCard
 
-A hashref of classwork results for the lesson, where the keys are beancan names (Str) and for each beancan there are 'merits', and 'absences' keys, with an Int value for the first and AbsenteeNames for the second key.
+A hashref of classwork results for the lesson, where the keys are beancan names (Str) and for each beancan there are 'merits', and 'absent' keys, with an Int value for the first and AbsenteeNames for the second key.
 
 =cut
 
