@@ -1,4 +1,4 @@
-#Last Edit: 2010 12月 19, 21時09分26秒
+#Last Edit: 2010 12月 19, 21時14分37秒
 #$Id$
 
 use MooseX::Declare;
@@ -517,6 +517,7 @@ The points given by the teacher are log-scaled to prevent active students from t
 		+{ map { $_ => $work->{$_} == 0 ?  0 : 1 + log $work->{$_} }
 			keys %$beancans };
 	}
+}
 
 =head2 Grades' GroupworkNoFault Approach
 
