@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 12月 19, 12時09分55秒
+#Last Edit: 2010 12月 27, 13時05分48秒
 #$Id$
 
 use MooseX::Declare;
@@ -977,18 +977,18 @@ The round.yaml file with data about the Compcomp activity for the given conversa
 
 =head3 tables
 
-The tables with players according to their roles for the given round, as an array ref. In the 'activities' mapping in the config file. Not ordered by table name or number. Tables undertaking more than one activity are only listed once.
+The tables with players according to their roles for the given round, as an hash ref. In the 'activities' mapping in the config file. Tables undertaking more than one activity are only listed once. Make sure each table has a unique table number. Some code here is same as in Swiss's round_table.pl and dblineup.rc. TODO A comp round.yaml layout the same as jigsaw one.
 
 activities:
   drbean:
     1:
-      - White: N9661748
+      0: White: N9661748
         Black: U9714127
   novak:
     1:
-      - White: N9532037
+      2: White: N9532037
         Black: U9714111
-      - White: V9731066
+      1: White: V9731066
         Black: V9810423
 
 =cut
@@ -996,24 +996,24 @@ activities:
     method tables ( Str $round ) {
 	my $config = $self->config($round);
 	my $activities = $config->{activity};
-	my @pairs;
+	my (%pairs, @dupes);
 	for my $key ( keys %$activities ) {
 	    my $topic = $activities->{$key};
 	    for my $form ( keys %$topic ) {
 		my $pairs = $topic->{$form};
-		for my $pair ( @$pairs ) {
-		    my @players = values %$pair;
-		    my @roles = keys %$pair;
-		    push @pairs, $pair unless
-			any { my @previous = values %$_;
-			    any { my $player=$_;
-				any { $player eq $_ } @previous
-			    } @players
-			} @pairs;
+		for my $n ( keys %$pairs ) {
+		    my $pair = $pairs->{$n};
+		    my @twoplayers = values %$pair;
+		    die "Table number $n with players @twoplayers is dupe" if
+			exists $pairs{$n} or
+			any { my $player = $_; any { $player eq $_ } @dupes
+			    } @twoplayers;
+		    push @dupes, @twoplayers;
+		    $pairs{ $n } = $pair;
 		}
 	    }
 	}
-	return \@pairs;
+	return \%pairs;
     }
 
 =head3 compQuizfile
@@ -1099,7 +1099,7 @@ The topic of the quiz in the given Compcomp round for the given table. Each tabl
 	    my $forms = $activity->{$topic};
 	    for my $form ( keys %$forms ) {
 		my $tables = $forms->{$form};
-		return $topic if any { $_ eq $table } @$tables;
+		return $topic if any { $_ eq $table } keys %$tables;
 	    }
 	}
 	carp "Topic? No quiz at $table table in round $round,";
@@ -1119,7 +1119,7 @@ The form of the quiz in the given Compcomp round for the given table. Each table
 	    my $forms = $activity->{$topic};
 	    for my $form ( keys %$forms ) {
 		my $tables = $forms->{$form};
-		return $form if any { $_ eq $table } @$tables;
+		return $form if any { $_ eq $table } keys %$tables;
 	    }
 	}
 	carp "Form? No quiz at $table table in round $round,";
