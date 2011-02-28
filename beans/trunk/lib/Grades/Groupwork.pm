@@ -1,4 +1,4 @@
-#Last Edit: 2010 12月 19, 20時08分52秒
+#Last Edit: 2010 12月 19, 21時09分26秒
 #$Id$
 
 use MooseX::Declare;
@@ -582,7 +582,7 @@ The merits the beancans gained for the given week, except for those members who 
 		}
 		else {
 		    $points{$id} = ( any { $name eq $_ } @$absent ) ?
-			2 : $self->merits($week)->{$beancan};
+			0 : $self->merits($week)->{$beancan};
 		}
 	    }
 	    return \%points;
