@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 12月 27, 13時05分48秒
+#Last Edit: 2010 12月 27, 13時55分00秒
 #$Id$
 
 use MooseX::Declare;
@@ -996,23 +996,39 @@ activities:
     method tables ( Str $round ) {
 	my $config = $self->config($round);
 	my $activities = $config->{activity};
-	my (%pairs, @dupes);
+	my (@pairs, %pairs, @dupes, $wantlist);
 	for my $key ( keys %$activities ) {
 	    my $topic = $activities->{$key};
 	    for my $form ( keys %$topic ) {
 		my $pairs = $topic->{$form};
-		for my $n ( keys %$pairs ) {
-		    my $pair = $pairs->{$n};
-		    my @twoplayers = values %$pair;
-		    die "Table number $n with players @twoplayers is dupe" if
-			exists $pairs{$n} or
-			any { my $player = $_; any { $player eq $_ } @dupes
-			    } @twoplayers;
-		    push @dupes, @twoplayers;
-		    $pairs{ $n } = $pair;
+		if ( ref( $pairs ) eq 'ARRAY' ) {
+		    $wantlist = 1;
+		    for my $pair ( @$pairs ) {
+		    my @players = values %$pair;
+		    my @roles = keys %$pair;
+		    push @pairs, $pair unless
+			any { my @previous = values %$_;
+			    any { my $player=$_;
+				any { $player eq $_ } @previous
+			    } @players
+			} @pairs;
+		    }
+		}
+		else {
+		    for my $n ( keys %$pairs ) {
+			my $pair = $pairs->{$n};
+			my @twoplayers = values %$pair;
+			die "Table number $n with players @twoplayers is dupe" if
+			    exists $pairs{$n} or
+			    any { my $player = $_; any { $player eq $_ } @dupes
+				} @twoplayers;
+			push @dupes, @twoplayers;
+			$pairs{ $n } = $pair;
+		    }
 		}
 	    }
 	}
+	return \@pairs if $wantlist;
 	return \%pairs;
     }
 
