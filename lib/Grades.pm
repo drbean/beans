@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2011  1月 15, 17時04分00秒
+#Last Edit: 2011  2月 28, 18時05分12秒
 #$Id$
 
 use MooseX::Declare;
@@ -83,7 +83,7 @@ The path to the league directory.
 =cut
 
 	has 'leagues' => (is => 'ro', isa => 'Str', required => 1, lazy => 1,
-	    default => '/home/drbean/class' );
+	    default => '/home/drbean/992' );
 
 =head3 id
 
@@ -194,16 +194,16 @@ The id of the member with the given player name.
 =cut
 
     method ided( Str $player) {
-        my $members = $self->members;
-	my %ids = map { $_->{name} => $_->{id} }
+	my $members = $self->members;
+	my %ids = map { $_->{id} => $_->{name} }
 	    grep { $_->{name} =~ m/^$player$/i } @$members;
-	my @names = keys %ids;
-	my @ids = values %ids;
+	my @ids = keys %ids;
+	my @names = values %ids;
 	local $" = ', ';
 	carp @ids . " players named @names, with ids: @ids," unless @ids==1;
 	if ( @ids == 1 ) { return $ids[0] }
-	else { return $ids{$player}; }
-      }
+	else { return $ids{$player}; }  
+    }
 
 =head3 inspect
 
