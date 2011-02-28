@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2011  1月 15, 17時01分32秒
+#Last Edit: 2011  1月 15, 17時04分00秒
 #$Id$
 
 use MooseX::Declare;
@@ -995,8 +995,10 @@ activities:
 
     method tables ( Str $round ) {
 	my $config = $self->config($round);
-	my $activities = $config->{activity};
 	my (@pairs, %pairs, @dupes, $wantlist);
+	my $groups = $config->{group};
+	return $groups if $groups;
+	my $activities = $config->{activity};
 	for my $key ( keys %$activities ) {
 	    my $topic = $activities->{$key};
 	    for my $form ( keys %$topic ) {
