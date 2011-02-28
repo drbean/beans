@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2010 12月 27, 13時55分00秒
+#Last Edit: 2011  1月 15, 17時01分32秒
 #$Id$
 
 use MooseX::Declare;
@@ -842,7 +842,7 @@ The league (object) whose approach this is.
 
 =head3 groupworkdirs
 
-The directory under which there are subdirectories containing data for the group/pair-work sessions.
+The directory under which there are subdirectories containing data for the group/pair-work sessions. Look first in 'groupwork', then 'compcomp' mappings, else use 'classwork' dir.
 
 =cut
 
@@ -851,8 +851,8 @@ The directory under which there are subdirectories containing data for the group
 	my $league = $self->league;
 	my $id = $league->id;
 	my $leaguedir = $self->league->leagues . "/" . $id;
-	my $basename = $league->yaml->{compcomp} ||
-			$league->yaml->{groupwork} || "classwork";
+	my $basename = $league->yaml->{groupwork} ||
+			$league->yaml->{compcomp} || "classwork";
 	my $groupworkdirs = $leaguedir .'/' . $basename;
 	}
 
@@ -977,7 +977,7 @@ The round.yaml file with data about the Compcomp activity for the given conversa
 
 =head3 tables
 
-The tables with players according to their roles for the given round, as an hash ref. In the 'activities' mapping in the config file. Tables undertaking more than one activity are only listed once. Make sure each table has a unique table number. Some code here is same as in Swiss's round_table.pl and dblineup.rc. TODO A comp round.yaml layout the same as jigsaw one.
+The tables with players according to their roles for the given round, as an hash ref. In the 'group' or 'activities' mapping in the config file. Tables undertaking more than one activity are only listed once. Make sure each table has a unique table number. Some code here is same as in Swiss's round_table.pl and dblineup.rc. TODO A comp round.yaml layout the same as jigsaw one.
 
 activities:
   drbean:
