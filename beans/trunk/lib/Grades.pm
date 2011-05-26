@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2011  3月 01, 10時24分15秒
+#Last Edit: 2011  3月 27, 14時30分05秒
 #$Id$
 
 use MooseX::Declare;
@@ -635,6 +635,7 @@ The number of questions in the given jigsaw for the given group.
 
     method qn ( Str $jigsaw, Str $group ) {
 	my $quiz = $self->quiz( $jigsaw, $group );
+	warn "No quiz for $group group in jigsaw $jigsaw," unless $quiz;
 	return scalar @$quiz;
     }
 
@@ -1236,9 +1237,9 @@ The ids of opponents of the players in the given conversation.
     method opponents ( Str $round ) {
 	my $tables = $self->tables( $round );
 	my %opponent;
-	for my $table ( @$tables ) {
-	    $opponent{$table->{White}} = $table->{Black};
-	    $opponent{$table->{Black}} = $table->{White};
+	for my $n ( keys %$tables ) {
+	    $opponent{$tables->{$n}->{White}} = $tables->{$n}->{Black};
+	    $opponent{$tables->{$n}->{Black}} = $tables->{$n}->{White};
 	}
 	my $byer = $self->byer( $round );
 	$opponent{ $byer } = 'bye' if $byer;
