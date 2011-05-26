@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2011  2月 28, 18時05分12秒
+#Last Edit: 2011  3月 01, 10時24分15秒
 #$Id$
 
 use MooseX::Declare;
@@ -196,7 +196,7 @@ The id of the member with the given player name.
     method ided( Str $player) {
 	my $members = $self->members;
 	my %ids = map { $_->{id} => $_->{name} }
-	    grep { $_->{name} =~ m/^$player$/i } @$members;
+	    grep { $_->{name} eq $player } @$members;
 	my @ids = keys %ids;
 	my @names = values %ids;
 	local $" = ', ';
