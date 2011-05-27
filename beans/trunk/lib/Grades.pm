@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2011  3月 27, 14時30分05秒
+#Last Edit: 2011  4月 19, 22時24分55秒
 #$Id$
 
 use MooseX::Declare;
@@ -1284,9 +1284,14 @@ The points of the players in the given conversation. 5 for a Bye, 1 for Late, 0 
 	my $correct = $self->correct( $round );
 	my $points;
 	my $late; $late = $config->{late} if exists $config->{late};
+	my $forfeit; $forfeit = $config->{forfeit} if exists $config->{forfeit};
 	my $byer = $self->byer( $round );
 	PLAYER: for my $player ( keys %$opponents ) {
-	    if ( any { $_ eq $player } @$late ) {
+	    if ( any { defined } @$forfeit and any { $_ eq $player } @$forfeit){
+		$points->{$player} = 0;
+		next PLAYER;
+	    }
+	    if ( any { defined } @$late and any { $_ eq $player } @$late ) {
 		$points->{$player} = 1;
 		next PLAYER;
 	    }
@@ -1325,7 +1330,7 @@ The points of the players in the given conversation. 5 for a Bye, 1 for Late, 0 
 		$points->{$player} = 1;
 		next PLAYER;
 	    }
-	    if ( not defined $theircorrect ) {
+	    if ( any { defined } @$forfeit and any { $_ eq $other } @$forfeit) {
 		$points->{$player} = 5;
 		next PLAYER;
 	    }
