@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2011  5月 29, 14時00分20秒
+#Last Edit: 2011  5月 29, 14時24分30秒
 #$Id$
 
 use MooseX::Declare;
@@ -1054,7 +1054,8 @@ The file system location of the file with the quiz questions and answers for the
 
     method compQuizfile ( Str $round ) {
 	my $config = $self->config($round);
-	return $config->{text};
+	my $text = $config->{text};
+	return $self->compcompdirs . "/../" . $text;
     }
 
 =head3 compQuizAttempted
