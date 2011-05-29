@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2011  4月 19, 22時24分55秒
+#Last Edit: 2011  5月 28, 21時36分42秒
 #$Id$
 
 use MooseX::Declare;
@@ -1118,7 +1118,7 @@ The topic of the quiz in the given Compcomp round for the given table. Each tabl
 	    my $forms = $activity->{$topic};
 	    for my $form ( keys %$forms ) {
 		my $tables = $forms->{$form};
-		return $topic if any { $_ eq $table } keys %$tables;
+		return $topic if any { $_ eq $table } @$tables;
 	    }
 	}
 	carp "Topic? No quiz at $table table in round $round,";
@@ -1138,7 +1138,7 @@ The form of the quiz in the given Compcomp round for the given table. Each table
 	    my $forms = $activity->{$topic};
 	    for my $form ( keys %$forms ) {
 		my $tables = $forms->{$form};
-		return $form if any { $_ eq $table } keys %$tables;
+		return $form if any { $_ eq $table } @$tables;
 	    }
 	}
 	carp "Form? No quiz at $table table in round $round,";
