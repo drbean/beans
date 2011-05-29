@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2011  5月 29, 13時19分39秒
+#Last Edit: 2011  5月 29, 13時27分19秒
 #$Id$
 
 use MooseX::Declare;
@@ -1055,25 +1055,6 @@ The file system location of the file with the quiz questions and answers for the
     method compQuizfile ( Str $round ) {
 	my $config = $self->config($round);
 	return $config->{text};
-    }
-
-=head3 compQuizSelection
-
-The comp quiz topics and their associated forms attempted by groups in the round, as the keys of an undef hashref.
-
-=cut
-
-    method compQuizSelection ( Str $round ) {
-	my $config = $self->config($round);
-	my $activity = $config->{activity};
-	my $selection;
-	for my $topic ( keys %$activity ) {
-	    my $forms = $activity->{$topic};
-	    for my $form ( keys %$forms ) {
-		$selection->{$topic}->{$form} = undef;
-	    }
-	}
-	return $selection;
     }
 
 =head3 compQuizAttempted
