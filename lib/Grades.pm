@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2011  5月 29, 13時27分19秒
+#Last Edit: 2011  5月 29, 14時00分20秒
 #$Id$
 
 use MooseX::Declare;
@@ -1113,7 +1113,7 @@ The topic of the quiz in the given Compcomp round for the given table. Each tabl
 		return $topic if any { $_ eq $table } @$tables;
 	    }
 	}
-	carp "Topic? No quiz at $table table in round $round,";
+	carp "Topic? No quiz at table $table in round $round,";
 	return;
     }
 
@@ -1133,7 +1133,7 @@ The form of the quiz in the given Compcomp round for the given table. Each table
 		return $form if any { $_ eq $table } @$tables;
 	    }
 	}
-	carp "Form? No quiz at $table table in round $round,";
+	carp "Form? No quiz at table $table in round $round,";
 	return;
     }
 
@@ -1159,7 +1159,7 @@ Ids in array, in White, Black role order
 	my $members = $self->league->members;
 	my %namedMembers = map { $_->{name} => $_ } @$members;
 	my $config = $self->config( $round );
-	my $pair = $config->{pair}->{$table};
+	my $pair = $config->{group}->{$table};
 	my @idsbyRole = @$pair{qw/White Black/};
 	return \@idsbyRole;
     }
