@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2011  5月 28, 21時36分42秒
+#Last Edit: 2011  5月 29, 13時19分39秒
 #$Id$
 
 use MooseX::Declare;
@@ -974,6 +974,17 @@ The round.yaml file with data about the Compcomp activity for the given conversa
 	try { $config = $self->inspect($file) }
 	    catch { warn "No config file for Compcomp round $round at $file" };
 	return $config;
+    }
+
+=head3 activities
+
+The activities which individual tables did in the given round. Keys are topics, keyed are forms. These, in turn, are keys of tables doing those topics and those forms.
+
+=cut
+
+    method activities( Str $round ) {
+	my $config = $self->config( $round );
+	return $config->{activity};
     }
 
 =head3 tables
