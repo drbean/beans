@@ -7,6 +7,7 @@ use parent 'Catalyst::Controller';
 use lib 'lib';
 use Grades;
 use List::Util qw/sum/;
+use List::MoreUtils qw/any/;
 
 #
 # Sets the actions in this controller to be registered with no prefix
@@ -87,6 +88,11 @@ sub listing : Local {
     my $league   = League->new(
 		leagues => $c->config->{leagues}, id => $leagueId );
     my $grades   = Grades->new({ league => $league });
+	my $blocked = $c->config->{blocked};
+	if ( any { $leagueId eq $_ } @$blocked ) {
+		$c->response->redirect("http://web.nuu.edu.tw/~greg/grades.html");
+		return;
+	}
     if ( $league and $league->is_member($playerId) ) {
         my $playerobj = Player->new( league => $league, id => $playerId );
         if ( $player eq $playerobj->name ) {
