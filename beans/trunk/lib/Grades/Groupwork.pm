@@ -1,4 +1,4 @@
-#Last Edit: 2010 12月 19, 21時14分37秒
+#Last Edit: 2011  6月 01, 13時33分51秒
 #$Id$
 
 use MooseX::Declare;
@@ -632,8 +632,10 @@ Totals for the beancans over the given session, keyed on individual names.
 			unless defined $grade->{$can};
 		my $absent = $self->absent($week)->{$can};
 		for my $member ( @$members ) {
-		    $tally{$member} += $grade->{$can}
-			unless any { $member eq $_ } @$absent;
+		    if ( any { $member eq $_ } @$absent ) {
+			$tally{$member} += 0;
+		    }
+		    else { $tally{$member} += $grade->{$can}; }
 		}
 	    }
 	}
