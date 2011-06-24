@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Last Edit: 2011  3月 27, 15時20分24秒
+# Last Edit: 2011  6月 24, 21時48分05秒
 # $Id: /dic/branches/ctest/grade 1160 2007-03-29T09:31:06.466606Z greg  $
 
 use strict;
@@ -77,7 +77,7 @@ foreach my $group ( keys %$groups )
 	my $members = $groups->{$group};
 	my %group; @group{ 'A' .. 'D' } =  @$members; 
 	my $score = $grades->rawJigsawScores( $exam, $group );
-	my $chinese = $score->{Chinese}->{$group};
+	my $chinese = $grades->jigsawDeduction( $exam, $group );
 	my $story = $grades->topic($exam, $group) . $grades->form($exam, $group);
 	my %rolebearers = reverse %group;
 	my @assistantPlayers;
@@ -159,17 +159,17 @@ foreach my $group ( keys %$groups )
 
 my %adjusted = map
 	{
-	die "$_?" unless exists $points{$ids{$_}} ;
-	# && exists $scoresheet->{Chinese}->{$groupName{$_}};
-	$ids{$_} => $points{$ids{$_}} ;
-	# - $scoresheet->{Chinese}->{$groupName{$_}}
+	die "$_?" unless exists $points{$ids{$_}}
+		&& defined $grades->jigsawDeduction( $exam, $groupName{$_} );
+	$ids{$_} => $points{$ids{$_}}
+		- $grades->jigsawDeduction( $exam, $groupName{$_} )
 	} @examinees;
 @adjusted{@assistantIds} = map
 	{
 		my $assistant = $_;
 		my @adjusted =
-			map { # die "$assistant Chinese: $assistantRecords{$assistant}->{$_}->{Chinese}?"
-			# unless defined $assistantRecords{$assistant}->{$_}->{Chinese};
+			map { die "$assistant Chinese: $assistantRecords{$assistant}->{$_}->{Chinese}?"
+			unless defined $assistantRecords{$assistant}->{$_}->{Chinese};
 			my $totalScore = $assistantRecords{$assistant}->{$_}->{totalScore};
 			my $groupGrade = $questions2grade->($totalScore/4);
 			my $adjusted = $groupGrade -
