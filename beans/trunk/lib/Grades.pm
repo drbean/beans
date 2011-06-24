@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2011  6月 21, 20時36分01秒
+#Last Edit: 2011  6月 24, 21時44分09秒
 #$Id$
 
 use MooseX::Declare;
@@ -782,6 +782,23 @@ The individual scores on the given quiz of each member of the given group, keyed
 	return \%scores;
     }
 
+=head3 chinese
+
+The number of times Chinese was used in the given round by all the groups. If there is no record of Chinese use, returns values of 0.
+
+=cut
+
+    method chinese (Str $round) {
+        my $data;
+	my $jigsaws = $self->jigsawdirs;
+	try { $data = $self->inspect( "$jigsaws/$round/scores.yaml"); }
+	    catch { warn "No scores in jigsaw $round."; };
+	my $chinese = $data->{Chinese};
+	my $groups = $self->jigsawGroups( $round );
+	$chinese->{ $_ } ||= 0 for keys %$groups;
+	return $chinese;
+    }
+
 =head3 jigsawDeduction
 
 Points deducted for undesirable performance elements (ie Chinese use) on the quiz of the given group in the given exam.
@@ -1124,7 +1141,7 @@ The topics of the quiz in the given Compcomp round for the given table, as an ar
 
 =cut
 
-    method compTopic ( Str $round, Str $table ) {
+    method compTopics ( Str $round, Str $table ) {
 	my $config = $self->config($round);
 	my $activity = $config->{activity};
 	my @topics;
