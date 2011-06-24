@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2011  5月 29, 14時24分30秒
+#Last Edit: 2011  6月 21, 20時36分01秒
 #$Id$
 
 use MooseX::Declare;
@@ -1118,6 +1118,27 @@ The topic of the quiz in the given Compcomp round for the given table. Each tabl
 	return;
     }
 
+=head3 compTopics
+
+The topics of the quiz in the given Compcomp round for the given table, as an array ref.
+
+=cut
+
+    method compTopic ( Str $round, Str $table ) {
+	my $config = $self->config($round);
+	my $activity = $config->{activity};
+	my @topics;
+	for my $topic ( keys %$activity ) {
+	    my $forms = $activity->{$topic};
+	    for my $form ( keys %$forms ) {
+		my $tables = $forms->{$form};
+		push @topics, $topic if any { $_ eq $table } @$tables;
+	    }
+	}
+	carp "Topic? No quiz at table $table in round $round," unless @topics;
+	return \@topics;
+    }
+
 =head3 compForm
 
 The form of the quiz in the given Compcomp round for the given table. Each table has one and only one quiz.
@@ -1136,6 +1157,25 @@ The form of the quiz in the given Compcomp round for the given table. Each table
 	}
 	carp "Form? No quiz at table $table in round $round,";
 	return;
+    }
+
+=head3 compForms
+
+The forms in the given Compcomp round for the given table, in the given quiz (topic), as an array ref.
+
+=cut
+
+    method compForms ( Str $round, Str $table, Str $topic ) {
+	my $config = $self->config($round);
+	my $activity = $config->{activity};
+	my $forms = $activity->{$topic};
+	my @forms;
+	for my $form ( keys %$forms ) {
+	    my $tables = $forms->{$form};
+	    push @forms, $form if any { $_ eq $table } @$tables;
+	}
+	carp "Form? No quiz at table $table in round $round," unless @forms;
+	return \@forms;
     }
 
 =head3 compqn
