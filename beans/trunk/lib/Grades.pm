@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2011 Oct 15, 08:21:39 PM
+#Last Edit: 2011 Dec 31, 01:35:09 PM
 #$Id$
 
 use MooseX::Declare;
@@ -1325,9 +1325,25 @@ The number of questions correct in the given conversation.
     }
 
 
+=head3 assistantPoints
+
+Assistants points are from config->{assistants} of form { Black => { U9933002 => 3, U9933007 => 4}, Yellow => { U9931007 => 4, U9933022 => 4 } }.
+
+=cut
+
+    method assistantPoints ( Str $round ) {
+	my $config = $self->config( $round );
+	my $assistants = $config->{assistant};
+	my %scores = map { %{ $assistants->{$_} } } keys %$assistants;
+	die "@{ [keys %scores] }: members?" if any
+	    { not $self->league->is_member($_) } keys %scores;
+	return \%scores;
+    }
+
+
 =head3 points
 
-The points of the players in the given conversation. 5 for a Bye, 1 for Late, 0 for Unpaired, 1 for a non-numerical number correct result, 5 for more correct, 3 for less correct, 4 for the same number correct. Transfers' results are computed from their results in the same round in their old league.
+The points of the players in the given conversation. 5 for a Bye, 1 for Late, 0 for Unpaired, 1 for a non-numerical number correct result, 5 for more correct, 3 for less correct, 4 for the same number correct. Transfers' results are computed from their results in the same round in their old league. Assistants points are from round.yaml, points for non-paired helpers.
 
 =cut
 
@@ -1338,8 +1354,13 @@ The points of the players in the given conversation. 5 for a Bye, 1 for Late, 0 
 	my $points;
 	my $late; $late = $config->{late} if exists $config->{late};
 	my $forfeit; $forfeit = $config->{forfeit} if exists $config->{forfeit};
+	my $assists = $self->assistantPoints( $round );
 	my $byer = $self->byer( $round );
 	PLAYER: for my $player ( keys %$opponents ) {
+	    if ( defined $assists and any { $_ eq $player } keys %$assists){
+		$points->{$player} = $assists->{$player};
+		next PLAYER;
+	    }
 	    if ( any { defined } @$forfeit and any { $_ eq $player } @$forfeit){
 		$points->{$player} = 0;
 		next PLAYER;
