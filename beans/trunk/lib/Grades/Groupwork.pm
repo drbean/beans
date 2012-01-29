@@ -1,4 +1,4 @@
-#Last Edit: 2011  6月 01, 13時33分51秒
+#Last Edit: 2011 Nov 09, 08:32:11 PM
 #$Id$
 
 use MooseX::Declare;
@@ -664,7 +664,7 @@ Totals for individual ids, over the whole series.
 		if ( defined $beancan ) {
 		    my $grade = $grade->{$name};
 		    carp $member->{name} .
-			" not in session $session"
+			"'s groupwork in session $session"
 			unless defined $grade;
 		    $grades{$id} += $grade;
 		} else {
