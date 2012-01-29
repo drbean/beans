@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2011 Dec 31, 07:14:53 PM
+#Last Edit: 2012 Jan 08, 04:07:41 PM
 #$Id$
 
 use MooseX::Declare;
@@ -1076,6 +1076,19 @@ The file system location of the file with the quiz questions and answers for the
 	return $self->compcompdirs . "/../" . $text;
     }
 
+=head3 topicNames
+
+Returns the names of comp quiz topics as an arrayref.
+
+=cut
+
+    method topicNames ( Str $round ) {
+	my $config = $self->config($round);
+	my $activities = $config->{activity};
+	my @topics = keys %$activities;
+	return \@topics;
+    }
+
 =head3 compQuizAttempted
 
 Returns the comp quiz topics and their associated forms attempted by the given group in the round, as an arrayref of hashrefs keyed on 'topic' and 'form'.
@@ -1332,7 +1345,7 @@ Assistants points are from config->{assistants} of form { Black => { U9933002 =>
     method assistantPoints ( Str $round ) {
 	my $config = $self->config( $round );
 	my $assistants = $config->{assistant};
-	my %scores = map { %{ $assistants->{$_} } } keys %$assistants;
+	my %scores = map { $_ => %{ $assistants->{$_} } } keys %$assistants;
 	die "@{ [keys %scores] }: members?" if any
 	    { not $self->league->is_member($_) } keys %scores;
 	return \%scores;
