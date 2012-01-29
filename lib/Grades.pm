@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2011 Sep 06, 04:36:17 PM
+#Last Edit: 2011 Sep 18, 09:11:54 PM
 #$Id$
 
 use MooseX::Declare;
@@ -1426,7 +1426,9 @@ The total over the conversations over the series expressed as a percentage of th
 	my $rounds = $self->all_weeks;
 	my $n = scalar @$rounds;
 	my $totals = $self->total;
-	my %percentages = map { $_ => $totals->{$_} * 100 / (5*$n) } keys %$totals;
+	my %percentages = $n? 
+	    map { $_ => $totals->{$_} * 100 / (5*$n) } keys %$totals:
+	    0;
 	return \%percentages;
     }
 
