@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 10/15/2011 07:52:09 PM
-# Last Edit: 2011 Oct 15, 08:27:13 PM
+# Last Edit: 2011 Oct 15, 08:41:15 PM
 # $Id$
 
 =head1 NAME
@@ -20,7 +20,7 @@ use 5.10.0;
 use strict;
 use warnings;
 use IO::All;
-use YAML qw/LoadFile DumpFile/;
+use YAML qw/LoadFile DumpFile Dump/;
 use Cwd; use File::Basename;
 use POSIX qw/floor ceil/;
 
@@ -81,7 +81,7 @@ for my $i ( $rumpGroups .. $fourth-1 ) {
 									$t[ -1 - $i ]->[1] ];
 }
 
-# DumpFile "classwork/$session/groups.yaml", \%g;
+print Dump \%g;
 
 =head1 AUTHOR
 
