@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Last Edit: 2011  6月 24, 21時48分05秒
+# Last Edit: 2011  6月 26, 19時47分50秒
 # $Id: /dic/branches/ctest/grade 1160 2007-03-29T09:31:06.466606Z greg  $
 
 use strict;
@@ -89,7 +89,7 @@ foreach my $group ( keys %$groups )
 		warn "$player has no id.\n" unless $playerId;
 		my $role = $rolebearers{$player};
 		warn "$player has no role.\n" if not defined $role;
-		warn "$player has no items\n" if not defined
+		warn "$player in $group group has no score\n" if not defined
 							$score->{$playerId};
 		my $personalScore = sum map
 			{
