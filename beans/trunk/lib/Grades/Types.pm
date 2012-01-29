@@ -76,11 +76,11 @@ subtype AbsenteeNames, as Maybe[ PlayerNames ], message
 
 =head2 PlayerId
 
-A string of digits, with possibly a letter in front.
+A string of digits or underscore, with possibly a letter in front.
 
 =cut
 
-subtype PlayerId, as Str, where { $_ =~ m/^[a-zA-Z]?[0-9]+$/ };
+subtype PlayerId, as Str, where { $_ =~ m/^[a-zA-Z]?[0-9_]+$/ };
 
 =head2 Member
 
