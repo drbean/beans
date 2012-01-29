@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2012 Jan 08, 04:07:41 PM
+#Last Edit: 2012 Jan 13, 05:23:59 PM
 #$Id$
 
 use MooseX::Declare;
@@ -168,7 +168,7 @@ Students who have stopped coming to class and so won't be included in classwork 
 
 =head3 transfer
 
-    $oldleague = $newleague->transfer->{93}
+    $oldleague = $newleague->transfer->{V9731059}
 
 Players who have transferred to this league from some other league at some point and the leagues they transferred from.
 
@@ -1345,10 +1345,11 @@ Assistants points are from config->{assistants} of form { Black => { U9933002 =>
     method assistantPoints ( Str $round ) {
 	my $config = $self->config( $round );
 	my $assistants = $config->{assistant};
-	my %scores = map { $_ => %{ $assistants->{$_} } } keys %$assistants;
-	die "@{ [keys %scores] }: members?" if any
-	    { not $self->league->is_member($_) } keys %scores;
-	return \%scores;
+	if ( $assistants ) {
+	    die "@{ [keys %$assistants] }: members?" if any
+		{ not $self->league->is_member($_) } keys %$assistants;
+	    return $assistants;
+	}
     }
 
 
