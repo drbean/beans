@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2011 Sep 18, 09:14:11 PM
+#Last Edit: 2011 Oct 15, 08:21:39 PM
 #$Id$
 
 use MooseX::Declare;
@@ -15,6 +15,9 @@ has 'league' => (metaclass => 'Getopt', is => 'ro', isa => 'Str',
 		cmd_flag => 'l',);
 has 'exam' => ( metaclass => 'Getopt', is => 'ro', isa => 'Str',
 		cmd_flag => 'e',);
+has 'session' => ( metaclass => 'Getopt', is => 'ro', isa => 'Str',
+		cmd_flag => 's',);
+
 
 has 'round' => ( metaclass => 'Getopt', is => 'ro', isa => 'Str',
 		cmd_flag => 'r',);
