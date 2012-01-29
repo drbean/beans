@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2011 Dec 31, 01:35:09 PM
+#Last Edit: 2011 Dec 31, 07:14:53 PM
 #$Id$
 
 use MooseX::Declare;
@@ -1009,19 +1009,17 @@ The activities which individual tables did in the given round. Keys are topics, 
 
 =head3 tables
 
-The tables with players according to their roles for the given round, as an hash ref. In the 'group' or 'activities' mapping in the config file. Tables undertaking more than one activity are only listed once. Make sure each table has a unique table number. Some code here is same as in Swiss's round_table.pl and dblineup.rc. TODO A comp round.yaml layout the same as jigsaw one.
+The tables with players according to their roles for the given round, as an hash ref. In the 'group' or 'activities' mapping in the config file. Make sure each table has a unique table number. Some code here is same as in Swiss's round_table.pl and dblineup.rc.
 
 activities:
   drbean:
     1:
-      0: White: N9661748
-        Black: U9714127
+      - 0
+      - 2
   novak:
     1:
-      2: White: N9532037
-        Black: U9714111
-      1: White: V9731066
-        Black: V9810423
+      - 2
+      - 1
 
 =cut
 
