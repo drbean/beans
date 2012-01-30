@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 10/15/2011 07:52:09 PM
-# Last Edit: 2011 Oct 15, 08:41:15 PM
+# Last Edit: 2012  1月 30, 14時21分07秒
 # $Id$
 
 =head1 NAME
@@ -36,7 +36,7 @@ create_groups.pl -l . -s 2 | sponge classwork/2/groups.yaml
 
 =head1 DESCRIPTION
 
-Takes league and individual members' grades and partititions into the teams in $league->yaml->{groupwork}/$session/groups.yaml, 4 (or 3) players to a team, so that the sum of the grades of members of each team are similar.
+Takes league and individual members' grades and partititions into the teams in $league->yaml->{groupwork}/$session/groups.yaml, $n (or $n-1) players to a team, so that the sum of the grades of members of each team are similar.
 
 =cut
 
@@ -44,41 +44,68 @@ Takes league and individual members' grades and partititions into the teams in $
 my $script = Grades::Script->new_with_options( league => basename(getcwd) );
 pod2usage(1) if $script->help;
 pod2usage(-exitstatus => 0, -verbose => 2) if $script->man;
-my $leagues = "/home/drbean/001";
+my $leagues = "/home/greg/001";
 my $leagueId = $script->league;
 $leagueId = basename( getcwd ) if $leagueId eq '.';
-my $l = League->new( leagues => '/home/drbean/001', id => $leagueId );
+my $l = League->new( leagues => '/home/greg/001', id => $leagueId );
 my $g = Grades->new({ league => $l });
 my $members = $l->members;
 my %m = map { $_->{id} => $_ } @$members;
 my $grades = $g->grades;
 
 my $session = $script->session;
+my $lastsession = $session - 1 if $session > 1;
 
-my $gs = LoadFile "classwork/$session/groups.yaml";
+my $n = 3;
+
+my $gs = LoadFile "classwork/$lastsession/groups.yaml";
 my @colors = sort keys %$gs;
-my ( %g, @t, $m );
+my %g;
 my @graded = sort { $grades->{$a} <=> $grades->{$b} }keys %m;
-push @t, [ $_, $m{$_}->{name} ] for @graded;
-my $fourth = ceil @t/4;
-my $rumpPlayers = @t % 4;
-my $rumpGroups = $rumpPlayers == 0?	0: 4 - $rumpPlayers;
-my $half =	$rumpPlayers == 1?	ceil @t/2:
-			$rumpPlayers == 2?	@t/2:
-			$rumpPlayers == 3?	floor @t/2:
-								@t/2 - 1;
-if ( $rumpPlayers ) {
-	for my $k ( 0 .. $rumpGroups -1 ) {
-		$g{ $colors[ -1 -$k ] } = [ $t[$k]->[1],
-								$t[ ( $half - $k ) ]->[1],
-								$t[ -1 -$k ]->[1] ];
-	}
+my @t = map  $m{$_}->{name}, @graded;
+my $groups = ceil @t/$n;
+my $rumpPlayers = @t % $n;
+my $rumpGroups = $rumpPlayers == 0?	0: $n - $rumpPlayers;
+
+if ( $n == 4 ) {
+    my $half =	$rumpPlayers == 1?	ceil @t/2:
+		$rumpPlayers == 2?	@t/2:
+		$rumpPlayers == 3?	floor @t/2:
+		$rumpPlayers == 0?	@t/2 - 1:
+					die "rumpPlayers greater than $n";
+    if ( $rumpPlayers ) {
+	    for my $k ( 0 .. $rumpGroups -1 ) {
+		    $g{ $colors[ -1 -$k ] } = [ $t[$k],
+						$t[ ( $half - $k ) ],
+						$t[ -1 -$k ] ];
+	    }
+    }
+    for my $i ( $rumpGroups .. $groups-1 ) {
+	    $g{ $colors[ $i - $rumpGroups ] } = [ $t[ $i ],
+						    $t[ $half - $i ],
+						    $t[ $#t - ( $half - $i ) ],
+						    $t[ -1 - $i ] ];
+    }
 }
-for my $i ( $rumpGroups .. $fourth-1 ) {
-	$g{ $colors[ $i - $rumpGroups ] } = [ $t[ $i ]->[1],
-									$t[ $half - $i ]->[1],
-									$t[ $#t - ( $half - $i ) ]->[1],
-									$t[ -1 - $i ]->[1] ];
+
+if ( $n == 3 ) {
+    my $half =	$rumpPlayers == 1?	@t/2:
+		$rumpPlayers == 2?	ceil @t/2:
+		$rumpPlayers == 0?	@t/2 - 1:
+					die "rumpPlayers greater than $n";
+    if ( $rumpPlayers ) {
+	    for my $k ( 0 .. $rumpGroups -1 ) {
+		    $g{ $colors[ -1 -$k ] } = [ $t[$k],
+						$t[ ( $half - $k ) ],
+						$t[ -1 -$k ] ];
+	    }
+    }
+    my @sign = [+1,-1];
+    for my $i ( $rumpGroups .. $groups-1 ) {
+	    $g{ $colors[ $i - $rumpGroups ] } = [ $t[ $i ],
+						$t[ $half - $sign[$i%2]*$i/2 ],
+						$t[ -1 - $i ] ];
+    }
 }
 
 print Dump \%g;
