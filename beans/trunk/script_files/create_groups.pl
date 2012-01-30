@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 10/15/2011 07:52:09 PM
-# Last Edit: 2012  1月 30, 14時21分07秒
+# Last Edit: 2012  1月 30, 16時04分17秒
 # $Id$
 
 =head1 NAME
@@ -10,11 +10,11 @@ create_groups.pl - Partition league into teams fairly on basis of ratings
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use 5.10.0;
 use strict;
@@ -89,21 +89,19 @@ if ( $n == 4 ) {
 }
 
 if ( $n == 3 ) {
-    my $half =	$rumpPlayers == 1?	@t/2:
-		$rumpPlayers == 2?	ceil @t/2:
-		$rumpPlayers == 0?	@t/2 - 1:
+    my $third =	$rumpPlayers == 1?	ceil @t/3:
+		$rumpPlayers == 2?	@t/3:
+		$rumpPlayers == 0?	@t/3 - 1:
 					die "rumpPlayers greater than $n";
     if ( $rumpPlayers ) {
 	    for my $k ( 0 .. $rumpGroups -1 ) {
 		    $g{ $colors[ -1 -$k ] } = [ $t[$k],
-						$t[ ( $half - $k ) ],
 						$t[ -1 -$k ] ];
 	    }
     }
-    my @sign = [+1,-1];
     for my $i ( $rumpGroups .. $groups-1 ) {
 	    $g{ $colors[ $i - $rumpGroups ] } = [ $t[ $i ],
-						$t[ $half - $sign[$i%2]*$i/2 ],
+						$t[ $third + $i ],
 						$t[ -1 - $i ] ];
     }
 }
