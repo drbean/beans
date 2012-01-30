@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 10/15/2011 07:52:09 PM
-# Last Edit: 2012  1月 30, 16時04分17秒
+# Last Edit: 2012  1月 30, 18時28分47秒
 # $Id$
 
 =head1 NAME
@@ -89,19 +89,18 @@ if ( $n == 4 ) {
 }
 
 if ( $n == 3 ) {
-    my $third =	$rumpPlayers == 1?	ceil @t/3:
-		$rumpPlayers == 2?	@t/3:
-		$rumpPlayers == 0?	@t/3 - 1:
-					die "rumpPlayers greater than $n";
     if ( $rumpPlayers ) {
 	    for my $k ( 0 .. $rumpGroups -1 ) {
 		    $g{ $colors[ -1 -$k ] } = [ $t[$k],
 						$t[ -1 -$k ] ];
 	    }
     }
+    my $half = @t/2;
+    my @sign = (+1,-1);
     for my $i ( $rumpGroups .. $groups-1 ) {
-	    $g{ $colors[ $i - $rumpGroups ] } = [ $t[ $i ],
-						$t[ $third + $i ],
+	    my $j = $i - $rumpGroups;
+	    $g{ $colors[ $j ] } = [ $t[ $i ],
+						$t[ $half + $sign[$j % 2] * ($j)/2 ],
 						$t[ -1 - $i ] ];
     }
 }
