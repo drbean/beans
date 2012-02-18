@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 10/15/2011 07:52:09 PM
-# Last Edit: 2012  1月 30, 18時28分47秒
+# Last Edit: 2012 Feb 18, 01:40:14 PM
 # $Id$
 
 =head1 NAME
@@ -24,6 +24,8 @@ use YAML qw/LoadFile DumpFile Dump/;
 use Cwd; use File::Basename;
 use POSIX qw/floor ceil/;
 
+use Getopt::Long;
+use Pod::Usage;
 use Grades;
 
 =head1 SYNOPSIS
