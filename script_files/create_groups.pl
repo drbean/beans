@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 10/15/2011 07:52:09 PM
-# Last Edit: 2012 Feb 18, 01:37:34 PM
+# Last Edit: 2012 Feb 18, 01:38:49 PM
 # $Id$
 
 =head1 NAME
@@ -46,10 +46,10 @@ Takes league and individual members' grades and partititions into the teams in $
 my $script = Grades::Script->new_with_options( league => basename(getcwd) );
 pod2usage(1) if $script->help;
 pod2usage(-exitstatus => 0, -verbose => 2) if $script->man;
-my $leagues = "/home/greg/001";
+my $leagues = "/home/drbean/002";
 my $leagueId = $script->league;
 $leagueId = basename( getcwd ) if $leagueId eq '.';
-my $l = League->new( leagues => '/home/greg/001', id => $leagueId );
+my $l = League->new( leagues => $leagues, id => $leagueId );
 my $g = Grades->new({ league => $l });
 my $members = $l->members;
 my %m = map { $_->{id} => $_ } @$members;
