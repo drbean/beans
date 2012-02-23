@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2012 Feb 18, 01:31:19 PM
+#Last Edit: 2012 Feb 18, 08:39:56 PM
 #$Id$
 
 use MooseX::Declare;
@@ -34,6 +34,9 @@ has 'weights' => (metaclass => 'Getopt', is => 'ro', isa => 'Str',
 		cmd_flag => 'w',);
 has 'player' => (metaclass => 'Getopt', is => 'ro', isa => 'Str',
 		cmd_flag => 'p',);
+
+has 'number' => (metaclass => 'Getopt', is => 'ro', isa => 'Str',
+		cmd_flag => 'n',);
 
 package Grades;
 
