@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 10/15/2011 07:52:09 PM
-# Last Edit: 2012 Feb 18, 01:38:49 PM
+# Last Edit: 2012 Feb 18, 02:39:49 PM
 # $Id$
 
 =head1 NAME
@@ -28,6 +28,8 @@ use Getopt::Long;
 use Pod::Usage;
 use Grades;
 
+use Try::Tiny;
+
 =head1 SYNOPSIS
 
 create_groups.pl -l . -s 2 | sponge classwork/2/groups.yaml
@@ -53,12 +55,14 @@ my $l = League->new( leagues => $leagues, id => $leagueId );
 my $g = Grades->new({ league => $l });
 my $members = $l->members;
 my %m = map { $_->{id} => $_ } @$members;
-my $grades = $g->grades;
+my $grades;
+$grades = try { $g->grades } catch { warn "No grades: $_"; };
+$grades = { map { $_ => $m{$_}->{rating} } keys %m } if $grades == 1;
 
 my $session = $script->session;
-my $lastsession = $session - 1 if $session > 1;
+my $lastsession = $session > 1 ? $session - 1 : 1;
 
-my $n = 3;
+my $n = 4;
 
 my $gs = LoadFile "classwork/$lastsession/groups.yaml";
 my @colors = sort keys %$gs;
