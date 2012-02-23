@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 10/15/2011 07:52:09 PM
-# Last Edit: 2012 Feb 18, 02:39:49 PM
+# Last Edit: 2012 Feb 18, 03:35:50 PM
 # $Id$
 
 =head1 NAME
@@ -56,8 +56,8 @@ my $g = Grades->new({ league => $l });
 my $members = $l->members;
 my %m = map { $_->{id} => $_ } @$members;
 my $grades;
-$grades = try { $g->grades } catch { warn "No grades: $_"; };
-$grades = { map { $_ => $m{$_}->{rating} } keys %m } if $grades == 1;
+$grades = try { $g->grades } catch { warn "Cannot group on grades: $_";
+    $grades = { map { $_ => $m{$_}->{rating} } keys %m } };
 
 my $session = $script->session;
 my $lastsession = $session > 1 ? $session - 1 : 1;
