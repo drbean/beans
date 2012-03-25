@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 10/15/2011 07:52:09 PM
-# Last Edit: 2012 Feb 18, 03:35:50 PM
+# Last Edit: 2012 Feb 20, 12:44:14 PM
 # $Id$
 
 =head1 NAME
@@ -32,7 +32,7 @@ use Try::Tiny;
 
 =head1 SYNOPSIS
 
-create_groups.pl -l . -s 2 | sponge classwork/2/groups.yaml
+create_groups.pl -l . -s 2 -n 3 | sponge classwork/2/groups.yaml
 
 =cut
 
@@ -56,13 +56,13 @@ my $g = Grades->new({ league => $l });
 my $members = $l->members;
 my %m = map { $_->{id} => $_ } @$members;
 my $grades;
-$grades = try { $g->grades } catch { warn "Cannot group on grades: $_";
+$grades = try { $g->grades } catch { warn "Not grouping on grades: $_";
     $grades = { map { $_ => $m{$_}->{rating} } keys %m } };
 
 my $session = $script->session;
 my $lastsession = $session > 1 ? $session - 1 : 1;
 
-my $n = 4;
+my $n = $script->beancan || 3;
 
 my $gs = LoadFile "classwork/$lastsession/groups.yaml";
 my @colors = sort keys %$gs;
