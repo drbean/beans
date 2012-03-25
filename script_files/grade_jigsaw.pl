@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Last Edit: 2011  6月 26, 19時47分50秒
+# Last Edit: 2012 Mar 25, 02:06:59 PM
 # $Id: /dic/branches/ctest/grade 1160 2007-03-29T09:31:06.466606Z greg  $
 
 use strict;
@@ -17,6 +17,7 @@ use Cwd; use File::Basename;
 my $script = Grades::Script->new_with_options;
 my $id = $script->league || basename( getcwd );
 my $exam = $script->round;
+my $beansInCan = $script->beancan || 3;
 
 my $league = League->new( id => $id );
 my $grades = Grades->new({ league => $league });
@@ -75,7 +76,8 @@ my $questions2grade = sub {
 foreach my $group ( keys %$groups )
 {
 	my $members = $groups->{$group};
-	my %group; @group{ 'A' .. 'D' } =  @$members; 
+	my @letters = ('A' .. 'D')[0..$beansInCan-1]; 
+	my %group; @group{ @letters } =  @$members; 
 	my $score = $grades->rawJigsawScores( $exam, $group );
 	my $chinese = $grades->jigsawDeduction( $exam, $group );
 	my $story = $grades->topic($exam, $group) . $grades->form($exam, $group);
@@ -125,8 +127,8 @@ foreach my $group ( keys %$groups )
 				"$group. @memberScores. Chinese: $chinese\\\\ ";
 	# $groupGrade = int (((60/100)*$topGrade/sqrt($sixtypercentScore)) *
 	# 					sqrt($totalScore));
-	# $groupGrade = int ((($totalScore/4)*( 9**2.3/$sixtypercentScore ))**(1/2.3) );
-	$groupGrade = $questions2grade->($totalScore/4);
+	# $groupGrade = int ((($totalScore/$beansInCan)*( 9**2.3/$sixtypercentScore ))**(1/2.3) );
+	$groupGrade = $questions2grade->($totalScore/$beansInCan);
 	$groupGrade = $groupGrade > $topGrade? $topGrade: $groupGrade;
 	@points{ @groupsIds } = ($groupGrade) x @groupsIds;
 	push @{$pointsByPoints{$groupGrade}},
@@ -143,8 +145,8 @@ foreach my $group ( keys %$groups )
 		my $assistant = $_;
 		my $points = max map {
 			my $totalScore = $assistantRecords{$assistant}->{$_}->{totalScore};
-		my $groupGrade = $questions2grade->($totalScore/4);
-		# my $groupGrade = int ((($totalScore/4)*( 9**2.3/$sixtypercentScore ))**(1/2.3) );
+		my $groupGrade = $questions2grade->($totalScore/$beansInCan);
+		# my $groupGrade = int ((($totalScore/$beansInCan)*( 9**2.3/$sixtypercentScore ))**(1/2.3) );
 			$groupGrade > $topGrade? $topGrade: $groupGrade;
 		} keys %{$assistantRecords{$assistant}};
 		$points;
@@ -171,7 +173,7 @@ my %adjusted = map
 			map { die "$assistant Chinese: $assistantRecords{$assistant}->{$_}->{Chinese}?"
 			unless defined $assistantRecords{$assistant}->{$_}->{Chinese};
 			my $totalScore = $assistantRecords{$assistant}->{$_}->{totalScore};
-			my $groupGrade = $questions2grade->($totalScore/4);
+			my $groupGrade = $questions2grade->($totalScore/$beansInCan);
 			my $adjusted = $groupGrade -
 				$assistantRecords{$assistant}->{$_}->{Chinese}
 			}
@@ -228,7 +230,7 @@ print TEX $template->fill_in( HASH => $report );
 =begin comment text
 sub scores2grade {
 	my $score = shift;
-	$groupGrade = int ((($totalScore/4)*( 9**2.3/$sixtypercentScore ))**(1/2.3) );
+	$groupGrade = int ((($totalScore/$beansInCan)*( 9**2.3/$sixtypercentScore ))**(1/2.3) );
 	$groupGrade = $groupGrade > $topGrade? $topGrade: $groupGrade;
 	return $groupGrade;
 }
