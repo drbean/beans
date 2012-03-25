@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 02/19/2012 06:58:16 PM
-# Last Edit: 2012 Feb 19, 07:28:33 PM
+# Last Edit: 2012 Feb 23, 11:13:12 AM
 # $Id$
 
 =head1 NAME
@@ -52,7 +52,7 @@ my $oldleagues = "/home/drbean/$semester";
 
 =head1 DESCRIPTION
 
-Copy old name, password, rating (grades) data from the league in league.yaml's 'anterior' field, overwriting new data, in the case of password and rating, only if they don't exist. name is overwritten in all cases, because it's probably a Chinese rather than English name.
+Copy old name, password, rating (grades) data from the league in league.yaml's 'anterior' field, or (old) 'one' argument, from old 'semester' argument, overwriting new data, in the case of password and rating, only if they don't exist. name is overwritten in all cases, because it's probably a Chinese rather than English name.
 
 =cut
 
