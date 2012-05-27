@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 10/15/2011 07:52:09 PM
-# Last Edit: 2012 Mar 26, 01:11:04 PM
+# Last Edit: 2012 Mar 27, 04:26:44 PM
 # $Id$
 
 =head1 NAME
@@ -66,7 +66,7 @@ my $n = $script->beancan || 3;
 
 my $gs = LoadFile "classwork/$lastsession/groups.yaml";
 my @colors = qw/Black Blue Brown Gray Green Orange Pink Purple Red White
-		Yellow BlackBlack BlueBlue BrownBrown GrayGray GreenGreen/;
+	Yellow BlackBlack BlueBlue BrownBrown GrayGray GreenGreen OrangeOrange/;
 my %g;
 my @graded = sort { $grades->{$a} <=> $grades->{$b} }keys %m;
 my @t = map  $m{$_}->{name}, @graded;
