@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2012 May 21, 11:53:22 AM
+#Last Edit: 2012 May 21, 01:37:24 PM
 #$Id$
 
 use MooseX::Declare;
@@ -1018,12 +1018,12 @@ The tables with players according to their roles for the given round, as an hash
 activities:
   drbean:
     1:
-      - 0
-      - 2
+      - U9931007
+      - U9933022
   novak:
     1:
-      - 2
-      - 1
+      - U9931028
+      - U9933045
 
 =cut
 
@@ -1066,6 +1066,26 @@ activities:
 	}
 	return \@pairs if $wantlist;
 	return \%pairs;
+    }
+
+=head3 pair2table
+
+A player and opponent mapped to a table number.
+
+=cut
+
+    method pair2table ( Str $player, Str $opponent, Str $round ) {
+	my $table = $self->tables( $round );
+	for my $n ( keys %$table ) {
+	    my $table = $table->{$n};
+	    my @pair = values %$table;
+	    if ( any { $_ eq $player } @pair ) {
+		if ( any { $_ eq $opponent } @pair ) {
+		    return { $n => $table };
+		}
+	    }
+	}
+	die "No table with player $player, opponent $opponent in round $round";
     }
 
 =head3 compQuizfile
@@ -1384,6 +1404,24 @@ Assistants points are from config->{assistant} of form { Black => { U9933002 => 
 	}
     }
 
+=head3 meritPay
+
+1 question each: 0,1 or 2 pts. 2 question each: 1,2 or 3 pts. 3 question each: 2,3 or 4 pts. 4 question each: 3,4 or 5 pts. 
+
+=cut
+
+    method meritPay ( Str $round ) {
+	my $config = $self->config( $round );
+	my $assistants = $config->{assistant};
+	if ( $assistants ) {
+	    my %assistantPoints = map { %{ $assistants->{$_} } } keys %$assistants;
+	     # my %assistantPoints = map { $assistants->{$_}->flatten } keys %$assistants;
+	     die "@{ [keys %$assistants] }: members?" if any
+		{ not $self->league->is_member($_) } keys %assistantPoints;
+	    return \%assistantPoints;
+	}
+    }
+
 
 =head3 points
 
@@ -1452,7 +1490,7 @@ The points of the players in the given conversation. 5 for a Bye, 1 for Late, 0 
 		$points->{$player} = 5;
 		next PLAYER;
 	    }
-	    $points->{$player} = $ourcorrect > $theircorrect? 5:
+			    $points->{$player} = $ourcorrect > $theircorrect? 5:
 				$ourcorrect < $theircorrect? 3: 4
 	}
 	return $points;
