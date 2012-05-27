@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2012 May 21, 01:37:24 PM
+#Last Edit: 2012 May 22, 08:32:04 AM
 #$Id$
 
 use MooseX::Declare;
@@ -955,7 +955,7 @@ class Compcomp extends Approach {
     use Try::Tiny;
     use Moose::Autobox;
     use List::Util qw/max/;
-    use List::MoreUtils qw/any/;
+    use List::MoreUtils qw/any all/;
     use Carp qw/carp/;
     use Grades::Types qw/Results/;
 
@@ -1404,21 +1404,49 @@ Assistants points are from config->{assistant} of form { Black => { U9933002 => 
 	}
     }
 
+=head3 dispensation
+
+Dispensation points are from config->{dispensation} of same form as assistantPoints, { Black => { U9933002 => 3, U9933007 => 4}, Yellow => { U9931007 => 4, U9933022 => 4 } }.
+
+=cut
+
+    method dispensation ( Str $round ) {
+	my $config = $self->config( $round );
+	my $dispensation = $config->{dispensation};
+	if ( $dispensation ) {
+	    my %dispensation = map { %{ $dispensation->{$_} } } keys %$dispensation;
+	     # my %assistantPoints = map { $assistants->{$_}->flatten } keys %$assistants;
+	     die "@{ [keys %$dispensation] }: members?" if any
+		{ not $self->league->is_member($_) } keys %dispensation;
+	    return \%dispensation;
+	}
+    }
+
 =head3 meritPay
 
 1 question each: 0,1 or 2 pts. 2 question each: 1,2 or 3 pts. 3 question each: 2,3 or 4 pts. 4 question each: 3,4 or 5 pts. 
 
 =cut
 
-    method meritPay ( Str $round ) {
-	my $config = $self->config( $round );
-	my $assistants = $config->{assistant};
-	if ( $assistants ) {
-	    my %assistantPoints = map { %{ $assistants->{$_} } } keys %$assistants;
-	     # my %assistantPoints = map { $assistants->{$_}->flatten } keys %$assistants;
-	     die "@{ [keys %$assistants] }: members?" if any
-		{ not $self->league->is_member($_) } keys %assistantPoints;
-	    return \%assistantPoints;
+    method meritPay ( Str $player, Str $opponent, Str $round ) {
+	my $table = $self->pair2table( $player, $opponent, $round );
+	my $tableN = (keys %$table)[0];
+	my $freeTotals = $self->freeTotals( $round, $tableN );
+	if ( all { $_ >= 4 } @$freeTotals ) {
+	    return { loss => 3, draw => 4, win => 5 };
+	}
+	elsif ( all { $_ >= 3 } @$freeTotals ) {
+	    return { loss => 2, draw => 3, win => 4 };
+	}
+	elsif ( all { $_ >= 2 } @$freeTotals ) {
+	    return { loss => 1, draw => 2, win => 3 };
+	}
+	elsif ( all { $_ >= 1 } @$freeTotals ) {
+	    return { loss => 0, draw => 1, win => 2 };
+	}
+	else { 
+	    return { loss => 0, draw => 0, win => 1 };
+
 	}
     }
 
@@ -1437,10 +1465,15 @@ The points of the players in the given conversation. 5 for a Bye, 1 for Late, 0 
 	my $late; $late = $config->{late} if exists $config->{late};
 	my $forfeit; $forfeit = $config->{forfeit} if exists $config->{forfeit};
 	my $assists = $self->assistantPoints( $round );
+	my $dispensed = $self->dispensation( $round );
 	my $byer = $self->byer( $round );
 	PLAYER: for my $player ( keys %$opponents ) {
 	    if ( defined $assists and any { $_ eq $player } keys %$assists){
 		$points->{$player} = $assists->{$player};
+		next PLAYER;
+	    }
+	    if ( defined $dispensed and any { $_ eq $player } keys %$dispensed){
+		$points->{$player} = $dispensed->{$player};
 		next PLAYER;
 	    }
 	    if ( any { defined } @$forfeit and any { $_ eq $player } @$forfeit){
@@ -1490,8 +1523,9 @@ The points of the players in the given conversation. 5 for a Bye, 1 for Late, 0 
 		$points->{$player} = 5;
 		next PLAYER;
 	    }
-			    $points->{$player} = $ourcorrect > $theircorrect? 5:
-				$ourcorrect < $theircorrect? 3: 4
+	    my $merits = $self->meritPay( $player, $other, $round );
+	    $points->{$player} = $ourcorrect > $theircorrect? $merits->{win}:
+		$ourcorrect < $theircorrect? $merits->{loss}: $merits->{draw};
 	}
 	return $points;
     }
