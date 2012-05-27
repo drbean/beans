@@ -1,4 +1,4 @@
-#Last Edit: 2011 Nov 09, 08:32:11 PM
+#Last Edit: 2012 May 27, 05:48:17 PM
 #$Id$
 
 use MooseX::Declare;
@@ -100,14 +100,14 @@ The files containing classwork points (beans) awarded to beancans.
 		return $files;
 	}
 
-=head3 all_weeks
+=head3 all_events
 
-The weeks (an array ref of integers) in which beans were awarded.
+The events (an array ref of integers) in which beans were awarded.
 
 =cut
 
-	has 'all_weeks' => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
-	method _build_all_weeks {
+	has 'all_events' => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
+	method _build_all_events {
 		my $files = $self->allfiles;
 		my $weeks = [ map { m|/(\d+)\.yaml$|; $1 } @$files ];
 		croak "No classwork weeks: @$weeks" unless @$weeks;
@@ -116,13 +116,13 @@ The weeks (an array ref of integers) in which beans were awarded.
 
 =head3 lastweek
 
-The last week in which beans were awarded.
+The last week in which beans were awarded. TODO lexicographic order, not numerical order.
 
 =cut
 
 	has 'lastweek' => ( is => 'ro', isa => 'Int', lazy_build => 1 );
 	method _build_lastweek {
-		my $weeks = $self->all_weeks;
+		my $weeks = $self->all_events;
 		max @$weeks;
 	}
 
@@ -135,7 +135,7 @@ The beans awarded to the beancans in the individual cards over the weeks of the 
 	has 'data' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 	method _build_data {
 		my $files = $self->allfiles;
-		my $weeks = $self->all_weeks;
+		my $weeks = $self->all_events;
 		+{ map { $weeks->[$_] => $self->inspect( $files->[$_] ) }
 			0..$#$weeks };
 	}
@@ -695,7 +695,7 @@ Running totals for individual ids out of 100, over the whole series.
 	has 'totalPercent' => ( is => 'ro', isa => Results, lazy_build => 1 );
 	method _build_totalPercent {
 		my $members = $self->league->members;
-		my $weeks = $self->all_weeks;
+		my $weeks = $self->all_events;
 		my $weeklyMax = $self->classMax;
 		my $totalMax = $weeklyMax * @$weeks;
 		my $grades = $self->total;
