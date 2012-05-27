@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2012 Mar 26, 10:18:58 AM
+#Last Edit: 2012 May 21, 10:08:42 AM
 #$Id$
 
 use MooseX::Declare;
@@ -1264,7 +1264,8 @@ The responses of the members of the given pair in the given round (as an anon ha
 	my $comp = $self->compcompdirs;
 	my $file = "$comp/$round/response.yaml";
 	my $responses = $self->inspect( $file );
-	return $responses->{$table};
+	return { free => $responses->{free}->{$table},
+		 set => $responses->{free}->{$table} };
     }
 
 
@@ -1341,7 +1342,7 @@ The number of questions correct in the given conversation.
 
 =head3 assistantPoints
 
-Assistants points are from config->{assistants} of form { Black => { U9933002 => 3, U9933007 => 4}, Yellow => { U9931007 => 4, U9933022 => 4 } }.
+Assistants points are from config->{assistant} of form { Black => { U9933002 => 3, U9933007 => 4}, Yellow => { U9931007 => 4, U9933022 => 4 } }.
 
 =cut
 
