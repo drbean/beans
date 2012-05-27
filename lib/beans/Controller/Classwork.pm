@@ -114,11 +114,11 @@ sub raw : Local {
 		};
 	    }
 	    else {
-		my $session  = $work->week2session($round);
-		my $can      = $work->name2beancan( $round, $playerName );
-		my $members  = $work->beancans($session)->{$can};
-		my $merits   = $work->merits($round)->{$can};
-		my $demerits = $work->demerits($round)->{$can};
+		my $session  = $classwork->week2session($round);
+		my $can      = $classwork->name2beancan( $round, $playerName );
+		my $members  = $classwork->beancans($session)->{$can};
+		my $merits   = $classwork->merits($round)->{$can};
+		my $demerits = $classwork->demerits($round)->{$can};
 		$exercise = {
 		    beancan  => $can,
 		    members  => $members,
