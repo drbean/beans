@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2012 May 27, 04:13:53 PM
+#Last Edit: 2012 May 27, 05:48:48 PM
 #$Id$
 
 use MooseX::Declare;
@@ -841,7 +841,7 @@ Delegatee handling classwork_total, classworkPercent
     has 'approach' => ( is => 'ro', isa => 'Approach', required => 1,
 	    handles => [ qw/
 		series beancans
-		all_weeks points
+		all_events points
 		classwork_total classworkPercent / ] );
 
 }
@@ -893,17 +893,17 @@ The sessions (weeks) over the series (semester) in each of which there was a dif
         [ sort { $a <=> $b } map m/^$dir\/(\d+)$/, @subdirs ];
     }
 
-#=head3 all_weeks
+#=head3 all_events
 #
 #All the weeks, or sessions or lessons for which grade data is being assembled from for the grade component.
 #
 #=cut
 #
-#    method all_weeks {
+#    method all_events {
 #	my $league = $self->league;
 #	my $type = $league->approach;
 #	my $meta = $type->meta;
-#	my $total = $type->new( league => $league )->all_weeks;
+#	my $total = $type->new( league => $league )->all_events;
 #    }
 #
 #=head3 points
@@ -971,15 +971,15 @@ The directory under which there are subdirectories containing data for the Compc
 	my $compcompdir = $leaguedir .'/' . shift->league->yaml->{compcomp};
     }
 
-=head3 all_weeks
+=head3 all_events
 
 The pair conversations over the series (semester). This method returns an arrayref of the numbers of the conversations, in numerical order, of the form, [1, 3 .. 7, 9, 10 .. 99 ]. Results are in sub directories of the same name, under compcompdirs.
 
 =cut
 
-    has 'all_weeks' =>
+    has 'all_events' =>
       ( is => 'ro', isa => 'Maybe[ArrayRef[Int]]', lazy_build => 1 );
-    method _build_all_weeks {
+    method _build_all_events {
         my $dir = $self->compcompdirs;
         my @subdirs = grep { -d } glob "$dir/*";
         [ sort { $a <=> $b } map m/^$dir\/(\d+)$/, @subdirs ];
@@ -1543,7 +1543,7 @@ The total over the conversations over the series.
 
     has 'total' => ( is => 'ro', isa => Results, lazy_build => 1 );
     method _build_total {
-	my $rounds = $self->all_weeks;
+	my $rounds = $self->all_events;
 	my $members = $self->league->members;
 	my @ids = map { $_->{id} } @$members;
 	my $totals;
@@ -1567,7 +1567,7 @@ The total over the conversations over the series expressed as a percentage of th
 
     has 'totalPercent' => ( is => 'ro', isa => Results, lazy_build => 1 );
     method _build_totalPercent {
-	my $rounds = $self->all_weeks;
+	my $rounds = $self->all_events;
 	my $n = scalar @$rounds;
 	my $totals = $self->total;
 	my %percentages = $n? 
@@ -1794,7 +1794,7 @@ An accessor for the object that handles classwork methods. Required at construct
 
 	has 'classwork' => ( is => 'ro', isa => 'Approach', required => 1,
 		handles => [ 'series', 'beancans',
-			    'points', 'all_weeks',
+			    'points', 'all_events',
 		    'classwork_total', 'classworkPercent' ] );
 
 =head3 config
