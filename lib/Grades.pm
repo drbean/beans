@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2012 May 21, 10:08:42 AM
+#Last Edit: 2012 May 21, 11:47:43 AM
 #$Id$
 
 use MooseX::Declare;
@@ -954,6 +954,7 @@ The comprehension question competition is a Swiss tournament regulated 2-partner
 class Compcomp extends Approach {
     use Try::Tiny;
     use Moose::Autobox;
+    use List::Util qw/max/;
     use List::MoreUtils qw/any/;
     use Carp qw/carp/;
     use Grades::Types qw/Results/;
@@ -1265,10 +1266,34 @@ The responses of the members of the given pair in the given round (as an anon ha
 	my $file = "$comp/$round/response.yaml";
 	my $responses = $self->inspect( $file );
 	return { free => $responses->{free}->{$table},
-		 set => $responses->{free}->{$table} };
+		 set => $responses->{set}->{$table} };
     }
 
+=head3 freeTotals
 
+The number of free questions each asked by White and Black.
+
+=cut
+
+
+    method freeTotals ( Str $round, Str $table ) {
+	my $response = $self->compResponses( $round, $table );
+	my $player = $self->idsbyCompRole( $round, $table );
+	my $topics = $self->compTopics( $round, $table );
+	my @qn = (0,0);
+	for my $topic ( @$topics ) {
+	    my $forms = $self->compForms( $round, $table, $topic );
+	    for my $form ( @$forms ) {
+		for my $n ( 0,1 ) {
+		    $qn[$n] += max (
+			keys %{ $response->{free}->{$topic}->{$form}->{$player->[$n]}->{point} } )
+			|| 0;
+		}
+	    }
+	}
+	return \@qn;
+    }
+		
 =head3 byer
 
 The id of the player with the Bye, or the empty string.
