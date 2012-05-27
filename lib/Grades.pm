@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2012 May 22, 08:32:04 AM
+#Last Edit: 2012 May 27, 04:13:53 PM
 #$Id$
 
 use MooseX::Declare;
@@ -1422,32 +1422,36 @@ Dispensation points are from config->{dispensation} of same form as assistantPoi
 	}
     }
 
-=head3 meritPay
+=head3 payout
 
 1 question each: 0,1 or 2 pts. 2 question each: 1,2 or 3 pts. 3 question each: 2,3 or 4 pts. 4 question each: 3,4 or 5 pts. 
 
 =cut
 
-    method meritPay ( Str $player, Str $opponent, Str $round ) {
-	my $table = $self->pair2table( $player, $opponent, $round );
-	my $tableN = (keys %$table)[0];
-	my $freeTotals = $self->freeTotals( $round, $tableN );
-	if ( all { $_ >= 4 } @$freeTotals ) {
-	    return { loss => 3, draw => 4, win => 5 };
-	}
-	elsif ( all { $_ >= 3 } @$freeTotals ) {
-	    return { loss => 2, draw => 3, win => 4 };
-	}
-	elsif ( all { $_ >= 2 } @$freeTotals ) {
-	    return { loss => 1, draw => 2, win => 3 };
-	}
-	elsif ( all { $_ >= 1 } @$freeTotals ) {
-	    return { loss => 0, draw => 1, win => 2 };
-	}
-	else { 
-	    return { loss => 0, draw => 0, win => 1 };
+    method payout ( Str $player, Str $opponent, Str $round ) {
+	my $protocol = $self->config($round)->{payprotocol};
+	if ( defined $protocol and $protocol eq 'meritPay' ) {
+	    my $table = $self->pair2table( $player, $opponent, $round );
+	    my $tableN = (keys %$table)[0];
+	    my $freeTotals = $self->freeTotals( $round, $tableN );
+	    if ( all { $_ >= 4 } @$freeTotals ) {
+		return { loss => 3, draw => 4, win => 5 };
+	    }
+	    elsif ( all { $_ >= 3 } @$freeTotals ) {
+		return { loss => 2, draw => 3, win => 4 };
+	    }
+	    elsif ( all { $_ >= 2 } @$freeTotals ) {
+		return { loss => 1, draw => 2, win => 3 };
+	    }
+	    elsif ( all { $_ >= 1 } @$freeTotals ) {
+		return { loss => 0, draw => 1, win => 2 };
+	    }
+	    else { 
+		return { loss => 0, draw => 0, win => 1 };
 
+	    }
 	}
+	else { return { loss => 3, draw => 4, win => 5 }; }
     }
 
 
@@ -1523,9 +1527,9 @@ The points of the players in the given conversation. 5 for a Bye, 1 for Late, 0 
 		$points->{$player} = 5;
 		next PLAYER;
 	    }
-	    my $merits = $self->meritPay( $player, $other, $round );
-	    $points->{$player} = $ourcorrect > $theircorrect? $merits->{win}:
-		$ourcorrect < $theircorrect? $merits->{loss}: $merits->{draw};
+	    my $grade = $self->payout( $player, $other, $round );
+	    $points->{$player} = $ourcorrect > $theircorrect? $grade->{win}:
+		$ourcorrect < $theircorrect? $grade->{loss}: $grade->{draw};
 	}
 	return $points;
     }
