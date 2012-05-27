@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2012 May 21, 11:47:43 AM
+#Last Edit: 2012 May 21, 11:53:22 AM
 #$Id$
 
 use MooseX::Declare;
@@ -1162,15 +1162,16 @@ The topics of the quiz in the given Compcomp round for the given table, as an ar
     method compTopics ( Str $round, Str $table ) {
 	my $config = $self->config($round);
 	my $activity = $config->{activity};
-	my @topics;
+	my %topics;
 	for my $topic ( keys %$activity ) {
 	    my $forms = $activity->{$topic};
 	    for my $form ( keys %$forms ) {
 		my $tables = $forms->{$form};
-		push @topics, $topic if any { $_ eq $table } @$tables;
+		$topics{ $topic } += 1 if any { $_ eq $table } @$tables;
 	    }
 	}
-	carp "Topic? No quiz at table $table in round $round," unless @topics;
+	carp "Topic? No quiz at table $table in round $round," unless %topics;
+	my @topics = keys %topics;
 	return \@topics;
     }
 
