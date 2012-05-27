@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2012 Feb 20, 12:41:44 PM
+#Last Edit: 2012 Mar 26, 10:18:58 AM
 #$Id$
 
 use MooseX::Declare;
@@ -953,6 +953,7 @@ The comprehension question competition is a Swiss tournament regulated 2-partner
 
 class Compcomp extends Approach {
     use Try::Tiny;
+    use Moose::Autobox;
     use List::MoreUtils qw/any/;
     use Carp qw/carp/;
     use Grades::Types qw/Results/;
@@ -1348,9 +1349,11 @@ Assistants points are from config->{assistants} of form { Black => { U9933002 =>
 	my $config = $self->config( $round );
 	my $assistants = $config->{assistant};
 	if ( $assistants ) {
-	    die "@{ [keys %$assistants] }: members?" if any
-		{ not $self->league->is_member($_) } keys %$assistants;
-	    return $assistants;
+	    my %assistantPoints = map { %{ $assistants->{$_} } } keys %$assistants;
+	     # my %assistantPoints = map { $assistants->{$_}->flatten } keys %$assistants;
+	     die "@{ [keys %$assistants] }: members?" if any
+		{ not $self->league->is_member($_) } keys %assistantPoints;
+	    return \%assistantPoints;
 	}
     }
 
