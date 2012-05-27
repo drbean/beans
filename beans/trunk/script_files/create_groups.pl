@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 10/15/2011 07:52:09 PM
-# Last Edit: 2012 Feb 20, 12:44:14 PM
+# Last Edit: 2012 Mar 26, 01:11:04 PM
 # $Id$
 
 =head1 NAME
@@ -65,11 +65,13 @@ my $lastsession = $session > 1 ? $session - 1 : 1;
 my $n = $script->beancan || 3;
 
 my $gs = LoadFile "classwork/$lastsession/groups.yaml";
-my @colors = sort keys %$gs;
+my @colors = qw/Black Blue Brown Gray Green Orange Pink Purple Red White
+		Yellow BlackBlack BlueBlue BrownBrown GrayGray GreenGreen/;
 my %g;
 my @graded = sort { $grades->{$a} <=> $grades->{$b} }keys %m;
 my @t = map  $m{$_}->{name}, @graded;
 my $groups = ceil @t/$n;
+my @groupname = @colors[0 .. $groups-1];
 my $rumpPlayers = @t % $n;
 my $rumpGroups = $rumpPlayers == 0?	0: $n - $rumpPlayers;
 
@@ -81,13 +83,13 @@ if ( $n == 4 ) {
 					die "rumpPlayers greater than $n";
     if ( $rumpPlayers ) {
 	    for my $k ( 0 .. $rumpGroups -1 ) {
-		    $g{ $colors[ -1 -$k ] } = [ $t[$k],
+		    $g{ $groupname[ -1 -$k ] } = [ $t[$k],
 						$t[ ( $half - $k ) ],
 						$t[ -1 -$k ] ];
 	    }
     }
     for my $i ( $rumpGroups .. $groups-1 ) {
-	    $g{ $colors[ $i - $rumpGroups ] } = [ $t[ $i ],
+	    $g{ $groupname[ $i - $rumpGroups ] } = [ $t[ $i ],
 						    $t[ $half - $i ],
 						    $t[ $#t - ( $half - $i ) ],
 						    $t[ -1 - $i ] ];
@@ -97,15 +99,15 @@ if ( $n == 4 ) {
 if ( $n == 3 ) {
     if ( $rumpPlayers ) {
 	    for my $k ( 0 .. $rumpGroups -1 ) {
-		    $g{ $colors[ -1 -$k ] } = [ $t[$k],
+		    $g{ $groupname[ -1 -$k ] } = [ $t[$k],
 						$t[ -1 -$k ] ];
 	    }
     }
     my $half = @t/2;
-    my @sign = (+1,-1);
+    my @sign = (-1,+1);
     for my $i ( $rumpGroups .. $groups-1 ) {
 	    my $j = $i - $rumpGroups;
-	    $g{ $colors[ $j ] } = [ $t[ $i ],
+	    $g{ $groupname[ $j ] } = [ $t[ $i ],
 						$t[ $half + $sign[$j % 2] * ($j)/2 ],
 						$t[ -1 - $i ] ];
     }
