@@ -14,7 +14,7 @@
     <td>[% exercise.othercorrect %]
     <td>[% exercise.otherid %]
     <td>[% exercise.othername %]
-[% ELSE %]
+[% ELSIF approach == 'Cooperative' %]
 <h3>Week: [% round %]</h3>
 <h4>Group: [% exercise.beancan %] </h4>
 <h4>Members: [% FOREACH member IN exercise.members %][% member %] [% END %]
@@ -24,6 +24,15 @@
     <td>[% exercise.merits %]
     <td><a href=
 "[% demerits _ '/' _ round %]">[% exercise.demerits %]</a>
+[% ELSE %]
+<h3>Week: [% round %]</h3>
+<h4>Group: [% exercise.beancan %] </h4>
+<h4>Members: [% FOREACH member IN exercise.members %][% member %] [% END %]
+<table>
+<tr align=center><th>Merits <th>Absent
+  <tr align=center>
+    <td>[% exercise.merits %]
+    <td>[% FOREACH absentee IN exercise.badboys %] [% absentee %] [% END %]
 [% END -%]
   </tr>
 </table>
