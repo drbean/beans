@@ -3,7 +3,7 @@
 
 <table>
 <tr><th>Class</th><th>Name</th><th>ID</th>
-<th>Sessions:</th>[% FOREACH week IN weeks %]
+<th>Week:</th>[% FOREACH week IN weeks %]
     <th>[% week.name %]</th>[% END %]
 <th>Grade</th></tr>
   <tr>
