@@ -43,7 +43,7 @@ sub listing : Local {
             $c->stash->{player} = $player;
             $c->stash->{id}     = $playerId;
             my ( $weeks, @grades, $totals );
-	    $weeks  = $classwork->all_weeks;
+	    $weeks  = $classwork->all_events;
 	    @grades = map {
 		{
 		    name => $_,
@@ -79,6 +79,7 @@ sub raw : Local {
 		leagues => $c->config->{leagues}, id => $leagueId );
     my $work   = Grades->new({ league => $league });
     my $classwork = $work->classwork;
+    my $approach = $league->approach;
     if ( $league and $league->is_member($playerId) ) {
         my $player = Player->new( league => $league, id => $playerId );
         if ( $playerName eq $player->name ) {
@@ -86,9 +87,9 @@ sub raw : Local {
             $c->stash->{player}   = $playerName;
             $c->stash->{id}       = $playerId;
             $c->stash->{round}    = $round;
-            $c->stash->{approach} = $league->approach;
+            $c->stash->{approach} = $approach;
             my $exercise;
-            if ( $league->approach eq "Compcomp" ) {
+            if ( $approach eq "Compcomp" ) {
 		my $comp = Compcomp->new( league => $league );
                 my $qns     = $comp->correct($round);
                 my $correct = $qns->{$playerId};
@@ -118,17 +119,21 @@ sub raw : Local {
 		my $can      = $classwork->name2beancan( $round, $playerName );
 		my $members  = $classwork->beancans($session)->{$can};
 		my $merits   = $classwork->merits($round)->{$can};
-		my $demerits = $classwork->demerits($round)->{$can};
+		my $badboys;
+		$badboys = $classwork->demerits($round)->{$can} if
+		    $approach eq 'Cooperative';
+		$badboys = $classwork->absent($round)->{$can} if
+		    $approach eq 'GroupworkNoFault';
 		$exercise = {
 		    beancan  => $can,
 		    members  => $members,
 		    merits   => $merits,
-		    demerits => $demerits,
+		    badboys => $badboys,
 		};
 	    }
 	    $c->stash->{exercise} = $exercise;
 	    $c->stash->{demerits} = $c->uri_for_action( 'classwork/demerits',
-		$leagueId, $playerId, $playerName );
+		$leagueId, $playerId, $playerName ) if $approach eq 'Cooperative';
 	    $c->stash->{template} = 'rawclasswork.tt2';
 	}
     }
