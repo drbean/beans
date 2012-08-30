@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 10/15/2011 07:52:09 PM
-# Last Edit: 2012 Mar 27, 04:26:44 PM
+# Last Edit: 2012 Aug 30, 02:57:31 PM
 # $Id$
 
 =head1 NAME
@@ -42,13 +42,15 @@ create_groups.pl -l . -s 2 -n 3 | sponge classwork/2/groups.yaml
 
 Takes league and individual members' grades and partititions into the teams in $league->yaml->{groupwork}/$session/groups.yaml, $n (or $n-1) players to a team, so that the sum of the grades of members of each team are similar.
 
+If the number of groups already present in the groups.yaml files is the same as the number of groups which will be generated, the names of the groups are retained. If not, consecutive names in color order are chosen.
+
 =cut
 
 
 my $script = Grades::Script->new_with_options( league => basename(getcwd) );
 pod2usage(1) if $script->help;
 pod2usage(-exitstatus => 0, -verbose => 2) if $script->man;
-my $leagues = "/home/drbean/002";
+my $leagues = "/home/drbean/011";
 my $leagueId = $script->league;
 $leagueId = basename( getcwd ) if $leagueId eq '.';
 my $l = League->new( leagues => $leagues, id => $leagueId );
@@ -64,14 +66,17 @@ my $lastsession = $session > 1 ? $session - 1 : 1;
 
 my $n = $script->beancan || 3;
 
-my $gs = LoadFile "classwork/$lastsession/groups.yaml";
+my $gs;
+$gs = try { LoadFile "classwork/$lastsession/groups.yaml" } catch
+    { $gs = {} };
+my @keys = keys %$gs;
 my @colors = qw/Black Blue Brown Gray Green Orange Pink Purple Red White
 	Yellow BlackBlack BlueBlue BrownBrown GrayGray GreenGreen OrangeOrange/;
 my %g;
 my @graded = sort { $grades->{$a} <=> $grades->{$b} }keys %m;
 my @t = map  $m{$_}->{name}, @graded;
 my $groups = ceil @t/$n;
-my @groupname = @colors[0 .. $groups-1];
+my @groupname = ( @keys == $groups )? sort @keys: @colors[0 .. $groups-1];
 my $rumpPlayers = @t % $n;
 my $rumpGroups = $rumpPlayers == 0?	0: $n - $rumpPlayers;
 
