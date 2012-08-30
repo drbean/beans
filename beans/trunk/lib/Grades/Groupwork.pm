@@ -1,4 +1,4 @@
-#Last Edit: 2012 May 27, 06:54:05 PM
+#Last Edit: 2012 May 27, 05:48:17 PM
 #$Id$
 
 use MooseX::Declare;
@@ -30,7 +30,7 @@ Keywords: gold stars, token economies, bean counter
 =cut
 
 class Groupwork extends Approach {
-	use List::Util qw/maxstr min sum/;
+	use List::Util qw/max min sum/;
 	use List::MoreUtils qw/any/;
 	use Carp;
 	use POSIX;
@@ -116,14 +116,14 @@ The events (an array ref of integers) in which beans were awarded.
 
 =head3 lastweek
 
-The last week in which beans were awarded.
+The last week in which beans were awarded. TODO lexicographic order, not numerical order.
 
 =cut
 
 	has 'lastweek' => ( is => 'ro', isa => 'Int', lazy_build => 1 );
 	method _build_lastweek {
 		my $weeks = $self->all_events;
-		maxstr @$weeks;
+		max @$weeks;
 	}
 
 =head3 data
