@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 02/19/2012 06:58:16 PM
-# Last Edit: 2012 Feb 23, 11:13:12 AM
+# Last Edit: 2012 Aug 28, 03:09:30 PM
 # $Id$
 
 =head1 NAME
@@ -37,7 +37,7 @@ my $script = Grades::Script->new_with_options( league => basename(getcwd) );
 pod2usage(1) if $script->help;
 pod2usage(-exitstatus => 0, -verbose => 2) if $script->man;
 
-my $leagues = "/home/drbean/002";
+my $leagues = "/home/drbean/011";
 my $leagueId = $script->league;
 my $semester = $script->session;
 $leagueId = basename( getcwd ) if $leagueId eq '.';
