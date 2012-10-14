@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 10/15/2011 07:52:09 PM
-# Last Edit: 2012 Aug 30, 02:57:31 PM
+# Last Edit: 2012 Aug 30, 10:02:32 PM
 # $Id$
 
 =head1 NAME
@@ -44,6 +44,8 @@ Takes league and individual members' grades and partititions into the teams in $
 
 If the number of groups already present in the groups.yaml files is the same as the number of groups which will be generated, the names of the groups are retained. If not, consecutive names in color order are chosen.
 
+If there are rump groups, retain the rump players in the same groups they are already in in groups.yaml, by putting their groups at the end of the line.
+
 =cut
 
 
@@ -79,6 +81,21 @@ my $groups = ceil @t/$n;
 my @groupname = ( @keys == $groups )? sort @keys: @colors[0 .. $groups-1];
 my $rumpPlayers = @t % $n;
 my $rumpGroups = $rumpPlayers == 0?	0: $n - $rumpPlayers;
+my (@resortGroups, @rumpGroupname);
+if ( $rumpGroups ) {
+    for my $name ( @groupname ) {
+	my $members = $gs->{$name};
+	if ( $members ) {
+	    push @resortGroups, $name if @$members == $n;
+	    push @rumpGroupname, $name if @$members < $n;
+	    die scalar @$members . " in $name group" if @$members > $n;
+	}
+    }
+}
+if ( @resortGroups ) {
+    push @resortGroups, @rumpGroupname;
+    @groupname = @resortGroups;
+}
 
 if ( $n == 4 ) {
     my $half =	$rumpPlayers == 1?	ceil @t/2:
