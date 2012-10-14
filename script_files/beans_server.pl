@@ -1,69 +1,11 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 
-BEGIN { 
-    $ENV{CATALYST_ENGINE} ||= 'HTTP';
-    $ENV{CATALYST_SCRIPT_GEN} = 31;
-    require Catalyst::Engine::HTTP;
-}  
-
-use strict;
-use warnings;
-use Getopt::Long;
-use Pod::Usage;
-use FindBin;
-use lib "$FindBin::Bin/../lib";
-
-my $debug             = 0;
-my $fork              = 0;
-my $help              = 0;
-my $host              = undef;
-my $port              = $ENV{BEANS_PORT} || $ENV{CATALYST_PORT} || 3000;
-my $keepalive         = 0;
-my $restart           = $ENV{BEANS_RELOAD} || $ENV{CATALYST_RELOAD} || 0;
-my $restart_delay     = 1;
-my $restart_regex     = '(?:/|^)(?!\.#).+(?:\.yml$|\.yaml$|\.conf|\.pm)$';
-my $restart_directory = undef;
-my $follow_symlinks   = 0;
-
-my @argv = @ARGV;
-
-GetOptions(
-    'debug|d'             => \$debug,
-    'fork'                => \$fork,
-    'help|?'              => \$help,
-    'host=s'              => \$host,
-    'port=s'              => \$port,
-    'keepalive|k'         => \$keepalive,
-    'restart|r'           => \$restart,
-    'restartdelay|rd=s'   => \$restart_delay,
-    'restartregex|rr=s'   => \$restart_regex,
-    'restartdirectory=s@' => \$restart_directory,
-    'followsymlinks'      => \$follow_symlinks,
-);
-
-pod2usage(1) if $help;
-
-if ( $restart && $ENV{CATALYST_ENGINE} eq 'HTTP' ) {
-    $ENV{CATALYST_ENGINE} = 'HTTP::Restarter';
-}
-if ( $debug ) {
-    $ENV{CATALYST_DEBUG} = 1;
+BEGIN {
+    $ENV{CATALYST_SCRIPT_GEN} = 40;
 }
 
-# This is require instead of use so that the above environment
-# variables can be set at runtime.
-require beans;
-
-beans->run( $port, $host, {
-    argv              => \@argv,
-    'fork'            => $fork,
-    keepalive         => $keepalive,
-    restart           => $restart,
-    restart_delay     => $restart_delay,
-    restart_regex     => qr/$restart_regex/,
-    restart_directory => $restart_directory,
-    follow_symlinks   => $follow_symlinks,
-} );
+use Catalyst::ScriptRunner;
+Catalyst::ScriptRunner->run('beans', 'Server');
 
 1;
 
