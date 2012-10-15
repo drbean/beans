@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2012 Aug 30, 09:59:11 AM
+#Last Edit: 2012 Oct 15, 01:03:57 PM
 #$Id$
 
 use MooseX::Declare;
@@ -1388,7 +1388,7 @@ The number of questions correct in the given conversation.
 
 =head3 assistantPoints
 
-Assistants points are from config->{assistant} of form { Black => { U9933002 => 3, U9933007 => 4}, Yellow => { U9931007 => 4, U9933022 => 4 } }.
+Assistants points are from config->{assistant} of form { Black => { U9933002 => 3, U9933007 => 4}, Yellow => { U9931007 => 4, U9933022 => 4 } }, and are the points for examiners with other responsibilities who are not participating in the round.
 
 =cut
 
