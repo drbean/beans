@@ -1,4 +1,4 @@
-#Last Edit: 2013 Feb 28, 02:19:18 PM
+#Last Edit: 2013 Feb 28, 02:39:41 PM
 #$Id$
 
 use MooseX::Declare;
@@ -169,8 +169,6 @@ Given a session, returns the active beancans, ie all but the 'Absent' beancan.
 
 Given a session, returns the files containing beans awarded during the session according to the league.yaml session key. The files are of form, \d+\.yaml$
 
-TODO Find session-week relationship in other way, eg league.yaml session key.
-
 =cut
 
     method files (Str $session) {
@@ -201,8 +199,6 @@ croak "Following session starts in week $nextfirstweek, the same week as or earl
 
 Given a session, returns the weeks (an array ref of integers) in which beans were awarded in the session.
 
-TODO Find session-week relationship in other way, eg league.yaml session key.
-
 =cut
 
     method weeks (Str $session) {
@@ -216,8 +212,6 @@ TODO Find session-week relationship in other way, eg league.yaml session key.
 	$Groupwork->week2session(15) # fourth
 
 Given the name of a week, return the name of the session it is in.
-
-TODO Find session-week relationship in other way, eg league.yaml session key.
 
 =cut
 
@@ -255,8 +249,6 @@ A hashref of names of members of beancans (players) and the beancans they were m
 	$Groupwork->name2beancan( $week, $playername )
 
 Given the name of a player, the name of the beancan they were a member of in the given week.
-
-TODO Find session-week relationship in other way, eg league.yaml session key.
 
 =cut
 
@@ -358,8 +350,6 @@ The numbers of players not on time in the beancans in the given week.
 =head3 grades4session
 
 Totals for the beancans over the given session. TODO Why '+=' in sessiontotal?
-
-TODO Find session-week relationship in other way, eg league.yaml session key.
 
 =cut
 
