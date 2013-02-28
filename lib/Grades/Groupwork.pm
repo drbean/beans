@@ -1,4 +1,4 @@
-#Last Edit: 2013  2月 20, 13時13分24秒
+#Last Edit: 2013 Feb 28, 01:57:43 PM
 #$Id$
 
 use MooseX::Declare;
@@ -84,7 +84,7 @@ Rather than refactor the class to work with individuals rather than groups, and 
 
 =head3 allfiles
 
-The files containing classwork points (beans) awarded to beancans. 
+The files containing classwork points (beans) awarded to beancans, of form, groupworkdir/\d+\.yaml$
 
 =cut
 
@@ -95,7 +95,7 @@ The files containing classwork points (beans) awarded to beancans.
 		my $series = $self->series;
 		my $league = $self->league->id;
 		my $files = [ grep m|/(\d+)\.yaml$|, glob "$dir/*.yaml"];
-		croak "${league}'s @$series files: @$files?" unless @$files;
+		croak "${league}'s @$series session files: @$files?" unless @$files;
 		return $files;
 	}
 
@@ -167,16 +167,35 @@ Given a session, returns the active beancans, ie all but the 'Absent' beancan.
 
 =head3 files
 
-Given a session, returns the files containing beans for the session of form, $session/\d+\.yaml$
+Given a session, returns the files containing beans awarded during the session according to the league.yaml session key. The files are of form, \d+\.yaml$
 
 TODO Find session-week relationship in other way, eg league.yaml session key.
 
 =cut
 
-	method files (Str $session) {
-		my $allfiles = $self->allfiles;
-		[ grep m|/$session/\d+\.yaml$|, @$allfiles ];
+    method files (Str $session) {
+	my $sessions = $self->league->session;
+	croak "No $session session.\n" unless defined $sessions->{$session};
+	my $firstweek = $sessions->{$session};
+	my $allfiles = $self->allfiles;
+	my $files;
+	if ( defined $sessions->{$session+1} ) {
+	    my $nextfirstweek = $sessions->{$session+1};
+	    my $lastweek = $nextfirstweek - 1;
+	    if ( $lastweek >= $firstweek ) {
+		my $range = ( $firstweek .. $lastweek );
+		$files = grep { m/\/(\d+)*\.yaml/;
+		    $1 >= $firstweek && $1 <= $lastweek } $allfiles;
+	    }
+	    else {
+croak "Following session starts in week $nextfirstweek, the same week as or earlier than the start of session $session, in week $firstweek\n"
+	    }
 	}
+	else {
+	    $files = grep { m/\/(\d+)*\.yaml/; $1 >= $firstweek } $allfiles;
+	}
+	return $files;
+    }
 
 =head3 weeks
 
@@ -186,10 +205,11 @@ TODO Find session-week relationship in other way, eg league.yaml session key.
 
 =cut
 
-	method weeks (Str $session) {
-		my $files = $self->files($session);
-		[ map { m|(\d+)\.yaml$|; $1 } @$files ];
-	}
+    method weeks (Str $session) {
+
+	my $files = $self->files($session);
+	[ map { m|(\d+)\.yaml$|; $1 } @$files ];
+    }
 
 =head3 week2session
 
