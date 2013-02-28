@@ -160,6 +160,16 @@ Hash refs of the players (students) in the league. The module assumes each of th
 		$data->{member};
 	}
 
+=head3 session
+
+The first week in each session, like { 1 => 1, 2 => 5, 3 => 10, 4 => 14 }, monotonically increasing week numbers.
+
+=cut
+
+	has 'session', (is => 'ro', isa => PlayerNames,
+	    lazy => 1, default => sub { shift->yaml->{session} } );
+
+
 =head3 absentees
 
 Students who have stopped coming to class and so won't be included in classwork scoring.
