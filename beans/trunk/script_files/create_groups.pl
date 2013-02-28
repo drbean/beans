@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 10/15/2011 07:52:09 PM
-# Last Edit: 2013  2月 20, 07時38分17秒
+# Last Edit: 2013  2月 20, 07時48分20秒
 # $Id$
 
 =head1 NAME
@@ -64,7 +64,8 @@ $grades = try { $g->grades } catch { warn "Not grouping on grades: $_";
     $grades = { map { $_ => $m{$_}->{rating} } keys %m } };
 
 my $session = $script->session;
-my $lastsession = $session > 1 ? $session - 1 : 1;
+# my $lastsession = $session > 1 ? $session - 1 : 1;
+my $lastsession = $session;
 
 my $n = $script->beancan || 3;
 
