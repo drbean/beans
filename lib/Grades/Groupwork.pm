@@ -1,4 +1,4 @@
-#Last Edit: 2013 Feb 28, 01:57:43 PM
+#Last Edit: 2013 Feb 28, 02:19:18 PM
 #$Id$
 
 use MooseX::Declare;
@@ -175,26 +175,26 @@ TODO Find session-week relationship in other way, eg league.yaml session key.
 
     method files (Str $session) {
 	my $sessions = $self->league->session;
-	croak "No $session session.\n" unless defined $sessions->{$session};
+	croak "No session $session.\n" unless defined $sessions->{$session};
 	my $firstweek = $sessions->{$session};
 	my $allfiles = $self->allfiles;
-	my $files;
+	my @files;
 	if ( defined $sessions->{$session+1} ) {
 	    my $nextfirstweek = $sessions->{$session+1};
 	    my $lastweek = $nextfirstweek - 1;
 	    if ( $lastweek >= $firstweek ) {
 		my $range = ( $firstweek .. $lastweek );
-		$files = grep { m/\/(\d+)*\.yaml/;
-		    $1 >= $firstweek && $1 <= $lastweek } $allfiles;
+		@files = grep { m/\/(\d+)*\.yaml/;
+		    $1 >= $firstweek && $1 <= $lastweek } @$allfiles;
 	    }
 	    else {
 croak "Following session starts in week $nextfirstweek, the same week as or earlier than the start of session $session, in week $firstweek\n"
 	    }
 	}
 	else {
-	    $files = grep { m/\/(\d+)*\.yaml/; $1 >= $firstweek } $allfiles;
+	    @files = grep { m/(\d+)*\.yaml/; $1 >= $firstweek } @$allfiles;
 	}
-	return $files;
+	return \@files;
     }
 
 =head3 weeks
