@@ -1,4 +1,4 @@
-#Last Edit: 2012 Nov 18, 07:25:41 PM
+#Last Edit: 2013  2月 20, 13時13分24秒
 #$Id$
 
 use MooseX::Declare;
@@ -94,8 +94,7 @@ The files containing classwork points (beans) awarded to beancans.
 		my $dir = $self->groupworkdirs;
 		my $series = $self->series;
 		my $league = $self->league->id;
-		my $files = [ map { grep m|/(\d+)\.yaml$|,
-					glob "$dir/$_/*.yaml" } @$series ];
+		my $files = [ grep m|/(\d+)\.yaml$|, glob "$dir/*.yaml"];
 		croak "${league}'s @$series files: @$files?" unless @$files;
 		return $files;
 	}
@@ -170,6 +169,8 @@ Given a session, returns the active beancans, ie all but the 'Absent' beancan.
 
 Given a session, returns the files containing beans for the session of form, $session/\d+\.yaml$
 
+TODO Find session-week relationship in other way, eg league.yaml session key.
+
 =cut
 
 	method files (Str $session) {
@@ -180,6 +181,8 @@ Given a session, returns the files containing beans for the session of form, $se
 =head3 weeks
 
 Given a session, returns the weeks (an array ref of integers) in which beans were awarded in the session.
+
+TODO Find session-week relationship in other way, eg league.yaml session key.
 
 =cut
 
@@ -193,6 +196,8 @@ Given a session, returns the weeks (an array ref of integers) in which beans wer
 	$Groupwork->week2session(15) # fourth
 
 Given the name of a week, return the name of the session it is in.
+
+TODO Find session-week relationship in other way, eg league.yaml session key.
 
 =cut
 
@@ -230,6 +235,8 @@ A hashref of names of members of beancans (players) and the beancans they were m
 	$Groupwork->name2beancan( $week, $playername )
 
 Given the name of a player, the name of the beancan they were a member of in the given week.
+
+TODO Find session-week relationship in other way, eg league.yaml session key.
 
 =cut
 
@@ -331,6 +338,8 @@ The numbers of players not on time in the beancans in the given week.
 =head3 grades4session
 
 Totals for the beancans over the given session. TODO Why '+=' in sessiontotal?
+
+TODO Find session-week relationship in other way, eg league.yaml session key.
 
 =cut
 
