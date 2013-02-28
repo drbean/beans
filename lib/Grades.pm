@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2013 Feb 28, 12:46:25 PM
+#Last Edit: 2013 Feb 28, 12:46:59 PM
 #$Id$
 
 use MooseX::Declare;
@@ -507,12 +507,17 @@ Running total homework scores of the league as percentages of the totalMax to th
 		my $league = $self->league->id;
 		my $totalMax = $self->totalMax;
 		my $idtotals = $self->homework;
-		my %percent = map {
-		    $_ => min( 100, 100 * $idtotals->{$_} / $totalMax )
+		my %percent;
+		if ( $totalMax == 0 ) {
+		    $percent{$_} = 0  for keys %$idtotals;
+		}
+		else {
+		    %percent = map {
+			$_ => min( 100, 100 * $idtotals->{$_} / $totalMax )
 				|| 0 } keys %$idtotals;
+		}
 		return \%percent;
 	}
-
 }
 
 
