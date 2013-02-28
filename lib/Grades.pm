@@ -956,7 +956,7 @@ The comprehension question competition is a Swiss tournament regulated 2-partner
 class Compcomp extends Approach {
     use Try::Tiny;
     use Moose::Autobox;
-    use List::Util qw/max/;
+    use List::Util qw/max min/;
     use List::MoreUtils qw/any all/;
     use Carp qw/carp/;
     use Grades::Types qw/Results/;
@@ -1318,6 +1318,17 @@ The number of free questions each asked by White and Black.
 	return \@qn;
     }
 		
+=head3 lowerFreeTotal
+
+The lesser of the 2 numbers of free questions asked by either White and Black.
+
+=cut
+
+    method lowerFreeTotal ( Str $round, Str $table ) {
+	my $totals = $self->freeTotals( $round, $table );
+	return min @$totals;
+    }
+		
 =head3 byer
 
 The id of the player with the Bye, or the empty string.
@@ -1427,34 +1438,29 @@ Dispensation points are from config->{dispensation} of same form as assistantPoi
 
 =head3 payout
 
-1 question each: 0,1 or 2 pts. 2 question each: 1,2 or 3 pts. 3 question each: 2,3 or 4 pts. 4 question each: 3,4 or 5 pts. 
+If payprotocol field is 'meritPay', 1 question each: 0,1 or 2 pts. 2 question each: 1,2 or 3 pts. 3 question each: 2,3 or 4 pts. 4 question each: 3,4 or 5 pts. 
 
+If the 'meritPay' payprotocol field ends in a number the specified number of questions each is required for the maximum points.
 =cut
 
     method payout ( Str $player, Str $opponent, Str $round ) {
 	my $protocol = $self->config($round)->{payprotocol};
-	if ( defined $protocol and $protocol eq 'meritPay' ) {
+	my ($loss, $draw, $win) = (3,4,5);
+	if ( defined $protocol and $protocol =~ m/^meritPay/ ) {
+	    (my $top_number = $protocol ) =~ s/^\D*(\d*)$/$1/;
+	    my $required = $top_number? $top_number: 4;
 	    my $table = $self->pair2table( $player, $opponent, $round );
 	    my $tableN = (keys %$table)[0];
-	    my $freeTotals = $self->freeTotals( $round, $tableN );
-	    if ( all { $_ >= 4 } @$freeTotals ) {
-		return { loss => 3, draw => 4, win => 5 };
-	    }
-	    elsif ( all { $_ >= 3 } @$freeTotals ) {
-		return { loss => 2, draw => 3, win => 4 };
-	    }
-	    elsif ( all { $_ >= 2 } @$freeTotals ) {
-		return { loss => 1, draw => 2, win => 3 };
-	    }
-	    elsif ( all { $_ >= 1 } @$freeTotals ) {
-		return { loss => 0, draw => 1, win => 2 };
-	    }
-	    else { 
-		return { loss => 0, draw => 0, win => 1 };
-
+	    my $questionN = $self->lowerFreeTotal( $round, $tableN );
+	    my $unfulfilled = $required - $questionN;
+	    if ( $unfulfilled > 0 ) {
+		$_ -= $unfulfilled for ($loss, $draw, $win);
+		if ( $loss < 0 ) {
+		    $loss = 0; $draw = 0; $win = 1;
+		}
 	    }
 	}
-	else { return { loss => 3, draw => 4, win => 5 }; }
+	return { loss => $loss, draw => $draw, win => $win };
     }
 
 
