@@ -1308,9 +1308,10 @@ The number of free questions each asked by White and Black.
 	    my $forms = $self->compForms( $round, $table, $topic );
 	    for my $form ( @$forms ) {
 		for my $n ( 0,1 ) {
-		    $qn[$n] += max (
-			keys %{ $response->{free}->{$topic}->{$form}->{$player->[$n]}->{point} } )
-			|| 0;
+		    my $points =
+			$response->{free}->{$topic}->{$form}->{$player->[$n]}->{point};
+		    $qn[$n] += max ( grep { $points->{$_} ne 'Nil' } 
+				    keys %$points ) || 0;
 		}
 	    }
 	}
