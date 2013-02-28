@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2013 Feb 28, 12:46:59 PM
+#Last Edit: 2013 Feb 28, 12:47:30 PM
 #$Id$
 
 use MooseX::Declare;
@@ -167,7 +167,7 @@ Students who have stopped coming to class and so won't be included in classwork 
 =cut
 
 	has 'absentees', (is => 'ro', isa => PlayerNames,
-	    lazy => 1, default => sub { shift->yaml->{absent} } );
+	    lazy => 1, default => sub { shift->yaml->{out} } );
 
 
 =head3 transfer
