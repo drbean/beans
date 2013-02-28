@@ -166,7 +166,7 @@ The first week in each session, like { 1 => 1, 2 => 5, 3 => 10, 4 => 14 }, monot
 
 =cut
 
-	has 'session', (is => 'ro', isa => PlayerNames,
+	has 'session', (is => 'ro', isa => 'HashRef',
 	    lazy => 1, default => sub { shift->yaml->{session} } );
 
 
