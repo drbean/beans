@@ -277,7 +277,7 @@ subtype Card,
 		all {
 			my $can = $_;
 			Str->check( $can ) and 
-			Int->check( $card{$can}->{merits} ) and
+			Num->check( $card{$can}->{merits} ) and
 			Int->check( $card{$can}->{absences} ) and
 			Int->check( $card{$can}->{tardies} );
 		}
