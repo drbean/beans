@@ -1,4 +1,4 @@
-#Last Edit: 2012 May 27, 05:48:17 PM
+#Last Edit: 2012 Nov 18, 07:25:41 PM
 #$Id$
 
 use MooseX::Declare;
@@ -564,9 +564,25 @@ The players absent from each beancan in the given week.
                 +{ map { $_ => $card->{$_}->{absent} } keys %$beancans };
         }
 
+
+=head3 tardy
+
+The players tardy from each beancan in the given week.
+
+=cut
+
+        method tardy (Num $week) {
+                my $session = $self->week2session($week);
+                my $beancans = $self->active($session);
+                my $card = $self->card($week);
+                $self->beancansNotInCard($beancans, $card, $week);
+                $self->beancanDataOnCard($beancans, $card, $week);
+                +{ map { $_ => $card->{$_}->{tardy} } keys %$beancans };
+        }
+
 =head3 points
 
-The merits the beancans gained for the given week, except for those members who were absent, and who get zero. Keyed on player id.
+The merits the beancans gained for the given week, except for those members who were absent, and who get zero, or tardy and who get 1. Keyed on player id.
 
 =cut
 
@@ -578,12 +594,15 @@ The merits the beancans gained for the given week, except for those members who 
 		my $id = $member->{id};
 		my $beancan = $self->name2beancan( $week, $name );
 		my $absent = $self->absent($week)->{$beancan};
-		unless ( $absent and ref $absent eq 'ARRAY' ) {
+		my $tardy = $self->tardy($week)->{$beancan};
+		unless ( ( $absent and ref $absent eq 'ARRAY' ) or
+			( $tardy and ref $tardy eq 'ARRAY' ) ) {
 		    $points{$id} = $self->merits($week)->{$beancan}; 
 		}
 		else {
 		    $points{$id} = ( any { $name eq $_ } @$absent ) ?
-			0 : $self->merits($week)->{$beancan};
+			0 : ( any { $name eq $_ } @$tardy ) ?
+			1 : $self->merits($week)->{$beancan};
 		}
 	    }
 	    return \%points;
