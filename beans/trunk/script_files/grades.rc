@@ -1,13 +1,52 @@
 #!/usr/bin/perl
 
+use strict;
+use warnings;
 use IO::All;
 use YAML qw/LoadFile DumpFile/;
 use Cwd;
 
 $_REPL->load_plugin('DumpHistory');
 
+my $session = 4;
+my $dirs = '/home/drbean/012';
+
 (my $dir = getcwd) =~ s/^.*\/([^\/]*)$/$1/;
 use Grades;
 my $l = League->new( leagues => '/home/greg/beans/t', id => $dir );
 my $g = Grades->new({ league => $l });
 my %m = map { $_->{id} => $_ } @{ $l->members };
+my $approach = $l->approach;
+my $c = $g->classwork;
+
+my $hw = $g->homeworkPercent;
+my %hw = map { $_ => $g->sprintround( $hw->{$_} ) } keys %$hw;
+my $classwork = $approach->new( league => $l )->totalPercent;
+my %classwork = map { $_ => $g->sprintround( $classwork->{$_} ) } keys %$classwork;
+
+my $comp = Compcomp->new({ league => $l });
+my $ex1 = $l->inspect("$dirs/$dir/exam/$session/g1.yaml");
+my $ex2 = $c->points($session);
+$l->save("$dirs/$dir/exam/$session/g2.yaml", $ex2);
+my %exams = map { $_ => ( $ex1->{$_} + $ex2->{$_} ) / 2 } keys %m;
+$l->save("$dirs/$dir/exam/$session/g.yaml", \%exams);
+my $ex = $g->examPercent;
+
+my $grade = $g->grades;
+
+my $weights = $g->weights;
+my $io = io 'grades.txt';
+my @grades = $l->id . " " . $l->name . " " . $l->field . " Grades\n" .
+"Classwork: " . $weights->{classwork} . "\n" .
+"Homework: " . $weights->{homework} . "\n" .
+"Exams: " . $weights->{exams} . "\n" .
+"Name\tId\tClasswork\tHomework\Exams\Grade\n";
+my @ids = sort keys %m;
+for my $id ( @ids ) {
+	push @grades,
+"$m{$id}->{name}\t$id\t$classwork{$id}\t$hw{$id}\t$ex->{$id}\t$grade->{$id}\n";
+}
+
+
+$io->print(@grades);
+$io->autoflush;
