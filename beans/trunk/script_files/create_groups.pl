@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 10/15/2011 07:52:09 PM
-# Last Edit: 2013 Mar 20, 11:31:08 AM
+# Last Edit: 2013 Mar 20, 11:59:57 AM
 # $Id$
 
 =head1 NAME
@@ -23,6 +23,7 @@ use IO::All;
 use YAML qw/LoadFile DumpFile Dump/;
 use Cwd; use File::Basename;
 use POSIX qw/floor ceil/;
+use List::MoreUtils qw/all/;
 
 use Getopt::Long;
 use Pod::Usage;
@@ -147,8 +148,19 @@ if ( $n == 2 ) {
 	$g{ $groupname[ $i - $rumpGroups ] } = [ $t[ $i ],
 						$t[ -1 - $i ] ];
     }
-    sleep 10;
 }
+
+my %algocheck;
+for my $group ( keys %g ) {
+    for my $name ( @{ $g{$group} } ) {
+	$algocheck{$name}++;
+	print "$name dupe in $group group.\n" if $algocheck{$name} >= 2;
+    }
+}
+for my $name ( @t ) {
+    print "$name has no group.\n" unless $algocheck{$name};
+}
+print "No dupes in groups.\n" if all { $algocheck{$_} == 1 } @t;
 
 print Dump \%g;
 
