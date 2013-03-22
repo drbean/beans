@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 03/21/2013 10:08:14 PM
-# Last Edit: 2013 Mar 21, 10:17:44 PM
+# Last Edit: 2013 Mar 22, 09:12:47 AM
 # $Id$
 
 =head1 NAME
@@ -29,12 +29,12 @@ print_grades.pl -l AFN231
 =cut
 
 
-my $session = 4;
+my $session = 1;
 my $dirs = '/home/drbean/012';
 
 (my $dir = getcwd) =~ s/^.*\/([^\/]*)$/$1/;
 use Grades;
-my $l = League->new( leagues => '/home/greg/beans/t', id => $dir );
+my $l = League->new( leagues => $dirs, id => $dir );
 my $g = Grades->new({ league => $l });
 my %m = map { $_->{id} => $_ } @{ $l->members };
 my $approach = $l->approach;
@@ -58,6 +58,7 @@ $l->save("$dirs/$dir/exam/$session/g2.yaml", $ex2);
 my %exams = map { $_ => ( $ex1->{$_} + $ex2->{$_} ) / 2 } keys %m;
 $l->save("$dirs/$dir/exam/$session/g.yaml", \%exams);
 my $ex = $g->examPercent;
+my %ex = map { $_ => $g->sprintround( $ex->{$_} ) } keys %$ex;
 
 my $grade = $g->grades;
 
@@ -71,7 +72,7 @@ my @grades = $l->id . " " . $l->name . " " . $l->field . " Grades\n" .
 my @ids = sort keys %m;
 for my $id ( @ids ) {
 	push @grades,
-"$m{$id}->{name}\t$id\t$classwork{$id}\t$hw{$id}\t$ex->{$id}\t$grade->{$id}\n";
+"$m{$id}->{name}\t$id\t$classwork{$id}\t$hw{$id}\t$ex{$id}\t$grade->{$id}\n";
 }
 
 
