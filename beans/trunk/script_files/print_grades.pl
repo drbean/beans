@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 03/21/2013 10:08:14 PM
-# Last Edit: 2013 Mar 22, 09:16:31 AM
+# Last Edit: 2013 Mar 22, 09:21:54 AM
 # $Id$
 
 =head1 NAME
@@ -55,6 +55,7 @@ my $comp = Compcomp->new({ league => $l });
 my $ex1 = $l->inspect("$dirs/$dir/exam/$session/g1.yaml");
 my $ex2 = $comp->points($session);
 # $l->save("$dirs/$dir/exam/$session/g2.yaml", $ex2);
+$ex2 = $l->inspect("$dirs/$dir/exam/$session/g2.yaml");
 my %exams = map { $_ => ( $ex1->{$_} + $ex2->{$_} ) / 2 } keys %m;
 $l->save("$dirs/$dir/exam/$session/g.yaml", \%exams);
 my $ex = $g->examPercent;
