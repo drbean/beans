@@ -5,13 +5,14 @@
   <tr><td>League:</td><td>
   <select name="league" size="[% leagues.size %]">
 
-<option value="MIA0014">MIA0014日資管大學二甲 商用英文實務(二)</option>
-<option value="BMA0058">BMA0058日經管大學二甲 商用英文實務(二)</option>
-<option value="BMA0056">BMA0056日經管大學二甲 商用英文實務(二)</option>
-<option value="FIA0033">FIA0033日財金大學二甲 商用英文實務(二)</option>
-<option value="FLA0016">FLA0016夜應外大學三甲 英文會話(四)</option>
-<option value="00034522">00034522進階英語聽力(一) 應用外語科-五專日間部-5年-01班</option>
-<option value="00034519">00034519語言與文化 應用外語科-五專日間部-5年-01班</option>
+<option value="MIA0009">MIA0009日資管大學二甲 商用英文實務(二)</option>
+<option value="BMA0041">BMA0041日經管大學二甲 商用英文實務(二)</option>
+<option value="BMA0035">BMA0035日經管大學二甲 商用英文實務(二)</option>
+<option value="FIA0046">FIA0046日財金大學二甲 商用英文實務(二)</option>
+<option value="FLA0037">FLA0037夜應外大學三甲 英文會話(四)</option>
+<option value="00037155">00037155進階英語聽力(一) 應用外語科-五專日間部-5年-01班</option>
+<option value="00037589">00037589語言與文化 應用外語科-五專日間部-5年-01班</option>
+<option value="AFN231">AFN231 NAF031四技外三甲 小說選讀</option>
 <option value="beans/t/emile">The Rousseau School of Pretentialism</option>
 
   </select></td></tr>
