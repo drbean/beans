@@ -1,4 +1,20 @@
-#!/usr/bin/perl
+#!/usr/bin/perl 
+
+# Created: 03/21/2013 10:08:14 PM
+# Last Edit: 2013 Mar 21, 10:17:44 PM
+# $Id$
+
+=head1 NAME
+
+print_grades.pl - Format classwork, homework, exams, final grades
+
+=head1 VERSION
+
+Version 0.01
+
+=cut
+
+our $VERSION = '0.01';
 
 use strict;
 use warnings;
@@ -6,7 +22,12 @@ use IO::All;
 use YAML qw/LoadFile DumpFile/;
 use Cwd;
 
-$_REPL->load_plugin('DumpHistory');
+=head1 SYNOPSIS
+
+print_grades.pl -l AFN231
+
+=cut
+
 
 my $session = 4;
 my $dirs = '/home/drbean/012';
@@ -18,6 +39,12 @@ my $g = Grades->new({ league => $l });
 my %m = map { $_->{id} => $_ } @{ $l->members };
 my $approach = $l->approach;
 my $c = $g->classwork;
+
+=head1 DESCRIPTION
+
+A gradesheet
+
+=cut
 
 my $hw = $g->homeworkPercent;
 my %hw = map { $_ => $g->sprintround( $hw->{$_} ) } keys %$hw;
@@ -50,3 +77,23 @@ for my $id ( @ids ) {
 
 $io->print(@grades);
 $io->autoflush;
+
+
+=head1 AUTHOR
+
+Dr Bean C<< <drbean at cpan, then a dot, (.), and org> >>
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2013 Dr Bean, all rights reserved.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+=cut
+
+# End of print_grades.pl
+
+# vim: set ts=8 sts=4 sw=4 noet:
+
+
