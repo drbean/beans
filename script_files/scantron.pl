@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # Created: 西元2010年04月04日 18時44分24秒
-# Last Edit: 2011  5月 26, 22時18分44秒
+# Last Edit: 2013 Apr 23, 09:32:29 PM
 # $Id$
 
 =head1 NAME
@@ -60,7 +60,7 @@ for my $group ( keys %$groups ) {
 	Bless( $response->{$group} )->keys( $idsbyRole );
 }
 my @formorders = map { $formorder{$_} } sort keys %formorder;
-Bless( $response )->keys([ map { sort @$_ } @formorders ]);
+# Bless( $response )->keys([ map { sort @$_ } @formorders ]);
 $YAML::UseAliases = 0;
 print Dump $response;
 
