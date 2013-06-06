@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Last Edit: 2012 Mar 25, 02:06:59 PM
+# Last Edit: 2013 Apr 24, 10:32:58 AM
 # $Id: /dic/branches/ctest/grade 1160 2007-03-29T09:31:06.466606Z greg  $
 
 use strict;
@@ -195,6 +195,10 @@ print Dump \%adjusted;
 @{$pointsByPoints{$_}} = sort @{$pointsByPoints{$_}} foreach keys %pointsByPoints;
 @{$adjustedByGrades{$_}} = sort @{$adjustedByGrades{$_}}
 						foreach keys %adjustedByGrades;
+
+@{ $indScoresByScore{$_} } = sort @{ $indScoresByScore{$_} }
+			for keys %indScoresByScore;
+
 my @indReport = map
 	{ "\\begin{small}\\vspace{-0.4cm} \\item [$_:] \\hspace*{0.5cm}\\\\@{$indScoresByScore{$_}}\\end{small}" }
 		sort {$a<=>$b} keys %indScoresByScore;
