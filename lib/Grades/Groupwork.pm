@@ -1,4 +1,4 @@
-#Last Edit: 2013 Jun 06, 12:47:15 PM
+#Last Edit: 2013 Jun 06, 12:51:31 PM
 #$Id$
 
 use MooseX::Declare;
@@ -380,7 +380,7 @@ Total for individual ids out of 100, for the given session
 	method playerGrade4session (Str $session) {
 		my $members = $self->league->members;
 		my $series = $self->series;
-		my (%grades);
+		my %grades; $grades{$_->{id}} = 0 for @$members;
 		my %presentMembers;
 		my $can = $self->names2beancans($session);
 		my $grade = $self->grades4session($session);
