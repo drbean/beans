@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 10/15/2011 07:52:09 PM
-# Last Edit: 2013 Mar 24, 05:12:13 PM
+# Last Edit: 2013 Mar 28, 07:50:42 PM
 # $Id$
 
 =head1 NAME
@@ -75,7 +75,7 @@ $gs = try { LoadFile "classwork/$lastsession/groups.yaml" } catch
     { $gs = {} };
 my @keys = keys %$gs;
 my @colors = qw/1-1 1-2 2-1 2-2 3-1 3-2 4-1 4-2 5-1 5-2 6-1 6-2 
-	7-1 7-2 8-1 8-2 9-1 9-2 10-1 10-2 11-1 11-2 12-1 12-2/;
+	8-1 8-2 9-1 9-2 10-1 10-2 11-1 11-2 12-1 12-2 13-1 13-2 14-1 14-2/;
 my %g;
 my @graded = sort { $grades->{$a} <=> $grades->{$b} }keys %m;
 my @t = map  $m{$_}->{name}, @graded;
@@ -144,8 +144,9 @@ if ( $n == 2 ) {
 	    $g{ $groupname[ -1 -$k ] } = [ $t[ $half ] ];
 	}
     }
-    for my $i ( $rumpGroups .. $groups-1 ) {
-	$g{ $groupname[ $i - $rumpGroups ] } = [ $t[ $i ],
+    for my $k ( $rumpGroups .. $groups-1 ) {
+	my $i = $k - $rumpGroups;
+	$g{ $groupname[ $i ] } = [ $t[ $i ],
 						$t[ -1 - $i ] ];
     }
 }
