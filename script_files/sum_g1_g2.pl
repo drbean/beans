@@ -1,20 +1,14 @@
 #!/usr/bin/perl 
 
 # Created: 04/28/2013 04:26:17 PM
-# Last Edit: 2013 Apr 28, 04:51:53 PM
+# Last Edit: 2013 Apr 28, 07:15:39 PM
 # $Id$
 
 =head1 NAME
 
-sum_g1_g2.pl - Average jigsaw scores in g1.yaml, compComp scores in g2.yaml
-
-=head1 VERSION
-
-Version 0.01
+sum_g1_g2.pl - Mean of jigsaw scores and compcomp scores
 
 =cut
-
-our $VERSION = '0.01';
 
 use strict;
 use warnings;
@@ -28,7 +22,7 @@ sum_g1_g2.pl -r 3 > exam/3/g.yaml
 use Cwd;
 use File::Basename;
 use List::MoreUtils qw/any/;
-use YAML qw/Bless Dump/;
+use YAML qw/LoadFile DumpFile Dump/;
 use Grades;
 
 my $script = Grades::Script->new_with_options;
@@ -42,6 +36,8 @@ my %m = map { $_->{id} => $_ } @{ $league->members };
 
 =head1 DESCRIPTION
 
+Exams are simultaneous jigsaw and compcomp activities. Average those 2 scores.
+Jigsaw scores are already in g1.yaml. We could use inspect, instead of LoadFile.
 Averages jigsaw and compComp scores. Be careful with absent players
 
 =cut
@@ -49,9 +45,10 @@ Averages jigsaw and compComp scores. Be careful with absent players
 my $leagues = $league->leagues;
 my $g1 = LoadFile "$leagues/$id/exam/$round/g1.yaml" or die "g1.yaml?";
 my $g2 = $co->points($exam);
-DumpFile "$leagues/$id/exam/$round/g1.yaml", $g2 or die "g2.yaml?";
+DumpFile "$leagues/$id/exam/$round/g2.yaml", $g2 or die "g2.yaml?";
 my %g = map { $_ => ( $g1->{$_} + $g2->{$_} ) / 2 } keys %m;
-DumpFile "$leagues/$id/exam/$round/g.yaml", \%g or die "g.yaml?";
+
+print Dump \%exams;
 
 =head1 AUTHOR
 
