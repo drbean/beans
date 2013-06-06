@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 03/21/2013 10:08:14 PM
-# Last Edit: 2013 Mar 27, 11:05:59 AM
+# Last Edit: 2013 Mar 27, 11:11:54 AM
 # $Id$
 
 =head1 NAME
@@ -24,7 +24,7 @@ use Cwd;
 
 =head1 SYNOPSIS
 
-print_grades.pl
+print_grades.pl > grades.txt
 
 =cut
 
