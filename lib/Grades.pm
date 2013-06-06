@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2013 Mar 22, 09:00:59 AM
+#Last Edit: 2013 May 29, 07:50:11 PM
 #$Id$
 
 use MooseX::Declare;
@@ -645,7 +645,7 @@ The options (as an anon array) to the given question in the given jigsaw for the
 
     method options ( Str $jigsaw, Str $group, Int $question ) {
 	my $quiz = $self->quiz( $jigsaw, $group );
-	my $options = $quiz->[$question]->{options};
+	my $options = $quiz->[$question]->{option};
 	return $options || '';
     }
 
