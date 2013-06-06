@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 03/21/2013 10:08:14 PM
-# Last Edit: 2013 Mar 27, 09:57:11 AM
+# Last Edit: 2013 Mar 27, 11:05:59 AM
 # $Id$
 
 =head1 NAME
@@ -24,7 +24,7 @@ use Cwd;
 
 =head1 SYNOPSIS
 
-print_grades.pl -l AFN231
+print_grades.pl
 
 =cut
 
@@ -51,13 +51,6 @@ my %hw = map { $_ => $g->sprintround( $hw->{$_} ) } keys %$hw;
 my $classwork = $approach->new( league => $l )->totalPercent;
 my %classwork = map { $_ => $g->sprintround( $classwork->{$_} ) } keys %$classwork;
 
-my $comp = Compcomp->new({ league => $l });
-my $ex1 = $l->inspect("$dirs/$dir/exam/$session/g1.yaml");
-my $ex2 = $comp->points($session);
-$l->save("$dirs/$dir/exam/$session/g2.yaml", $ex2);
-$ex2 = $l->inspect("$dirs/$dir/exam/$session/g2.yaml");
-my %exams = map { $_ => ( $ex1->{$_} + $ex2->{$_} ) / 2 } keys %m;
-$l->save("$dirs/$dir/exam/$session/g.yaml", \%exams);
 my $ex = $g->examPercent;
 my %ex = map { $_ => $g->sprintround( $ex->{$_} ) } keys %$ex;
 
