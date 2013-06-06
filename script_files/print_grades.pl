@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 03/21/2013 10:08:14 PM
-# Last Edit: 2013 Mar 24, 04:49:33 PM
+# Last Edit: 2013 Mar 27, 09:57:11 AM
 # $Id$
 
 =head1 NAME
@@ -64,7 +64,6 @@ my %ex = map { $_ => $g->sprintround( $ex->{$_} ) } keys %$ex;
 my $grade = $g->grades;
 
 my $weights = $g->weights;
-my $io = io 'grades.txt';
 my @grades = $l->id . " " . $l->name . " " . $l->field . " Grades\n" .
 "Classwork: " . $weights->{classwork} . "\n" .
 "Homework: " . $weights->{homework} . "\n" .
@@ -77,8 +76,7 @@ for my $id ( @ids ) {
 }
 
 
-$io->print(@grades);
-$io->autoflush;
+print(@grades);
 
 
 =head1 AUTHOR
