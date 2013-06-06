@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 03/21/2013 10:08:14 PM
-# Last Edit: 2013 Mar 27, 11:06:17 AM
+# Last Edit: 2013 Mar 27, 11:11:21 AM
 # $Id$
 
 =head1 NAME
@@ -13,12 +13,12 @@ sum_g12.pl - Mean of jigsaw scores and compcomp scores
 use strict;
 use warnings;
 use IO::All;
-use YAML qw/LoadFile DumpFile/;
+use YAML qw/Dump LoadFile DumpFile/;
 use Cwd;
 
 =head1 SYNOPSIS
 
-sum_g12.pl
+sum_g12.pl > exam/1/g.yaml
 
 =cut
 
