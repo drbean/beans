@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Last Edit: 2013 Apr 24, 10:32:58 AM
+# Last Edit: 2013 May 30, 02:02:47 PM
 # $Id: /dic/branches/ctest/grade 1160 2007-03-29T09:31:06.466606Z greg  $
 
 use strict;
@@ -200,7 +200,7 @@ print Dump \%adjusted;
 			for keys %indScoresByScore;
 
 my @indReport = map
-	{ "\\begin{small}\\vspace{-0.4cm} \\item [$_:] \\hspace*{0.5cm}\\\\@{$indScoresByScore{$_}}\\end{small}" }
+	{ "\\vspace{-0.4cm} \\item [$_:] \\hspace*{0.5cm}\\\\@{$indScoresByScore{$_}}" }
 		sort {$a<=>$b} keys %indScoresByScore;
 my @groupReport = map 
 	{ "\\vspace{-0.4cm} \\item [$_:] \\hspace*{0.5cm}\\\\@{$groupScoresByScore{$_}}" }
