@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 04/28/2013 04:26:17 PM
-# Last Edit: 2013 May 30, 08:49:42 AM
+# Last Edit: 2013 May 31, 07:35:29 AM
 # $Id$
 
 =head1 NAME
@@ -46,7 +46,12 @@ my $leagues = $league->leagues;
 my $g1 = LoadFile "$leagues/$id/exam/$exam/g1.yaml" or die "g1.yaml?";
 my $g2 = $co->points($exam);
 DumpFile "$leagues/$id/exam/$exam/g2.yaml", $g2 or die "g2.yaml?";
-my %g = map { $_ => ( $g1->{$_} + $g2->{$_} ) / 2 } keys %m;
+my %g = map {
+		die "Player $_ missing from g1.yaml" if not defined $g1->{$_};
+		die "Player $_ missing from g2.yaml" if not defined $g2->{$_};
+		$_ => ( $g1->{$_} + $g2->{$_} ) / 2
+	    } keys %m;
+
 
 print Dump \%g;
 
