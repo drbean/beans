@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 10/15/2011 07:52:09 PM
-# Last Edit: 2013 Mar 28, 07:50:42 PM
+# Last Edit: 2013 Apr 01, 03:55:36 PM
 # $Id$
 
 =head1 NAME
@@ -128,7 +128,7 @@ if ( $n == 3 ) {
 	    }
     }
     my $half = @t/2;
-    my @sign = (+1,-1);
+    my @sign = (-1,+1);
     for my $i ( $rumpGroups .. $groups-1 ) {
 	    my $j = $i - $rumpGroups;
 	    $g{ $groupname[ $j ] } = [ $t[ $i ],
