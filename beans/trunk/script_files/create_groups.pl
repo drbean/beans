@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 10/15/2011 07:52:09 PM
-# Last Edit: 2013 Mar 20, 11:59:57 AM
+# Last Edit: 2013 Mar 22, 12:25:37 PM
 # $Id$
 
 =head1 NAME
@@ -128,7 +128,7 @@ if ( $n == 3 ) {
 	    }
     }
     my $half = @t/2;
-    my @sign = (-1,+1);
+    my @sign = (+1,-1);
     for my $i ( $rumpGroups .. $groups-1 ) {
 	    my $j = $i - $rumpGroups;
 	    $g{ $groupname[ $j ] } = [ $t[ $i ],
@@ -151,16 +151,17 @@ if ( $n == 2 ) {
 }
 
 my %algocheck;
+@algocheck{@t} = ( 0 ) x @t;
 for my $group ( keys %g ) {
     for my $name ( @{ $g{$group} } ) {
 	$algocheck{$name}++;
-	print "$name dupe in $group group.\n" if $algocheck{$name} >= 2;
+	print STDERR "$name dupe in $group group.\n" if $algocheck{$name} >= 2;
     }
 }
 for my $name ( @t ) {
-    print "$name has no group.\n" unless $algocheck{$name};
+    print STDERR "$name has no group.\n" unless $algocheck{$name};
 }
-print "No dupes in groups.\n" if all { $algocheck{$_} == 1 } @t;
+print STDERR "No dupes in groups.\n" if all { $algocheck{$_} == 1 } @t;
 
 print Dump \%g;
 
