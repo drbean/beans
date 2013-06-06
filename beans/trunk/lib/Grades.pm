@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2013 Feb 28, 12:47:30 PM
+#Last Edit: 2013 Mar 22, 09:00:59 AM
 #$Id$
 
 use MooseX::Declare;
@@ -1427,7 +1427,7 @@ Assistants points are from config->{assistant} of form { Black => { U9933002 => 
 	if ( $assistants ) {
 	    my %assistantPoints = map { %{ $assistants->{$_} } } keys %$assistants;
 	     # my %assistantPoints = map { $assistants->{$_}->flatten } keys %$assistants;
-	     die "@{ [keys %$assistants] }: members?" if any
+	     die "@{ [keys %$assistants] }: assistant members?" if any
 		{ not $self->league->is_member($_) } keys %assistantPoints;
 	    return \%assistantPoints;
 	}
