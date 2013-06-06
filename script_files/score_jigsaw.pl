@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # Created: 西元2010年04月04日 19時52分56秒
-# Last Edit: 2010  7月 02, 09時13分14秒
+# Last Edit: 2013 May 29, 09:17:14 PM
 # $Id$
 
 =head1 NAME
@@ -58,6 +58,8 @@ for my $group ( keys %$groups ) {
 	    }
 	    elsif ( $answer eq 'True' or $answer eq 'False' ) {
 		$codedvalue->[$n++] = { True => 'T', False => 'F' } }
+	    elsif ( $answer eq 'Present' or $answer eq 'Absent' ) {
+		$codedvalue->[$n++] = { Absent => 'Absent', Present => 'Present' } }
 	    else {
 		warn "Answer for " . ($n+1) . "th item in $topic$form quiz,";
 		$codedvalue->[$n++] = { Other => 'Other' } }
