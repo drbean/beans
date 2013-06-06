@@ -1,4 +1,4 @@
-#Last Edit: 2013 Feb 28, 02:39:41 PM
+#Last Edit: 2013 Jun 06, 12:47:15 PM
 #$Id$
 
 use MooseX::Declare;
@@ -370,6 +370,47 @@ Totals for the beancans over the given session. TODO Why '+=' in sessiontotal?
 			}
 		}
 		\%sessiontotal;
+	}
+
+=head3 playerGrade4session
+
+Total for individual ids out of 100, for the given session
+
+=cut
+	method playerGrade4session (Str $session) {
+		my $members = $self->league->members;
+		my $series = $self->series;
+		my (%grades);
+		my %presentMembers;
+		my $can = $self->names2beancans($session);
+		my $grade = $self->grades4session($session);
+		for my $member ( @$members ) {
+			my $name = $member->{name};
+			my $id = $member->{id};
+			my $beancan = $can->{$member->{name}};
+			if ( defined $beancan ) {
+				my $grade = $grade->{$can->{$name}};
+				carp $member->{name} .
+					" not in session $session"
+					unless defined $grade;
+				$grades{$id} += $grade;
+			} else {
+				carp $member->{name} .
+				"'s beancan in session $session?"
+			}
+		}
+		for my $member ( @$members ) {
+			my $id = $member->{id};
+			if ( exists $grades{$id} ) {
+				$grades{$id} = min( 100, $grades{$id} );
+			}
+			else {
+				my $name = $member->{name};
+				carp "$name $id Groupwork?";
+				$grades{$id} = 0;
+			}
+		}
+		\%grades;
 	}
 
 =head3 totalPercent
