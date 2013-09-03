@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 02/19/2012 06:58:16 PM
-# Last Edit: 2012 Aug 28, 03:10:36 PM
+# Last Edit: 2013 Sep 03, 08:38:51 AM
 # $Id$
 
 =head1 NAME
@@ -39,9 +39,8 @@ pod2usage(-exitstatus => 0, -verbose => 2) if $script->man;
 
 my $leagueId = $script->league;
 my $semester = $script->session;
-my $leagues = "/home/drbean/$semester";
 $leagueId = basename( getcwd ) if $leagueId eq '.';
-my $l = League->new( leagues => $leagues, id => $leagueId );
+my $l = League->new( id => $leagueId );
 my $g = Grades->new({ league => $l });
 my $yaml = $l->yaml;
 my $members = $l->members;
@@ -68,7 +67,7 @@ for my $member ( @$members ) {
 	my $id = $member->{id};
 	$member->{rating} ||= $grades->{ $id };
 	$member->{password} ||=  $oldm{$id}->{password};
-	$member->{name} = $oldm{$id}->{name};
+	$member->{name} = $oldm{$id}->{name} if $oldm{$id}->{name};
 	push @updated, $member;
 }
 
