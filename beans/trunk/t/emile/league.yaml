@@ -1,5 +1,6 @@
 ---
 id: emile
+approach: GroupworkNoFault
 league: Rousseau Cram School
 field: Prestentialism
 hw: homework
@@ -36,9 +37,13 @@ series:
   - second
   - third
   - fourth
+session:
+  1: 2
+  2: 5
+  3: 10
+  4: 14
 weights:
   classwork: 20
   homework : 20
   exams    : 60
 conversations:
-approach: Groupwork
