@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 02/19/2012 06:58:16 PM
-# Last Edit: 2013 Sep 03, 08:38:51 AM
+# Last Edit: 2013 Sep 06, 05:21:37 PM
 # $Id$
 
 =head1 NAME
@@ -51,7 +51,7 @@ my $oldleagues = "/home/drbean/$semester";
 
 =head1 DESCRIPTION
 
-Copy old name, password, rating (grades) data from the league in league.yaml's 'anterior' field, or (old) 'one' argument, from old 'semester' argument, overwriting new data, in the case of password and rating, only if they don't exist. name is overwritten in all cases, because it's probably a Chinese rather than English name.
+Copy old name, password, rating (grades) data from the league in league.yaml's 'anterior' field, or (old) 'one' argument, from old 'semester' argument, overwriting new data, in the case of password and rating, only if they don't exist. name is overwritten in the case it's a Chinese rather than English name.
 
 =cut
 
@@ -67,7 +67,8 @@ for my $member ( @$members ) {
 	my $id = $member->{id};
 	$member->{rating} ||= $grades->{ $id };
 	$member->{password} ||=  $oldm{$id}->{password};
-	$member->{name} = $oldm{$id}->{name} if $oldm{$id}->{name};
+	$member->{name} = $oldm{$id}->{name} if $oldm{$id}->{name}
+		and $member->{name} eq $member->{Chinese};
 	push @updated, $member;
 }
 
