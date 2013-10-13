@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 03/21/2013 10:08:14 PM
-# Last Edit: 2013 Mar 27, 11:11:21 AM
+# Last Edit: 2013 Oct 13, 10:10:25 PM
 # $Id$
 
 =head1 NAME
@@ -24,7 +24,7 @@ sum_g12.pl > exam/1/g.yaml
 
 
 my $session = 1;
-my $dirs = '/home/drbean/012';
+my $dirs = '/home/drbean/021';
 
 (my $dir = getcwd) =~ s/^.*\/([^\/]*)$/$1/;
 use Grades;
