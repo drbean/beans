@@ -296,6 +296,9 @@ subtype TortCard,
 	where {
 		my %card = %$_;
 		delete $card{Absent};
+		for my $key ( keys %card ) {
+		    delete $card{$key} unless $key =~ m/^[[:upper:]]/;
+		}
 		all {
 			my $can = $_;
 			Str->check( $can ) and 
