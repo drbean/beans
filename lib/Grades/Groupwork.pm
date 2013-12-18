@@ -1,4 +1,4 @@
-#Last Edit: 2013 Sep 05, 03:08:22 AM
+#Last Edit: 2013 Jun 06, 12:51:31 PM
 #$Id$
 
 use MooseX::Declare;
@@ -346,6 +346,31 @@ The numbers of players not on time in the beancans in the given week.
 		+{ map { $_ => $card->{$_}->{tardies} } keys %$beancans };
 	}
 
+
+=head3 grades4session
+
+Totals for the beancans over the given session. TODO Why '+=' in sessiontotal?
+
+=cut
+
+	method grades4session (Str $session) {
+		my $weeks = $self->weeks($session);
+		my $beancans = $self->beancans($session);
+		my (%sessiontotal);
+		for my $week ( @$weeks ) {
+			my $grade = $self->work2grades($week);
+			for my $can ( keys %$beancans ) {
+				if ( $can =~ m/absent/i ) {
+					$sessiontotal{$can} = 0;
+					next;
+				}
+				carp "$can not in week $week Groupwork"
+					unless defined $grade->{$can};
+				$sessiontotal{$can} += $grade->{$can};
+			}
+		}
+		\%sessiontotal;
+	}
 
 =head3 playerGrade4session
 
