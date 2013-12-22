@@ -1,4 +1,4 @@
-#Last Edit: 2013 Jun 06, 12:51:31 PM
+#Last Edit: 2013 Dec 22, 01:09:13 PM
 #$Id$
 
 use MooseX::Declare;
@@ -70,7 +70,7 @@ The different beancans for each of the sessions in the series. In the directory 
 
 =head3 beancans
 
-A hashref of all the beancans in a given session with the names of the members of each beancan. The number, composition and names of the beancans may change from one session of the series to the next.
+A hashref of all the beancans in a given session with the names keying the ids of the members of each beancan. The number, composition and names of the beancans may change from one session of the series to the next.
 	
 Players in one beancan all get the same Groupwork grade for that session. The beancan members may be the same as the members of the class group, who work together in class, or may be individuals. Usually in a big class, the beancans will be the same as the groups, and in a small class they will be individuals.
 
@@ -80,7 +80,21 @@ Rather than refactor the class to work with individuals rather than groups, and 
 
 =cut 
 
-	method beancans (Str $session) { $self->beancanseries->{$session}; }
+	method beancans (Str $session) {
+	    my $beancans = $self->beancanseries->{$session};
+	    my $league = $self->league;
+	    my %beancans = map { my $can = $_;
+	        $can => { map { $_ => $league->ided( $_ ) }
+	        		    @{$beancans->{$can}} } } keys %$beancans;
+	    return \%beancans;
+	}
+=head3 beancan_names
+
+A hashref of all the beancans in a given session with the names of the members of each beancan.
+	
+=cut 
+
+	method beancan_names (Str $session) { $self->beancanseries->{$session}; }
 
 =head3 allfiles
 
