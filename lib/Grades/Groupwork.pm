@@ -1,4 +1,4 @@
-#Last Edit: 2013 Dec 25, 12:59:17 PM
+#Last Edit: 2013 Dec 25, 10:14:20 PM
 #$Id$
 
 use MooseX::Declare;
@@ -173,7 +173,7 @@ Given a session, returns the active beancans, ie all but the 'Absent' beancan.
 =cut
 
 	method active (Str $session) {
-		my $beancans = $self->beancans($session);
+		my $beancans = $self->beancan_names($session);
 		my %active = %$beancans;
 		delete $active{Absent};
 		return \%active;
@@ -269,7 +269,7 @@ Given the name of a player, the name of the beancan they were a member of in the
 	method name2beancan (Num $week, Str $name) {
 		croak "Week $week?" unless defined $week;
 		my $session = $self->week2session($week);
-		my $beancans = $self->beancans($session);
+		my $beancans = $self->beancan_names($session);
 		my @names; push @names, @$_ for values %$beancans;
 		my @name2beancans;
 		while ( my ($beancan, $names) = each %$beancans ) {
@@ -369,7 +369,7 @@ Totals for the beancans over the given session. TODO Why '+=' in sessiontotal?
 
 	method grades4session (Str $session) {
 		my $weeks = $self->weeks($session);
-		my $beancans = $self->beancans($session);
+		my $beancans = $self->beancan_names($session);
 		my (%sessiontotal);
 		for my $week ( @$weeks ) {
 			my $grade = $self->work2grades($week);
@@ -396,7 +396,7 @@ Total for individual ids out of 100, for the given session
 		my $series = $self->series;
 		my %grades; $grades{$_->{id}} = 0 for @$members;
 		my %presentMembers;
-		my $can = $self->names2beancans($session);
+		my $can = $self->names2beancan_names($session);
 		my $grade = $self->grades4session($session);
 		for my $member ( @$members ) {
 			my $name = $member->{name};
@@ -690,7 +690,7 @@ The merits the beancans gained for the given session, with the Absent beancan ge
 
     method sessionMerits (Num $session) {
 	my $weeks = $self->weeks($session);
-	my $beancans = $self->beancans($session);
+	my $beancans = $self->beancan_names($session);
 	my %merits;
 	for my $week ( @$weeks ) {
 	    my $merits = $self->merits($week);
@@ -709,7 +709,7 @@ Totals for the beancans over the given session, keyed on individual names.
 
     method grades4session (Str $session) {
 	my $weeks = $self->weeks($session);
-	my $beancans = $self->beancans($session);
+	my $beancans = $self->beancan_names($session);
 	my %tally;
 	for my $week ( @$weeks ) {
 	    my $grade = $self->merits($week);
