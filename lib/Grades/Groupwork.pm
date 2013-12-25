@@ -1,4 +1,4 @@
-#Last Edit: 2013 Dec 22, 01:09:13 PM
+#Last Edit: 2013 Dec 25, 12:59:17 PM
 #$Id$
 
 use MooseX::Declare;
@@ -245,7 +245,7 @@ A hashref of names of members of beancans (players) and the beancans they were m
 =cut
 
 	method names2beancans (Str $session) {
-		my $beancans = $self->beancans($session);
+		my $beancans = $self->beancan_names($session);
 		my %beancansreversed;
 		while ( my ($beancan, $names) = each %$beancans ) {
 			for my $name ( @$names ) {
