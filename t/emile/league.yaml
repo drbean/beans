@@ -6,6 +6,7 @@ field: Prestentialism
 hw: homework
 compcomp: comp
 groupwork: classwork
+classMax: 3
 exams: exams
 examMax: 15
 hwMax: 2
@@ -26,6 +27,7 @@ member:
     name: Therese
     rating: 1500
     password: th
+out:
   - id: 223
     name: therese
     rating: 1500
