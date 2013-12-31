@@ -85,7 +85,7 @@ is_deeply($g->homeworkPercent, { 34113=>0, S09413=>50, 1=>100, 222=>50 },
 # jigsaw
 
 is_deeply( $g->config( 'Jigsaw', '2'), $g->inspect('t/emile/exams/2/round.yaml'), 'Config file.');
-is( $g->topic( '2', 'Brown' ), 'citrus', 'Topic of exam text');
+is( $g->topic( '2', 'Brown' ), 'internet', 'Topic of exam text');
 is( $g->form( '3', 'Brown' ), 2, 'Form of exam text');
 
 my $quizfile = "t/emile/activities.yaml";
