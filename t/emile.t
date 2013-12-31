@@ -3,8 +3,8 @@ use warnings;
 use Test::More;
 use FindBin qw/$Bin/;
 
-plan tests => 52;
 plan skip_all => 'unset env var NO_TEST to enable this test' if $ENV{NO_TEST};
+plan tests => 52;
 
 use lib 'lib';
 use Grades;
@@ -14,7 +14,7 @@ my $g = Grades->new({ league => $l });
 
 # groupwork
 
-my $gp = Groupwork->new( league => $l );
+my $gp = $g->classwork;
 is_deeply( $gp->totalPercent,
 	{ 34113 => 80, S09413 => 80, 1 => 60, 222 => 60, 223=>0},
 	"Classwork role delegates classworkPercent to Groupwork role" );
