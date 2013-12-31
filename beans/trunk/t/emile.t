@@ -27,13 +27,13 @@ is_deeply($gp->beancanseries, {
            4 => { one  => [qw/Emile Sophie/], two => [qw/Rousseau Therese/] },
          }, 'beancans for 4 sessions' ); 
 is_deeply( $gp->allfiles, [ qw[
-	t/emile/classwork/1/2.yaml t/emile/classwork/1/3.yaml
-	t/emile/classwork/2/5.yaml t/emile/classwork/2/6.yaml
-	t/emile/classwork/2/7.yaml t/emile/classwork/2/8.yaml
-	t/emile/classwork/3/10.yaml t/emile/classwork/3/11.yaml
-	t/emile/classwork/3/12.yaml t/emile/classwork/4/14.yaml
-	t/emile/classwork/4/15.yaml t/emile/classwork/4/16.yaml
-	] ], 'all 12 files in 4 sessions');
+	t/emile/classwork/2.yaml t/emile/classwork/3.yaml
+	t/emile/classwork/5.yaml t/emile/classwork/6.yaml
+	t/emile/classwork/7.yaml t/emile/classwork/8.yaml
+	t/emile/classwork/10.yaml t/emile/classwork/11.yaml
+	t/emile/classwork/12.yaml t/emile/classwork/14.yaml
+	t/emile/classwork/15.yaml t/emile/classwork/16.yaml
+	] ], 'all 12 files in classwork');
 is_deeply( $gp->all_weeks, [2,3,5,6,7,8,10..12,14..16], "all 12 weeks");
 is_deeply( $gp->lastweek, 16, "last week");
 is_deeply( $gp->beancans('3'),
