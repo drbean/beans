@@ -95,9 +95,9 @@ is( $g->quizfile( '4' ), $quizfile, 'Location of exam text');
 is_deeply($g->quiz( '4', 'Brown' ),
 	$g->inspect($quizfile)->{cars}->{jigsaw}->{2}->{quiz},
 	'Quiz content');
-is_deeply( $g->options( '1/1', 'Brown', 0 ), ['True','False'],
+is_deeply( $g->options( '1', 'Brown', 0 ), ['True','False'],
 	'Options');
-is( $g->qn( '1/2', 'Brown' ), 8, 'Number of exam questions' );
+is( $g->qn( '1', 'Brown' ), 8, 'Number of exam questions' );
 
 my ($emile, $rousseau, $sophie, $therese);
 @$emile{1..9} = ( (0,1) x 4, 0 ); @$rousseau{1..9} = (0,0,1) x 3;
