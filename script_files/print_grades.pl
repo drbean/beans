@@ -1,20 +1,14 @@
 #!/usr/bin/perl 
 
 # Created: 03/21/2013 10:08:14 PM
-# Last Edit: 2013 Sep 11, 03:06:02 PM
+# Last Edit: 2013 Dec 31, 01:55:54 PM
 # $Id$
 
 =head1 NAME
 
 print_grades.pl - Format classwork, homework, exams, final grades
 
-=head1 VERSION
-
-Version 0.01
-
 =cut
-
-our $VERSION = '0.01';
 
 use strict;
 use warnings;
