@@ -51,7 +51,7 @@ is( eval{ $gp->name2beancan(3, 'KarlMarx') }, undef, 'Which group is Karl Marx i
 is_deeply( $gp->merits(14), { one => 3, two => 3 }, "merits in Week 14");
 is_deeply( $gp->absences(2), {  one => 1, two => 1 }, "absences in week 2");
 is_deeply( $gp->tardies(2), { one => 1, two => 1 }, "people late in week 2");
-is( $gp->payout('2'), 5, "If the total paid to players each week in session 2 is 5, the average grade over the semester should be 80.");
+# is( $gp->payout('2'), 5, "If the total paid to players each week in session 2 is 5, the average grade over the semester should be 80.");
 is_deeply( $gp->demerits(3), { one => 3, two => 3 }, "2*absences+tardies");
 is_deeply( $gp->favor(2), { one => 1, two => 1 }, "favor to avoid 0");
 is( $gp->maxDemerit(2), 3, "demerits of group(s) with most absences, tardies");
