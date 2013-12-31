@@ -36,7 +36,7 @@ is_deeply( $gp->allfiles, [ qw[
 	] ], 'all 12 files in classwork');
 is_deeply( $gp->all_events, [2,3,5,6,7,8,10..12,14..16], "all 12 weeks");
 is_deeply( $gp->lastweek, 16, "last week");
-is_deeply( $gp->beancans('3'),
+is_deeply( $gp->beancan_names('3'),
 	{ one  => [qw/Emile Sophie/], two => [qw/Rousseau Therese/] },
 	"beancans" );
 is_deeply( $gp->weeks('4'), [14..16], 'weeks in fourth session');
