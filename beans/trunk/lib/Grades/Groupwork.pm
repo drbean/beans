@@ -1,4 +1,4 @@
-#Last Edit: 2013 Dec 25, 10:14:20 PM
+#Last Edit: 2013 Dec 31, 11:19:50 AM
 #$Id$
 
 use MooseX::Declare;
@@ -360,117 +360,6 @@ The numbers of players not on time in the beancans in the given week.
 		+{ map { $_ => $card->{$_}->{tardies} } keys %$beancans };
 	}
 
-
-=head3 grades4session
-
-Totals for the beancans over the given session. TODO Why '+=' in sessiontotal?
-
-=cut
-
-	method grades4session (Str $session) {
-		my $weeks = $self->weeks($session);
-		my $beancans = $self->beancan_names($session);
-		my (%sessiontotal);
-		for my $week ( @$weeks ) {
-			my $grade = $self->work2grades($week);
-			for my $can ( keys %$beancans ) {
-				if ( $can =~ m/absent/i ) {
-					$sessiontotal{$can} = 0;
-					next;
-				}
-				carp "$can not in week $week Groupwork"
-					unless defined $grade->{$can};
-				$sessiontotal{$can} += $grade->{$can};
-			}
-		}
-		\%sessiontotal;
-	}
-
-=head3 playerGrade4session
-
-Total for individual ids out of 100, for the given session
-
-=cut
-	method playerGrade4session (Str $session) {
-		my $members = $self->league->members;
-		my $series = $self->series;
-		my %grades; $grades{$_->{id}} = 0 for @$members;
-		my %presentMembers;
-		my $can = $self->names2beancan_names($session);
-		my $grade = $self->grades4session($session);
-		for my $member ( @$members ) {
-			my $name = $member->{name};
-			my $id = $member->{id};
-			my $beancan = $can->{$member->{name}};
-			if ( defined $beancan ) {
-				my $grade = $grade->{$can->{$name}};
-				carp $member->{name} .
-					" not in session $session"
-					unless defined $grade;
-				$grades{$id} += $grade;
-			} else {
-				carp $member->{name} .
-				"'s beancan in session $session?"
-			}
-		}
-		for my $member ( @$members ) {
-			my $id = $member->{id};
-			if ( exists $grades{$id} ) {
-				$grades{$id} = min( 100, $grades{$id} );
-			}
-			else {
-				my $name = $member->{name};
-				carp "$name $id Groupwork?";
-				$grades{$id} = 0;
-			}
-		}
-		\%grades;
-	}
-
-=head3 totalPercent
-
-Running totals for individual ids out of 100, over the whole series.
-
-=cut
-	has 'totalPercent' => ( is => 'ro', isa => Results, lazy_build => 1 );
-	method _build_totalPercent {
-		my $members = $self->league->members;
-		my $series = $self->series;
-		my (%grades);
-		for my $session ( @$series ) {
-			my %presentMembers;
-			my $can = $self->names2beancans($session);
-			my $grade = $self->grades4session($session);
-			for my $member ( @$members ) {
-				my $name = $member->{name};
-				my $id = $member->{id};
-				my $beancan = $can->{$member->{name}};
-				if ( defined $beancan ) {
-					my $grade = $grade->{$can->{$name}};
-					carp $member->{name} .
-						" not in session $session"
-						unless defined $grade;
-					$grades{$id} += $grade;
-				} else {
-					carp $member->{name} .
-					"'s beancan in session $session?"
-				}
-			}
-		}
-		for my $member ( @$members ) {
-			my $id = $member->{id};
-			if ( exists $grades{$id} ) {
-				$grades{$id} = min( 100, $grades{$id} );
-			}
-			else {
-				my $name = $member->{name};
-				carp "$name $id Groupwork?";
-				$grades{$id} = 0;
-			}
-		}
-		\%grades;
-	}
-
 }
 
 =head2 Grades' Cooperative Methods
@@ -591,6 +480,117 @@ The points given by the teacher are log-scaled to prevent active students from t
 		+{ map { $_ => $work->{$_} == 0 ?  0 : 1 + log $work->{$_} }
 			keys %$beancans };
 	}
+
+=head3 grades4session
+
+Totals for the beancans over the given session. TODO Why '+=' in sessiontotal?
+
+=cut
+
+	method grades4session (Str $session) {
+		my $weeks = $self->weeks($session);
+		my $beancans = $self->beancan_names($session);
+		my (%sessiontotal);
+		for my $week ( @$weeks ) {
+			my $grade = $self->work2grades($week);
+			for my $can ( keys %$beancans ) {
+				if ( $can =~ m/absent/i ) {
+					$sessiontotal{$can} = 0;
+					next;
+				}
+				carp "$can not in week $week Groupwork"
+					unless defined $grade->{$can};
+				$sessiontotal{$can} += $grade->{$can};
+			}
+		}
+		\%sessiontotal;
+	}
+
+=head3 playerGrade4session
+
+Total for individual ids out of 100, for the given session
+
+=cut
+	method playerGrade4session (Str $session) {
+		my $members = $self->league->members;
+		my $series = $self->series;
+		my %grades; $grades{$_->{id}} = 0 for @$members;
+		my %presentMembers;
+		my $can = $self->names2beancan_names($session);
+		my $grade = $self->grades4session($session);
+		for my $member ( @$members ) {
+			my $name = $member->{name};
+			my $id = $member->{id};
+			my $beancan = $can->{$member->{name}};
+			if ( defined $beancan ) {
+				my $grade = $grade->{$can->{$name}};
+				carp $member->{name} .
+					" not in session $session"
+					unless defined $grade;
+				$grades{$id} += $grade;
+			} else {
+				carp $member->{name} .
+				"'s beancan in session $session?"
+			}
+		}
+		for my $member ( @$members ) {
+			my $id = $member->{id};
+			if ( exists $grades{$id} ) {
+				$grades{$id} = min( 100, $grades{$id} );
+			}
+			else {
+				my $name = $member->{name};
+				carp "$name $id Groupwork?";
+				$grades{$id} = 0;
+			}
+		}
+		\%grades;
+	}
+
+=head3 totalPercent
+
+Running totals for individual ids out of 100, over the whole series.
+
+=cut
+	has 'totalPercent' => ( is => 'ro', isa => Results, lazy_build => 1 );
+	method _build_totalPercent {
+		my $members = $self->league->members;
+		my $series = $self->series;
+		my (%grades);
+		for my $session ( @$series ) {
+			my %presentMembers;
+			my $can = $self->names2beancans($session);
+			my $grade = $self->grades4session($session);
+			for my $member ( @$members ) {
+				my $name = $member->{name};
+				my $id = $member->{id};
+				my $beancan = $can->{$member->{name}};
+				if ( defined $beancan ) {
+					my $grade = $grade->{$can->{$name}};
+					carp $member->{name} .
+						" not in session $session"
+						unless defined $grade;
+					$grades{$id} += $grade;
+				} else {
+					carp $member->{name} .
+					"'s beancan in session $session?"
+				}
+			}
+		}
+		for my $member ( @$members ) {
+			my $id = $member->{id};
+			if ( exists $grades{$id} ) {
+				$grades{$id} = min( 100, $grades{$id} );
+			}
+			else {
+				my $name = $member->{name};
+				carp "$name $id Groupwork?";
+				$grades{$id} = 0;
+			}
+		}
+		\%grades;
+	}
+
 }
 
 =head2 Grades' GroupworkNoFault Approach
