@@ -1,20 +1,14 @@
 #!/usr/bin/perl 
 
 # Created: 02/19/2012 06:58:16 PM
-# Last Edit: 2013 Sep 06, 05:21:37 PM
+# Last Edit: 2013 Dec 31, 01:55:35 PM
 # $Id$
 
 =head1 NAME
 
 anterior_data.pl - Transfer names, passwords, ratings from previous semester
 
-=head1 VERSION
-
-Version 0.01
-
 =cut
-
-our $VERSION = '0.01';
 
 use strict;
 use warnings;

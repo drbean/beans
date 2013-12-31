@@ -1,20 +1,14 @@
 #!/usr/bin/perl 
 
 # Created: 10/15/2011 07:52:09 PM
-# Last Edit: 2013 Sep 05, 03:23:43 AM
+# Last Edit: 2013 Dec 31, 01:56:20 PM
 # $Id$
 
 =head1 NAME
 
 create_groups.pl - Partition league into teams fairly on basis of ratings
 
-=head1 VERSION
-
-Version 0.02
-
 =cut
-
-our $VERSION = '0.02';
 
 use 5.10.0;
 use strict;
