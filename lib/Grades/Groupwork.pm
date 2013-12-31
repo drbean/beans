@@ -1,4 +1,4 @@
-#Last Edit: 2013 Dec 31, 11:19:50 AM
+#Last Edit: 2013 Dec 31, 11:15:21 AM
 #$Id$
 
 use MooseX::Declare;
@@ -113,6 +113,21 @@ The files containing classwork points (beans) awarded to beancans, of form, grou
 		return $files;
 	}
 
+=head3 all_ided_files
+
+The files containing classwork points (beans) awarded to beancans, of form, groupworkdir/\d+\.yaml$ keyed on the \d+.
+
+=cut
+
+
+	has 'all_ided_files'  => ( is => 'ro', isa => 'HashRef', lazy_build => 1 );
+	method _build_all_ided_files {
+		my $files = $self->allfiles;
+		my %files = map { m|/(\d+)\.yaml$|; $1 => $_ } @$files;
+		croak "No classwork files: $files?" unless %files;
+		return \%files;
+	}
+
 =head3 all_events
 
 The events (an array ref of integers) in which beans were awarded.
@@ -122,7 +137,8 @@ The events (an array ref of integers) in which beans were awarded.
 	has 'all_events' => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
 	method _build_all_events {
 		my $files = $self->allfiles;
-		my $weeks = [ map { m|/(\d+)\.yaml$|; $1 } @$files ];
+		my @weeks = map { m|/(\d+)\.yaml$|; $1 } @$files;
+		my $weeks = [ sort { $a <=> $b } @weeks ];
 		croak "No classwork weeks: @$weeks" unless @$weeks;
 		return $weeks;
 	}
