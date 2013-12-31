@@ -77,9 +77,9 @@ is_deeply( $g->hwbyround, {
 is($g->roundMax, 2, 'max hw score per round');
 is($g->totalMax, 22, 'maximum possible homework score');
 is_deeply($g->hwforid(34113), [ (0) x 11 ], 'no hw score for Emile');
-is_deeply($g->homework, { 34113 => 0, S09413 => 11, 1 => 22, 222 => 11, 223=>0},
+is_deeply($g->homework, { 34113 => 0, S09413 => 11, 1 => 22, 222 => 11 },
 	"total homework / 22", );
-is_deeply($g->homeworkPercent, { 34113=>0, S09413=>50, 1=>100, 222=>50, 223=>0},
+is_deeply($g->homeworkPercent, { 34113=>0, S09413=>50, 1=>100, 222=>50 },
 	"total %homework");
 
 # jigsaw
