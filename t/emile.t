@@ -16,7 +16,7 @@ my $g = Grades->new({ league => $l });
 
 my $gp = $g->classwork;
 is_deeply( $gp->totalPercent,
-	{ 34113 => 80, S09413 => 80, 1 => 60, 222 => 60, 223=>0},
+	{ 34113 => 100, S09413 => 100, 1 => 66.6666666666667, 222, 66.6666666666667},
 	"Classwork role delegates classworkPercent to Groupwork role" );
 is( $gp->groupworkdirs, 't/emile/classwork', 'groupwork location' );
 is_deeply( $gp->series, [ 1 .. 4 ], '4-session series' );
