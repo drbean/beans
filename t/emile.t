@@ -93,7 +93,7 @@ my $quizfile = "t/emile/activities.yaml";
 is( $g->quizfile( '1' ), $quizfile, 'Location of exam text');
 is( $g->quizfile( '4' ), $quizfile, 'Location of exam text');
 is_deeply($g->quiz( '4', 'Brown' ),
-	$g->inspect('t/emile/activities.yaml')->{cars}->{jigsaw}->{2}->{quiz},
+	$g->inspect($quizfile)->{cars}->{jigsaw}->{2}->{quiz},
 	'Quiz content');
 is_deeply( $g->options( '1/1', 'Brown', 0 ), ['True','False'],
 	'Options');
