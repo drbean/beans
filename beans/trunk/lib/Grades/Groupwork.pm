@@ -1,4 +1,4 @@
-#Last Edit: 2013 Dec 31, 11:15:21 AM
+#Last Edit: 2013 Dec 31, 12:02:25 PM
 #$Id$
 
 use MooseX::Declare;
@@ -98,7 +98,7 @@ A hashref of all the beancans in a given session with the names of the members o
 
 =head3 allfiles
 
-The files containing classwork points (beans) awarded to beancans, of form, groupworkdir/\d+\.yaml$
+The files (unsorted) containing classwork points (beans) awarded to beancans, of form, groupworkdir/\d+\.yaml$
 
 =cut
 
@@ -136,11 +136,10 @@ The events (an array ref of integers) in which beans were awarded.
 
 	has 'all_events' => ( is => 'ro', isa => 'ArrayRef', lazy_build => 1 );
 	method _build_all_events {
-		my $files = $self->allfiles;
-		my @weeks = map { m|/(\d+)\.yaml$|; $1 } @$files;
-		my $weeks = [ sort { $a <=> $b } @weeks ];
-		croak "No classwork weeks: @$weeks" unless @$weeks;
-		return $weeks;
+		my $files = $self->all_ided_files;
+		my @events = sort { $a <=> $b } keys %$files;
+		croak "No classwork weeks: @events" unless @events;
+		return \@events;
 	}
 
 =head3 lastweek
@@ -163,10 +162,8 @@ The beans awarded to the beancans in the individual cards over the weeks of the 
 
 	has 'data' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 	method _build_data {
-		my $files = $self->allfiles;
-		my $weeks = $self->all_events;
-		+{ map { $weeks->[$_] => $self->inspect( $files->[$_] ) }
-			0..$#$weeks };
+		my $files = $self->all_ided_files;
+		+{ map { $_ => $self->inspect( $files->{$_} ) } keys %$files };
 	}
 
 =head3 card
