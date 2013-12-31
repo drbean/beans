@@ -4,7 +4,7 @@ use Test::More;
 use FindBin qw/$Bin/;
 
 plan skip_all => 'unset env var NO_TEST to enable this test' if $ENV{NO_TEST};
-plan tests => 52;
+plan tests => 47;
 
 use lib 'lib';
 use Grades;
@@ -132,4 +132,4 @@ is_deeply( $g->examids, [ 1 .. 4 ], 'examids' );
 
 my $c = Compcomp->new( league => $l );
 is( $c->compcompdirs, 't/emile/comp', 'compcompdirs' );
-is_deeply( $c->all_weeks, [ 1..2 ], 'conversations' );
+is_deeply( $c->all_events, [ 1..2 ], 'conversations' );
