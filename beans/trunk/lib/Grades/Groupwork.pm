@@ -1,4 +1,4 @@
-#Last Edit: 2014 Jan 01, 11:54:39 AM
+#Last Edit: 2014 Jan 01, 12:16:04 PM
 #$Id$
 
 use MooseX::Declare;
@@ -814,7 +814,8 @@ Running totals for individual ids out of 100, over the whole series.
 		    my $score = 100 * $grades->{$id} / $totalMax ;
 		    warn "$member->{name}: ${id}'s classwork score of $score"
 			if $score > 100;
-		    $percent{$id} = $score;
+		    my $rounded = sprintf '%.2f', $score;
+		    $percent{$id} = $rounded;
 		}
 		return \%percent;
 	}
