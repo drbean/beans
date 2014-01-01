@@ -1,4 +1,4 @@
-#Last Edit: 2013 Dec 31, 12:02:25 PM
+#Last Edit: 2014 Jan 01, 11:54:39 AM
 #$Id$
 
 use MooseX::Declare;
@@ -593,7 +593,9 @@ Running totals for individual ids out of 100, over the whole series.
 		for my $member ( @$members ) {
 			my $id = $member->{id};
 			if ( exists $grades{$id} ) {
-				$grades{$id} = min( 100, $grades{$id} );
+				my $grade = min( 100, $grades{$id} );
+				my $rounded = sprintf '%.2f', $grade;
+				$grades{$id} = $rounded;
 			}
 			else {
 				my $name = $member->{name};
