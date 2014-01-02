@@ -1,0 +1,26 @@
+[% META title = 'Grades Request' -%]
+
+<form method="post" action="[% c.uri_for('listing') %]">
+<table>
+  <tr><td>League:</td><td>
+  <select name="league" size="[% leagues.size %]">
+
+<option value="AFN2N0">AFN2N0 NAF021_四技外二甲_選修_2
+ 初級商用英文</option>
+<option value="AFN3Y0">NAF031_四技外三甲_選修_2
+電腦多媒體語言教學</option>
+<option value="AFN300">NAF031_四技外三甲_必修_2
+ 高階英語聽力</option>
+<option value="GL00006">日語文共同學制虛擬班二甲 中級英文聽說訓練</option>
+<option value="GL00030">日語文共同學制虛擬班二甲 中級英文聽說訓練</option>
+<option value="FLA0006">夜應外大學四甲 新聞英語</option>
+<option value="FLA0007">夜應外大學四甲 英語演說</option>
+<option value="yd40001280">育達 基礎英文(G)</option>
+<option value="beans/t/emile">The Rousseau School of Pretentialism</option>
+
+  </select></td></tr>
+  <tr><td>Id:</td><td><input type="text" name="id"></td></tr>
+  <tr><td>English Name:</td><td><input type="text" name="player"></td></tr>
+</table>
+<input type="submit" name="Submit" value="Submit">
+</form>
