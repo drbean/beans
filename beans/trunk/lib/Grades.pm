@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2014 Jan 13, 01:07:33 PM
+#Last Edit: 2014 Jan 14, 11:21:47 AM
 #$Id$
 
 use MooseX::Declare;
@@ -395,13 +395,13 @@ A hashref of the homework grades for players in the league for each round.
 		return \%grades;
 	}
 
-=head3 roundMax
+=head3 hwMax
 
 The highest possible score in the homework
 
 =cut
 
-	has 'roundMax' => (is => 'ro', isa => 'Int', lazy => 1, default =>
+	has 'hwMax' => (is => 'ro', isa => 'Int', lazy => 1, default =>
 					sub { shift->league->yaml->{hwMax} } );
 
 =head3 totalMax
@@ -413,7 +413,7 @@ The total maximum points that a Player could have gotten to this point in the wh
 	has 'totalMax' => (is => 'ro', isa => 'Int', lazy_build => 1);
 	method _build_totalMax {
 		my $rounds = $self->rounds;
-		my $hwMax = $self->roundMax;
+		my $hwMax = $self->hwMax;
 		$hwMax * @$rounds;
 	}
 
