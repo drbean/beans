@@ -74,7 +74,7 @@ is_deeply( $g->hwbyround, {
            16  => { 34113 => 0, S09413 => 1, 1 => 2, 222 => 1, },
            17  => { 34113 => 0, S09413 => 1, 1 => 2, 222 => 1, },
          }, 'homework' );
-is($g->roundMax, 2, 'max hw score per round');
+is($g->hwMax, 2, 'max hw score per round');
 is($g->totalMax, 22, 'maximum possible homework score');
 is_deeply($g->hwforid(34113), [ (0) x 11 ], 'no hw score for Emile');
 is_deeply($g->homework, { 34113 => 0, S09413 => 11, 1 => 22, 222 => 11 },
