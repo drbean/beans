@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 08/28/2012 02:53:15 PM
-# Last Edit: 2013 Aug 17, 01:41:56 PM
+# Last Edit: 2014  2月 15, 15時58分23秒
 # $Id$
 
 =head1 NAME
@@ -18,6 +18,7 @@ our $VERSION = '0.02';
 
 use strict;
 use warnings;
+use Pod::Usage;
 
 =head1 SYNOPSIS
 
