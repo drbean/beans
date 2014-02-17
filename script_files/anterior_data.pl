@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 02/19/2012 06:58:16 PM
-# Last Edit: 2013 Dec 31, 01:55:35 PM
+# Last Edit: 2014  2月 15, 16時53分43秒
 # $Id$
 
 =head1 NAME
@@ -47,19 +47,21 @@ my $oldleagues = "/home/drbean/$semester";
 
 Copy old name, password, rating (grades) data from the league in league.yaml's 'anterior' field, or (old) 'one' argument, from old 'semester' argument, overwriting new data, in the case of password and rating, only if they don't exist. name is overwritten in the case it's a Chinese rather than English name.
 
+TODO Not touching ratings because grades perhaps broken for old courses, and ratings not being used.
+
 =cut
 
 my $antel = League->new( leagues => $oldleagues,
 	id => $oldone );
 my $anteg = Grades->new({ league => $antel });
-my $grades = $anteg->grades;
+# my $grades = $anteg->grades;
 my $oldmembers = $antel->yaml->{member};
 my %oldm = map { $_->{id} => $_ } @$oldmembers;
 
 my @updated;
 for my $member ( @$members ) {
 	my $id = $member->{id};
-	$member->{rating} ||= $grades->{ $id };
+	# $member->{rating} ||= $grades->{ $id };
 	$member->{password} ||=  $oldm{$id}->{password};
 	$member->{name} = $oldm{$id}->{name} if $oldm{$id}->{name}
 		and $member->{name} eq $member->{Chinese};
