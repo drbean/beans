@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # Created: 西元2010年04月04日 19時52分56秒
-# Last Edit: 2014 Mar 24, 03:13:19 PM
+# Last Edit: 2013 May 29, 09:17:14 PM
 # $Id$
 
 =head1 NAME
@@ -46,7 +46,6 @@ for my $group ( keys %$groups ) {
 	my $quiz = $grades->quiz( $exam, $group );
 	my $topic = $grades->topic($exam, $group);
 	my $form = $grades->form($exam, $group);
-	my $qn = $grades->qn($exam, $group);
 	my ($codedvalue, $n);
 	for my $item ( @$quiz ) {
 	    my $answer = $item->{answer};
@@ -84,7 +83,7 @@ for my $group ( keys %$groups ) {
 			}
 			$score++ if $myanswer eq $theanswer;
 		}
-		$response->{letters}->{$group}->{$id} = 100 * $score/$qn;
+		$response->{letters}->{$group}->{$id} = $score;
 		$response->{letters}->{$group}->{story} =
 				$grades->topic( $exam, $group ) .
 				$grades->form( $exam, $group );
