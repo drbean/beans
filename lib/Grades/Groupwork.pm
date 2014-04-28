@@ -1,4 +1,4 @@
-#Last Edit: 2014 Jan 01, 12:16:04 PM
+#Last Edit: 2014  4月 28, 15時06分26秒
 #$Id$
 
 use MooseX::Declare;
@@ -247,6 +247,11 @@ Given the name of a week, return the name of the session it is in.
 		my %sessions2weeks = map { $_ => $self->weeks($_) } @$sessions;
 		while ( my ($session, $weeks) = each %sessions2weeks ) {
 			return $session if any { $_ eq $week } @$weeks;
+		}
+		my $session = $self->league->session;
+		my @series = sort { $b <=> $a } keys %$session;
+		while ( my $next = shift @series ) {
+		    return $next if $week >= $session->{$next};
 		}
 		croak "Week $week in none of @$sessions sessions.\n";
 	}
