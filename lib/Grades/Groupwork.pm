@@ -1,4 +1,4 @@
-#Last Edit: 2014  4月 28, 15時06分26秒
+#Last Edit: 2014  4月 28, 15時14分48秒
 #$Id$
 
 use MooseX::Declare;
@@ -200,7 +200,7 @@ Given a session, returns the files containing beans awarded during the session a
 
     method files (Str $session) {
 	my $sessions = $self->league->session;
-	croak "No session $session.\n" unless defined $sessions->{$session};
+	croak "No session $session defined.\n" unless defined $sessions->{$session};
 	my $firstweek = $sessions->{$session};
 	my $allfiles = $self->allfiles;
 	my @files;
