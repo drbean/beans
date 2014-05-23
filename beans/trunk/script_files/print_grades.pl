@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 03/21/2013 10:08:14 PM
-# Last Edit: 2014  2月 16, 21時36分50秒
+# Last Edit: 2014  4月 29, 22時01分16秒
 # $Id$
 
 =head1 NAME
@@ -59,7 +59,7 @@ my @grades = $l->id . " " . $l->name . " " . $l->field . " Grades\n" .
 my @ids = sort keys %m;
 for my $id ( @ids ) {
 	push @grades,
-"$m{$id}->{name}\t$id\t\t$classwork{$id}\t$hw{$id}\t$ex{$id}\t$grade->{$id}\n";
+"$m{$id}->{Chinese}\t$id\t\t$classwork{$id}\t$hw{$id}\t$ex{$id}\t$grade->{$id}\n";
 }
 
 
