@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 西元2014年06月02日 15時04分40秒
-# Last Edit: 2014  6月 16, 14時36分50秒
+# Last Edit: 2014  6月 22, 20時57分44秒
 # $Id$
 
 =head1 NAME
@@ -19,7 +19,7 @@ use Cwd; use File::Basename;
 
 =head1 SYNOPSIS
 
-print_ids.pl -l GL00019 > members.txt
+print_ids.pl -l GL00019 -s 4 > members.txt
 
 =cut
 
@@ -43,7 +43,7 @@ print STDOUT @cans;
 
 =head1 DESCRIPTION
 
-Use in vim to get list of ids, eg :r! print_ids.pl
+Use in vim to get list of ids, eg :r! print_ids.pl -l GL00019 -s 4
 
 =cut
 
