@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 10/15/2011 07:52:09 PM
-# Last Edit: 2014  2月 16, 21時36分31秒
+# Last Edit: 2014  9月 10, 20時27分43秒
 # $Id$
 
 =head1 NAME
@@ -47,7 +47,7 @@ If there are rump groups, retain the rump players in the same groups they are al
 my $script = Grades::Script->new_with_options( league => basename(getcwd) );
 pod2usage(1) if $script->help;
 pod2usage(-exitstatus => 0, -verbose => 2) if $script->man;
-my $leagues = "/home/drbean/022";
+my $leagues = "/home/drbean/031";
 my $leagueId = $script->league;
 $leagueId = basename( getcwd ) if $leagueId eq '.';
 my $l = League->new( leagues => $leagues, id => $leagueId );
