@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 西元2014年06月02日 15時04分40秒
-# Last Edit: 2014  6月 02, 15時49分27秒
+# Last Edit: 2014  9月 10, 20時28分56秒
 # $Id$
 
 =head1 NAME
@@ -35,7 +35,7 @@ print_ids.pl -l GL00019 > members.txt
 # my @ids = sort map { $_->{id} } @$members;
 
 my $leagueId = basename( getcwd );
-my $y = LoadFile "/home/drbean/022/$leagueId/league.yaml";
+my $y = LoadFile "/home/drbean/031/$leagueId/league.yaml";
 my $members = $y->{member};
 my @ids = sort map { $_->{id} } @$members;
 $, = "\n";

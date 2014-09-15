@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 03/21/2013 10:08:14 PM
-# Last Edit: 2014  4月 29, 22時01分16秒
+# Last Edit: 2014  9月 10, 20時28分35秒
 # $Id$
 
 =head1 NAME
@@ -24,7 +24,7 @@ print_grades.pl > grades.txt
 
 
 my $session = 1;
-my $dirs = '/home/drbean/022';
+my $dirs = '/home/drbean/031';
 
 (my $dir = getcwd) =~ s/^.*\/([^\/]*)$/$1/;
 use Grades;
