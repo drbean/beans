@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 08/28/2012 02:53:15 PM
-# Last Edit: 2014 Sep 15, 05:06:57 PM
+# Last Edit: 2014 Sep 15, 05:12:03 PM
 # $Id$
 
 =head1 NAME
@@ -57,7 +57,7 @@ my $g = Grades->new({ league => $l });
 my $c = $l->yaml;
 my $school = $c->{school};
 my %m = map { $_->{id} => $_ } @{ $l->members };
-my $io = io("~/admin/$semester/$school/$leagueId.txt");
+my $io = io("/home/drbean/admin/$semester/$school/$leagueId.txt");
 my @members;
 my @lines = $io->slurp;
 my $h2p = Lingua::Han::PinYin->new;
