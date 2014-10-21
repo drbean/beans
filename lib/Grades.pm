@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2014 Oct 21, 08:43:55 PM
+#Last Edit: 2014 Oct 21, 08:52:06 PM
 #$Id$
 
 use MooseX::Declare;
@@ -880,6 +880,22 @@ The league (object) whose approach this is.
     has 'league' => (is =>'ro', isa => 'League', required => 1,
 				handles => [ 'inspect' ] );
 
+=head3 beancandirs
+
+The directory under which there are subdirectories containing beancan membership for the group/pair-work sessions. Look first in 'group', then 'compcomp' mappings, else use 'session' dir.
+
+=cut
+
+    has 'beancandirs' => (is => 'ro', isa => 'Str', lazy_build => 1);
+    method _build_beancandirs {
+	my $league = $self->league;
+	my $id = $league->id;
+	my $leaguedir = $self->league->leagues . "/" . $id;
+	my $basename = $league->yaml->{group} ||
+			$league->yaml->{compcomp} || "session";
+	my $beancandirs = $leaguedir .'/' . $basename;
+	}
+
 =head3 groupworkdirs
 
 The directory under which there are subdirectories containing data for the group/pair-work sessions. Look first in 'groupwork', then 'compcomp' mappings, else use 'classwork' dir.
@@ -892,20 +908,20 @@ The directory under which there are subdirectories containing data for the group
 	my $id = $league->id;
 	my $leaguedir = $self->league->leagues . "/" . $id;
 	my $basename = $league->yaml->{groupwork} ||
-			$league->yaml->{compcomp} || "session";
+			$league->yaml->{compcomp} || "classwork";
 	my $groupworkdirs = $leaguedir .'/' . $basename;
 	}
 
 =head3 series
 
-The sessions (weeks) over the series (semester) in each of which there was a different grouping and results of players. This method returns an arrayref of the names (numbers) of the sessions, in numerical order, of the form, [1, 3 .. 7, 9, 10 .. 99 ]. Results are in sub directories of the same name, under groupworkdirs.
+The sessions (weeks) over the series (semester) in each of which there was a different grouping and results of players. This method returns an arrayref of the names (numbers) of the sessions, in numerical order, of the form, [1, 3 .. 7, 9, 10 .. 99 ]. Results are in sub directories of the same name, under beancandirs.
 
 =cut
 
     has 'series' =>
       ( is => 'ro', isa => 'Maybe[ArrayRef[Int]]', lazy_build => 1 );
     method _build_series {
-        my $dir = $self->groupworkdirs;
+        my $dir = $self->beancandirs;
         my @subdirs = grep { -d } glob "$dir/*";
         [ sort { $a <=> $b } map m/^$dir\/(\d+)$/, @subdirs ];
     }

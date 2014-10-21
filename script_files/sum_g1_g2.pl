@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 04/28/2013 04:26:17 PM
-# Last Edit: 2014 Mar 25, 08:31:30 AM
+# Last Edit: 2014 Oct 21, 08:04:00 PM
 # $Id$
 
 =head1 NAME
@@ -44,8 +44,8 @@ Averages jigsaw and compComp scores. Be careful with absent players
 
 my $leagues = $league->leagues;
 my $g1 = LoadFile "$leagues/$id/exam/$exam/g1.yaml" or die "g1.yaml?";
-my $g2 = $co->points($exam);
-DumpFile "$leagues/$id/exam/$exam/g2.yaml", $g2 or die "g2.yaml?";
+# my $g2 = $co->points($exam);
+# DumpFile "$leagues/$id/exam/$exam/g2.yaml", $g2 or die "g2.yaml?";
 my $g2_again = $league->inspect("$leagues/$id/exam/$exam/g2.yaml");
 my %g = map {
 		die "Player $_ missing from g1.yaml" if not defined $g1->{$_};

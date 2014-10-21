@@ -1,4 +1,4 @@
-#Last Edit: 2014  4月 28, 15時14分48秒
+#Last Edit: 2014 Oct 21, 08:52:02 PM
 #$Id$
 
 use MooseX::Declare;
@@ -54,7 +54,7 @@ The different beancans for each of the sessions in the series. In the directory 
 
     has 'beancanseries' => ( is => 'ro', lazy_build => 1 );
     method _build_beancanseries {
-	my $dir = $self->groupworkdirs;
+	my $dir = $self->beancandirs;
         my $series = $self->series;
         my $league = $self->league->id;
 	my %beancans;
