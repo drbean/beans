@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2014  9月 10, 20時29分51秒
+#Last Edit: 2014 Oct 21, 08:43:55 PM
 #$Id$
 
 use MooseX::Declare;
@@ -892,7 +892,7 @@ The directory under which there are subdirectories containing data for the group
 	my $id = $league->id;
 	my $leaguedir = $self->league->leagues . "/" . $id;
 	my $basename = $league->yaml->{groupwork} ||
-			$league->yaml->{compcomp} || "classwork";
+			$league->yaml->{compcomp} || "session";
 	my $groupworkdirs = $leaguedir .'/' . $basename;
 	}
 
