@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 04/28/2013 04:26:17 PM
-# Last Edit: 2014 Oct 21, 08:04:00 PM
+# Last Edit: 2014 Oct 22, 02:52:31 PM
 # $Id$
 
 =head1 NAME
@@ -15,7 +15,7 @@ use warnings;
 
 =head1 SYNOPSIS
 
-sum_g1_g2.pl -r 3 > exam/3/g.yaml
+sum_g1_g2.pl -r 3 -x comp > exam/3/g.yaml
 
 =cut
 
@@ -28,6 +28,7 @@ use Grades;
 my $script = Grades::Script->new_with_options;
 my $id = $script->league || basename( getcwd );
 my $exam = $script->round;
+my $exercise = $script->exercise;
 
 my $league = League->new( id => $id );
 my $grades = Grades->new({ league => $league });
@@ -36,16 +37,20 @@ my %m = map { $_->{id} => $_ } @{ $league->members };
 
 =head1 DESCRIPTION
 
-Exams are simultaneous jigsaw and compcomp activities. Average those 2 scores.
+Exams are simultaneous jigsaw and auxiliary activities. Average those 2 scores.
 Jigsaw scores are already in g1.yaml. We could use inspect, instead of LoadFile.
-Averages jigsaw and compComp scores. Be careful with absent players
+Averages jigsaw and auxiliary scores. Be careful with absent players
+
+If exercise (-x) is "comp", calculate points and write to g2.yaml.
 
 =cut
 
 my $leagues = $league->leagues;
 my $g1 = LoadFile "$leagues/$id/exam/$exam/g1.yaml" or die "g1.yaml?";
-# my $g2 = $co->points($exam);
-# DumpFile "$leagues/$id/exam/$exam/g2.yaml", $g2 or die "g2.yaml?";
+if ( $exercise eq "comp" ) {
+    my $g2 = $co->points($exam);
+    DumpFile "$leagues/$id/exam/$exam/g2.yaml", $g2 or die "g2.yaml?";
+}
 my $g2_again = $league->inspect("$leagues/$id/exam/$exam/g2.yaml");
 my %g = map {
 		die "Player $_ missing from g1.yaml" if not defined $g1->{$_};
