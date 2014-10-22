@@ -1,4 +1,4 @@
-#Last Edit: 2014 Oct 21, 08:52:02 PM
+#Last Edit: 2014 Oct 22, 03:28:07 PM
 #$Id$
 
 use MooseX::Declare;
@@ -109,7 +109,7 @@ The files (unsorted) containing classwork points (beans) awarded to beancans, of
 		my $series = $self->series;
 		my $league = $self->league->id;
 		my $files = [ grep m|/(\d+)\.yaml$|, glob "$dir/*.yaml"];
-		croak "${league}'s @$series session files: @$files?" unless @$files;
+		croak "${league}'s @$series groupwork files: @$files?" unless @$files;
 		return $files;
 	}
 
