@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 西元2014年06月09日 13時37分26秒
-# Last Edit: 2015  2月 24, 13時12分37秒
+# Last Edit: 2015 Mar 12, 03:25:47 PM
 # $Id$
 
 =head1 NAME
@@ -51,7 +51,7 @@ pod2usage(-exitstatus => 0, -verbose => 2) if $man;
 
 my $letter2order = { A => 0, B => 1, C => 2 };
 
-my $file = LoadFile "$leagues/$league/classwork/$session/groups.yaml";
+my $file = LoadFile "$leagues/$league/session/$session/groups.yaml";
 my $can = $file->{$group};
 my $size = scalar @$can;
 my $order = $letter2order->{$letter} % $size;
