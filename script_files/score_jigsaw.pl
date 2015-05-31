@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # Created: 西元2010年04月04日 19時52分56秒
-# Last Edit: 2013 May 29, 09:17:14 PM
+# Last Edit: 2015  5月 31, 15時33分02秒
 # $Id$
 
 =head1 NAME
@@ -46,6 +46,8 @@ for my $group ( keys %$groups ) {
 	my $quiz = $grades->quiz( $exam, $group );
 	my $topic = $grades->topic($exam, $group);
 	my $form = $grades->form($exam, $group);
+	die "$group group's topic, form in ${id}'s Exam $exam?" if
+	    any {not defined} $quiz, $topic, $form;
 	my ($codedvalue, $n);
 	for my $item ( @$quiz ) {
 	    my $answer = $item->{answer};
