@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2015  2月 24, 13時11分46秒
+#Last Edit: 2015  4月 02, 11時29分37秒
 #$Id$
 
 use MooseX::Declare;
@@ -1476,7 +1476,7 @@ If the 'meritPay' payprotocol field ends in a number the specified number of que
 
     method payout ( Str $player, Str $opponent, Str $round ) {
 	my $protocol = $self->config($round)->{payprotocol};
-	my ($loss, $draw, $win) = (3,4,5);
+	my ($loss, $draw, $win) = (4,4,5);
 	if ( defined $protocol and $protocol =~ m/^meritPay/ ) {
 	    (my $top_number = $protocol ) =~ s/^\D*(\d*)$/$1/;
 	    my $required = $top_number? $top_number: 4;
