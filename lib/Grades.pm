@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2015  4月 02, 11時29分37秒
+#Last Edit: 2015  7月 05, 17時15分58秒
 #$Id$
 
 use MooseX::Declare;
@@ -1810,6 +1810,7 @@ class Grades with Homework with Exams with Jigsaw
     require Grades::Groupwork;
     use Carp;
     use Grades::Types qw/Weights/;
+    use List::Util qw/max min/;
 
 =head3 BUILDARGS
 
@@ -1897,6 +1898,40 @@ A hashref of student ids and final grades.
 			$exams->{$_}    * $weights->{exams} /100 )
 				} @ids;
 		\%grades;
+	}
+
+=head3 curve
+
+A hashref of student ids and final grades, curved from $low to $high, with the median at $median.
+
+=cut
+
+	method curve (Str $low, Str $median, Str $high) {
+		my $league = $self->league;
+		my $members = $league->members;
+		my @ids = map { $_->{id} } @$members;
+		my $grade = $self->grades;
+		my @grades = values %$grade;
+		my $real_low = min @grades;
+		my $real_median = (sort {$a<=>$b} @grades)[ @ids/2 ];
+		my $real_high = max @grades;
+		my %curved;
+		for my $member ( keys %$grade ) {
+		    if ( $grade->{$member} > $real_median ) {
+			$curved{$member} = $self->sprintround( $median +
+			    ($high - $median) * ($grade->{$member} - $real_median) /
+						($real_high - $real_median) );
+		    }
+		    elsif ( $grade->{$member} <= $real_median ) {
+			$curved{$member} = $self->sprintround( $low + 
+			    ($median - $low) * ($grade->{$member} - $real_low) /
+						($real_median - $real_low) );
+		    }
+		    else {
+			    die "No grade.member, no curved.grade.member?\n"; 
+		    }
+		}
+		\%curved;
 	}
 
 }
