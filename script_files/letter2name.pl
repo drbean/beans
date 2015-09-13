@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 西元2014年06月09日 13時37分26秒
-# Last Edit: 2015 Mar 12, 03:25:47 PM
+# Last Edit: 2015 Sep 12, 13:39:07
 # $Id$
 
 =head1 NAME
@@ -35,7 +35,7 @@ Returns name of player (without \n) from letter designation
 
 =cut
 
-my $leagues = "/home/drbean/032";
+my $leagues = "/home/drbean/041";
 my ($session, $group, $letter, $help, $man);
 my $league => basename(getcwd);
 GetOptions ("league=s" => \$league,
