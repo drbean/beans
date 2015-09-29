@@ -7,23 +7,44 @@ import Data.Yaml
 import Data.Aeson
 import Options.Applicative
 
-data Member = Member { id :: Id, name :: Text } deriving (Show)
-data League = League { member :: [Member] } deriving (Show)
-data Id = Player Text deriving (Show,Generic)
-data Grade = Grade { i :: Id, grade_point :: Int } deriving (Show,Generic)
-data Homework = Hwk { exercise :: Text , grades :: [Grade] } deriving (Show,Generic)
-instance FromJSON Member where parseJSON = withObject "member" $ \o -> Member <$> o .: "id" <*> o .: "name"
-instance FromJSON League where parseJSON = withObject "league" $ \o -> League <$> o .: "member"
-instance FromJSON Id
-instance FromJSON Grade
-instance FromJSON Homework
-instance ToJSON Id
-instance ToJSON Grade -- where toJSON g = object [ "player" .= player g, "grade" .= grade g ]
-instance ToJSON Homework 
+data Member = Member Text deriving (Show,Generic)
+data League = League { member :: [Member] } deriving (Show,Generic)
+data Group = G [Member] deriving (Show,Generic)
+data Session = S { eleven :: Group, twelve :: Group, twentyone :: Group } deriving (Show,Generic)
+data Grade = Gr { tardy :: [Member], absent :: [Member], merits :: Int } deriving (Show,Generic)
+data Classwork = Cwk { topic :: Text , eleven :: Grade, twelve :: Grade, twentyone :: Grade, qz :: Quiz, r :: [Responses] } deriving (Show,Generic)
+data Question = Q Text deriving (Show,Generic)
+data Option = O Text deriving (Show,Generic)
+data Answer = A Text deriving (Show,Generic)
+data Item = I { q :: Question, o :: [Option], a :: Answer } deriving (Show,Generic)
+data Quiz = Qz [Item] deriving (Show,Generic)
+data Response = R Answer Answer Answer deriving (Show,Generic)
+instance FromJSON Member
+instance FromJSON League
+instance FromJSON Group
+instance FromJSON Classwork
+instance FromJSON Question
+instance FromJSON Option
+instance FromJSON Answer
+instance FromJSON Item
+instance FromJSON Quiz
+instance FromJSON Response
+instance ToJSON Member
+instance ToJSON League
+instance ToJSON Group
+instance ToJSON Classwork
+instance ToJSON Question
+instance ToJSON Option
+instance ToJSON Answer
+instance ToJSON Item
+instance ToJSON Quiz
+instance ToJSON Response
+
+group = [ G "1-1", G "1-2", G "2-1", G "2-2", G "3-1", G "3-2", G "4-1", G "4-2" ]
 
 main = do
-	let yaml = "/home/drbean/041/FLA0008/league.yaml"
-	y <- Data.Yaml.decodeFile yaml :: IO (Maybe League)
+	let yaml = "/home/drbean/041/FLA0008/session/1/groups.yaml"
+	y <- Data.Yaml.decodeFile yaml :: IO (Maybe [Group])
 	let member = case y of
 		Just ( League l ) -> l
 		Nothing -> error "no parse of league.yaml"
