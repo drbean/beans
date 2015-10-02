@@ -77,7 +77,8 @@ q2is (Qz is) = is
 q2is _ = error "No items in quiz?"
 r2a :: Response -> Answer
 r2a (R int) = (A int)
--- r2int (R int) = int
+a2int (A int) = int
+r2int (R int) = int
 
 main = do
 	y <- Data.Yaml.decodeFile s :: IO (Maybe Session)
