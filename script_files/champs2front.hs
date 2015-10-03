@@ -14,7 +14,7 @@ data Group = G [Member] deriving (Show,Generic)
 data Session = S { eleven :: Group, twelve :: Group, twentyone :: Group } deriving (Show,Generic)
 data Question = Q Text deriving (Show,Generic)
 data Option = O Text deriving (Show,Generic)
-data Answer = A Int deriving (Show,Generic)
+data Answer = A Int deriving (Show,Generic,Eq)
 data Item = I { q :: Question, o :: [Option], a :: Answer } deriving (Show,Generic)
 data Quiz = Qz [Item] deriving (Show,Generic)
 data Response = R Int deriving (Show,Generic)
@@ -105,9 +105,9 @@ main = do
 			a0 = ((a (is!!0)) == (r2a (rs g!!0)))
 			a1 = ((a (is!!1)) == (r2a (rs g!!1)))
 			-- a2 = ((a (is!!2)) == (r2a (rs g!!2)))
-			-- m = Prelude.length (Prelude.filter True [a0,a1])
+			m = Prelude.length (Prelude.filter ( (==) True) [a0,a1])
 			in
-			(Gr {tardy = tardy g, absent = absent g, merits = 2, rs = rs g})) groups
+			(Gr {tardy = tardy g, absent = absent g, merits = m, rs = rs g})) groups
 	let cwk' = Cwk { topic = "lerman", eleven' = grades!!0, twelve' = grades!!1, twentyone' = grades!!2, qz = quiz }
 	Data.Yaml.encodeFile "/home/drbean/041/FLA0008/classwork/1.yaml" cwk
 	return (cwk, cwk')
