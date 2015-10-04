@@ -8,6 +8,21 @@ import Data.Aeson
 import Data.Aeson.Types
 import Options.Applicative
 
+data CommandLine = Cline { league :: String, round :: String }
+
+cline :: Options.Applicative.Parser CommandLine
+cline = Cline
+	<$> strOption
+	(	long "league"
+		<> short 'l'
+		<> metavar "LEAGUE"
+		<> help "FLA0008, etc" )
+	<*> strOption
+	(	long "round"
+		<> short 'r'
+		<> metavar "ROUND"
+		<> help "1, 2, 3tc" )
+
 data Member = Member Text deriving (Show,Generic,Eq)
 data League = League { member :: [Member] } deriving (Show,Generic)
 data Group = G [Member] deriving (Show,Generic)
@@ -90,12 +105,9 @@ point g pts = maybe 0 id (lookup g pts)
 --	"quiz" .= [ (object [ "q" .= "What is the answer", "o" .= [ "True", "False" ], "a" .= 0 ]), (object [ "q" .= "What is the answer", "o" .= [ "True", "False" ], "a" .= 0 ]) ]
 --	]
 
-main = do
-	y <- Data.Yaml.decodeFile s :: IO (Maybe Session)
-	let group = case y of
-		Just s -> s
-		Nothing -> error "no parse of groups.yaml"
-	let f = "/home/drbean/041/FLA0008/classwork/1.yaml"
+champed :: CommandLine -> IO ()
+champed (Cline l r) = do
+	let f = "/home/drbean/041/" <> l <> "/classwork/" <> r <> ".yaml"
 	z <- Data.Yaml.decodeFile f :: IO (Maybe Classwork)
 	let cwk = case z of 
 		Just c -> c
@@ -112,15 +124,21 @@ main = do
 			) groups
 	let max = fromIntegral ( Prelude.maximum (Prelude.map snd points) )
 	let min = fromIntegral ( Prelude.minimum (Prelude.map snd points) )
+	let denom = case (max == min) of
+		True -> min
+		_ -> max - min
 	let grades = Prelude.map (\g -> let
 		raw = point g points
-		merit = 2 + ( (fromIntegral raw) - min)/(max - min)
+		merit = 2 + ( (fromIntegral raw) - min)/denom
 		in
 		(Gr {tardy = tardy g, absent = absent g, merits = merit, rs = rs g, p = raw})) groups
 	let cwk' = Cwk { topic = "lerman", eleven' = grades!!0, twelve' = grades!!1, twentyone' = grades!!2, qz = quiz }
 	Data.Yaml.encodeFile "/home/drbean/041/FLA0008/classwork/1.yaml" cwk'
-	return (cwk, cwk')
-	--case y of (Just (Hwk t g)) -> print ("topic: " <> t ) ; Nothing -> error "No parse"
-	--let players = [ "fdsfds", "dfsd", "fdssd" ]
-	-- let z = Data.Aeson.toJSON (Hwk "gillian" grade )
-	-- print (Hwk "self" players)
+champed _ = return ()
+
+main :: IO ()
+main = execParser opts >>= champed where
+	opts = info (helper <*> cline) (fullDesc
+		<> progDesc "Grade champs 2 front for LEAGUE in ROUND"
+		<> header "champs2front.hs - grade champs2front" )
+
