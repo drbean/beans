@@ -122,16 +122,16 @@ champed (Cline l r) = do
 			in
 			(g, Prelude.length (Prelude.filter ( (==) True) [a0,a1] ) )
 			) groups
-	let max = fromIntegral ( Prelude.maximum (Prelude.map snd points) )
-	let min = fromIntegral ( Prelude.minimum (Prelude.map snd points) )
-	let denom = case (max == min) of
-		True -> min
-		_ -> max - min
+	let max = Prelude.maximum (Prelude.map snd points)
+	let min = Prelude.minimum (Prelude.map snd points)
 	let grades = Prelude.map (\g -> let
 		raw = point g points
-		merit = 2 + ( (fromIntegral raw) - min)/denom
+		merit :: Int -> Float
+		merit p | p == max = 3
+		merit p | p == min = 2
+		merit p = 2 + fromIntegral (raw - min) / fromIntegral (max - min)
 		in
-		(Gr {tardy = tardy g, absent = absent g, merits = merit, rs = rs g, p = raw})) groups
+		(Gr {tardy = tardy g, absent = absent g, merits = merit raw, rs = rs g, p = raw})) groups
 	let cwk' = Cwk { topic = "lerman", eleven' = grades!!0, twelve' = grades!!1, twentyone' = grades!!2, qz = quiz }
 	Data.Yaml.encodeFile "/home/drbean/041/FLA0008/classwork/1.yaml" cwk'
 champed _ = return ()
