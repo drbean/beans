@@ -26,7 +26,11 @@ cline = Cline
 data Member = Member Text deriving (Show,Generic,Eq)
 data League = League { member :: [Member] } deriving (Show,Generic)
 data Group = G [Member] deriving (Show,Generic)
-data Session = S { eleven :: Group, twelve :: Group, twentyone :: Group } deriving (Show,Generic)
+data Session = S { eleven :: Group, twelve :: Group,
+	twentyone :: Group, twentytwo :: Group,
+	thirtyone :: Group, thirtytwo :: Group,
+	fortyone :: Group, fortytwo :: Group
+	} deriving (Show,Generic)
 data Question = Q Text deriving (Show,Generic)
 data Option = O Text deriving (Show,Generic)
 data Answer = A Int deriving (Show,Generic,Eq)
@@ -34,7 +38,12 @@ data Item = I { q :: Question, o :: [Option], a :: Answer } deriving (Show,Gener
 data Quiz = Qz [Item] deriving (Show,Generic)
 data Response = R Int deriving (Show,Generic,Eq)
 data Grade = Gr { tardy :: [Member], absent :: [Member], rs :: [Response], merits :: Float, p :: Int } deriving (Show,Generic,Eq)
-data Classwork = Cwk { topic :: Text , eleven' :: Grade, twelve' :: Grade, twentyone' :: Grade, qz :: Quiz } deriving (Show,Generic)
+data Classwork = Cwk { topic :: Text ,
+	eleven' :: Grade, twelve' :: Grade,
+	twentyone' :: Grade, twentytwo' :: Grade,
+	thirtyone' :: Grade, thirtytwo' :: Grade,
+	fortyone' :: Grade, fortytwo' :: Grade,
+	qz :: Quiz } deriving (Show,Generic)
 instance FromJSON Member
 instance FromJSON League
 instance FromJSON Group
@@ -88,7 +97,8 @@ rewriteClassworkField s = case s of
 s = "/home/drbean/041/FLA0008/session/1/groups.yaml"
 f = "/home/drbean/041/FLA0008/classwork/1.yaml"
 q2is :: Quiz -> [Item]
-q2is (Qz is) = is
+q2is (Qz (i:[])) = [i]
+q2is (Qz (i:is)) = i : (q2is (Qz is) )
 q2is _ = error "No items in quiz?"
 r2a :: Response -> Answer
 r2a (R int) = (A int)
@@ -112,15 +122,21 @@ champed (Cline l r) = do
 	let cwk = case z of 
 		Just c -> c
 		Nothing -> error "no parse of classwork/1.yaml"
+	let top = topic cwk
 	let quiz = qz cwk
-	let groups = Prelude.map (\f -> f cwk ) [ eleven', twelve', twentyone' ]
+	let groups = Prelude.map (\f -> f cwk ) [
+		eleven', twelve',
+		twentyone', twentytwo',
+		thirtyone', thirtytwo',
+		fortyone', fortytwo'
+		]
 	let points = Prelude.map (\g -> let
 			is = q2is (qz cwk)
 			a0 = ((a (is!!0)) == (r2a (rs g!!0)))
 			a1 = ((a (is!!1)) == (r2a (rs g!!1)))
 			a2 = ((a (is!!2)) == (r2a (rs g!!2)))
 			in
-			(g, Prelude.length (Prelude.filter ( (==) True) [a0,a1] ) )
+			(g, Prelude.length (Prelude.filter ( (==) True) [a0,a1,a2] ) )
 			) groups
 	let max = Prelude.maximum (Prelude.map snd points)
 	let min = Prelude.minimum (Prelude.map snd points)
@@ -132,9 +148,13 @@ champed (Cline l r) = do
 		merit p = 2 + fromIntegral (raw - min) / fromIntegral (max - min)
 		in
 		(Gr {tardy = tardy g, absent = absent g, merits = merit raw, rs = rs g, p = raw})) groups
-	let cwk' = Cwk { topic = "lerman", eleven' = grades!!0, twelve' = grades!!1, twentyone' = grades!!2, qz = quiz }
-	Data.Yaml.encodeFile "/home/drbean/041/FLA0008/classwork/1.yaml" cwk'
-champed _ = return ()
+	let cwk' = Cwk { topic = top,
+		eleven' = grades!!0, twelve' = grades!!1,
+		twentyone' = grades!!2, twentytwo' = grades!!3,
+		thirtyone' = grades!!4, thirtytwo' = grades!!5,
+		fortyone' = grades!!6, fortytwo' = grades!!7,
+		qz = quiz }
+	Data.Yaml.encodeFile f cwk'
 
 main :: IO ()
 main = execParser opts >>= champed where
