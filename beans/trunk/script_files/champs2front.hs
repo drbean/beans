@@ -5,6 +5,7 @@
 
 import Data.Text
 import GHC.Generics
+import Data.ByteString
 import Data.Yaml
 import Data.Aeson
 import Data.Aeson.Types
@@ -43,7 +44,7 @@ data Grade = Gr { tardy :: [Member], absent :: [Member], rs :: [Response], merit
 data Classwork = Cwk { topic :: Text ,
 	eleven' :: Grade, twelve' :: Grade,
 	twentyone' :: Grade, twentytwo' :: Grade,
-	twentythree' :: Grade, twentyfour' :: Grade,
+	-- twentythree' :: Grade, twentyfour' :: Grade,
 	thirtyone' :: Grade, thirtytwo' :: Grade,
 	fortyone' :: Grade, fortytwo' :: Grade,
 	qz :: Quiz } deriving (Show,Generic)
@@ -159,7 +160,7 @@ champed (Cline l r) = do
 		thirtyone' = grades!!4, thirtytwo' = grades!!5,
 		fortyone' = grades!!6, fortytwo' = grades!!7,
 		qz = quiz }
-	Data.Yaml.encodeFile f cwk'
+	Data.ByteString.putStrLn (Data.Yaml.encode cwk')
 
 main :: IO ()
 main = execParser opts >>= champed where
