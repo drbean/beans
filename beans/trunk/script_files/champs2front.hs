@@ -1,3 +1,5 @@
+#!/usr/bin/env runhaskell
+
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -41,6 +43,7 @@ data Grade = Gr { tardy :: [Member], absent :: [Member], rs :: [Response], merit
 data Classwork = Cwk { topic :: Text ,
 	eleven' :: Grade, twelve' :: Grade,
 	twentyone' :: Grade, twentytwo' :: Grade,
+	twentythree' :: Grade, twentyfour' :: Grade,
 	thirtyone' :: Grade, thirtytwo' :: Grade,
 	fortyone' :: Grade, fortytwo' :: Grade,
 	qz :: Quiz } deriving (Show,Generic)
@@ -79,6 +82,7 @@ rewriteSessionField	s = case s of
 	"thirtythree"	-> "3-3" ; "thirtyfour"	-> "3-4"
 	"fortyone"	-> "4-1" ; "fortytwo"	-> "4-2"
 	"fortythree"	-> "4-3" ; "fortyfour"	-> "4-4"
+	"fortyfive"	-> "4-5" ; "fortysix"	-> "4-6"
 	_	-> error ("No " ++ s ++ "field")
 
 rewriteClassworkField s = case s of
@@ -91,6 +95,7 @@ rewriteClassworkField s = case s of
 	"thirtythree'"	-> "3-3" ; "thirtyfour'"	-> "3-4"
 	"fortyone'"	-> "4-1" ; "fortytwo'"	-> "4-2"
 	"fortythree'"	-> "4-3" ; "fortyfour'"	-> "4-4"
+	"fortyfive'"	-> "4-5" ; "fortysix'"	-> "4-6"
 	"topic" -> "topic" ; "qz" -> "qz" ; "r" -> "r" ;
 	_	-> error ("No " ++ s ++ "field")
 
@@ -121,7 +126,7 @@ champed (Cline l r) = do
 	z <- Data.Yaml.decodeFile f :: IO (Maybe Classwork)
 	let cwk = case z of 
 		Just c -> c
-		Nothing -> error "no parse of classwork/1.yaml"
+		Nothing -> error ("no parse of classwork/" <> r <> ".yaml")
 	let top = topic cwk
 	let quiz = qz cwk
 	let groups = Prelude.map (\f -> f cwk ) [
