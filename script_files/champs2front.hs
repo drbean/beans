@@ -2,6 +2,7 @@
 
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 import Data.Text
 import GHC.Generics
@@ -53,7 +54,20 @@ instance FromJSON League
 instance FromJSON Group
 instance FromJSON Session where parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = rewriteSessionField }
 instance FromJSON Grade
-instance FromJSON Classwork where parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = rewriteClassworkField }
+instance FromJSON Classwork where
+	parseJSON = withObject "classwork" $ \o -> do
+		topic <- o .: "topic"
+		qz <- o .: "qz"
+		eleven' <- o .: "1-1"
+		twelve' <- o .: "1-2"
+		twentyone' <- o .: "2-1"
+		twentytwo' <- o .: "2-2"
+		thirtyone' <- o .: "3-1"
+		thirtytwo' <- o .: "3-2"
+		fortyone' <- o .: "4-1"
+		fortytwo' <- o .: "4-2"
+		return Cwk {..}
+
 instance FromJSON Question
 instance FromJSON Option
 instance FromJSON Answer
