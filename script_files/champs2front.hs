@@ -30,11 +30,6 @@ cline = Cline
 data Member = Member Text deriving (Show,Generic,Eq)
 data League = League { member :: [Member] } deriving (Show,Generic)
 data Group = G [Member] deriving (Show,Generic)
-data Session = S { eleven :: Group, twelve :: Group,
-	twentyone :: Group, twentytwo :: Group,
-	thirtyone :: Group, thirtytwo :: Group,
-	fortyone :: Group, fortytwo :: Group
-	} deriving (Show,Generic)
 data Question = Q Text deriving (Show,Generic)
 data Option = O Text deriving (Show,Generic)
 data Answer = A Int deriving (Show,Generic,Eq)
@@ -43,29 +38,28 @@ data Quiz = Qz [Item] deriving (Show,Generic)
 data Response = R Int deriving (Show,Generic,Eq)
 data Grade = Gr { tardy :: [Member], absent :: [Member], rs :: [Response], merits :: Float, p :: Int } deriving (Show,Generic,Eq)
 data Classwork = Cwk { topic :: Text ,
-	eleven' :: Grade, twelve' :: Grade,
-	twentyone' :: Grade, twentytwo' :: Grade,
-	-- twentythree' :: Grade, twentyfour' :: Grade,
-	thirtyone' :: Grade, thirtytwo' :: Grade,
-	fortyone' :: Grade, fortytwo' :: Grade,
+	eleven :: Grade, twelve :: Grade,
+	twentyone :: Grade, twentytwo :: Grade,
+	-- twentythree :: Grade, twentyfour :: Grade,
+	thirtyone :: Grade, thirtytwo :: Grade,
+	fortyone :: Grade, fortytwo :: Grade,
 	qz :: Quiz } deriving (Show,Generic)
 instance FromJSON Member
 instance FromJSON League
 instance FromJSON Group
-instance FromJSON Session where parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = rewriteSessionField }
 instance FromJSON Grade
 instance FromJSON Classwork where
 	parseJSON = withObject "classwork" $ \o -> do
 		topic <- o .: "topic"
 		qz <- o .: "qz"
-		eleven' <- o .: "1-1"
-		twelve' <- o .: "1-2"
-		twentyone' <- o .: "2-1"
-		twentytwo' <- o .: "2-2"
-		thirtyone' <- o .: "3-1"
-		thirtytwo' <- o .: "3-2"
-		fortyone' <- o .: "4-1"
-		fortytwo' <- o .: "4-2"
+		eleven <- o .: "1-1"
+		twelve <- o .: "1-2"
+		twentyone <- o .: "2-1"
+		twentytwo <- o .: "2-2"
+		thirtyone <- o .: "3-1"
+		thirtytwo <- o .: "3-2"
+		fortyone <- o .: "4-1"
+		fortytwo <- o .: "4-2"
 		return Cwk {..}
 
 instance FromJSON Question
@@ -77,7 +71,6 @@ instance FromJSON Response
 instance ToJSON Member
 instance ToJSON League
 instance ToJSON Group
-instance ToJSON Session
 instance ToJSON Grade
 instance ToJSON Classwork where toJSON = genericToJSON defaultOptions { fieldLabelModifier = rewriteClassworkField }
 instance ToJSON Question
@@ -87,7 +80,7 @@ instance ToJSON Item
 instance ToJSON Quiz
 instance ToJSON Response
 
-rewriteSessionField	s = case s of
+rewriteClassworkField	s = case s of
 	"eleven"	-> "1-1" ; "twelve"	-> "1-2"
 	"thirteen"	-> "1-3" ; "fourteen"	-> "1-4"
 	"twentyone"	-> "2-1" ; "twentytwo"	-> "2-2"
@@ -98,21 +91,8 @@ rewriteSessionField	s = case s of
 	"fortyone"	-> "4-1" ; "fortytwo"	-> "4-2"
 	"fortythree"	-> "4-3" ; "fortyfour"	-> "4-4"
 	"fortyfive"	-> "4-5" ; "fortysix"	-> "4-6"
-	_	-> error ("No " ++ s ++ "field")
-
-rewriteClassworkField s = case s of
-	"eleven'"	-> "1-1" ; "twelve'"	-> "1-2"
-	"thirteen'"	-> "1-3" ; "fourteen'"	-> "1-4"
-	"twentyone'"	-> "2-1" ; "twentytwo'"	-> "2-2"
-	"twentythree'"	-> "2-3" ; "twentyfour'"	-> "2-4"
-	"twentyfive'"	-> "2-5" ; "twentysix'"	-> "2-6"
-	"thirtyone'"	-> "3-1" ; "thirtytwo'"	-> "3-2"
-	"thirtythree'"	-> "3-3" ; "thirtyfour'"	-> "3-4"
-	"fortyone'"	-> "4-1" ; "fortytwo'"	-> "4-2"
-	"fortythree'"	-> "4-3" ; "fortyfour'"	-> "4-4"
-	"fortyfive'"	-> "4-5" ; "fortysix'"	-> "4-6"
 	"topic" -> "topic" ; "qz" -> "qz" ; "r" -> "r" ;
-	_	-> error ("No " ++ s ++ "field")
+	_	-> error ("No " ++ s ++ " field")
 
 s = "/home/drbean/041/FLA0008/session/1/groups.yaml"
 f = "/home/drbean/041/FLA0008/classwork/1.yaml"
@@ -145,10 +125,10 @@ champed (Cline l r) = do
 	let top = topic cwk
 	let quiz = qz cwk
 	let groups = Prelude.map (\f -> f cwk ) [
-		eleven', twelve',
-		twentyone', twentytwo',
-		thirtyone', thirtytwo',
-		fortyone', fortytwo'
+		eleven, twelve,
+		twentyone, twentytwo,
+		thirtyone, thirtytwo,
+		fortyone, fortytwo
 		]
 	let points = Prelude.map (\g -> let
 			is = q2is (qz cwk)
@@ -169,10 +149,10 @@ champed (Cline l r) = do
 		in
 		(Gr {tardy = tardy g, absent = absent g, merits = merit raw, rs = rs g, p = raw})) groups
 	let cwk' = Cwk { topic = top,
-		eleven' = grades!!0, twelve' = grades!!1,
-		twentyone' = grades!!2, twentytwo' = grades!!3,
-		thirtyone' = grades!!4, thirtytwo' = grades!!5,
-		fortyone' = grades!!6, fortytwo' = grades!!7,
+		eleven = grades!!0, twelve = grades!!1,
+		twentyone = grades!!2, twentytwo = grades!!3,
+		thirtyone = grades!!4, thirtytwo = grades!!5,
+		fortyone = grades!!6, fortytwo = grades!!7,
 		qz = quiz }
 	Data.ByteString.putStrLn (Data.Yaml.encode cwk')
 
