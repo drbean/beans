@@ -47,7 +47,14 @@ data Classwork = Cwk { topic :: Text ,
 instance FromJSON Member
 instance FromJSON League
 instance FromJSON Group
-instance FromJSON Grade
+instance FromJSON Grade where
+	parseJSON = withObject "grade" $ \o -> do
+		tardy <- o .:? "tardy" .!= []
+		absent <- o .:? "absent" .!= []
+		rs <- o .: "rs"
+		p <- o .:? "p" .!= 0
+		merits <- o .:? "merits" .!= 0
+		return Gr {..}
 instance FromJSON Classwork where
 	parseJSON = withObject "classwork" $ \o -> do
 		topic <- o .: "topic"
