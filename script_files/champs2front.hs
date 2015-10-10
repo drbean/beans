@@ -43,6 +43,7 @@ data Classwork = Cwk { topic :: Text ,
 	-- twentythree :: Grade, twentyfour :: Grade,
 	thirtyone :: Grade, thirtytwo :: Grade,
 	fortyone :: Grade, fortytwo :: Grade,
+	fiftyone :: Grade, fiftytwo :: Grade,
 	qz :: Quiz } deriving (Show,Generic)
 instance FromJSON Member
 instance FromJSON League
@@ -67,6 +68,8 @@ instance FromJSON Classwork where
 		thirtytwo <- o .: "3-2"
 		fortyone <- o .: "4-1"
 		fortytwo <- o .: "4-2"
+		fiftyone <- o .: "5-1"
+		fiftytwo <- o .: "5-2"
 		return Cwk {..}
 
 instance FromJSON Question
@@ -98,6 +101,7 @@ rewriteClassworkField	s = case s of
 	"fortyone"	-> "4-1" ; "fortytwo"	-> "4-2"
 	"fortythree"	-> "4-3" ; "fortyfour"	-> "4-4"
 	"fortyfive"	-> "4-5" ; "fortysix"	-> "4-6"
+	"fiftyone"	-> "5-1" ; "fiftytwo"	-> "5-2"
 	"topic" -> "topic" ; "qz" -> "qz" ; "r" -> "r" ;
 	_	-> error ("No " ++ s ++ " field")
 
@@ -124,11 +128,11 @@ point g pts = maybe 0 id (lookup g pts)
 
 champed :: CommandLine -> IO ()
 champed (Cline l r) = do
-	let f = "/home/drbean/041/" <> l <> "/classwork/" <> r <> ".yaml"
+	let f = "/home/drbean/041/" <> l <> "/classwork/" <> r <> ".yaml.table"
 	z <- Data.Yaml.decodeFile f :: IO (Maybe Classwork)
 	let cwk = case z of 
 		Just c -> c
-		Nothing -> error ("no parse of classwork/" <> r <> ".yaml")
+		Nothing -> error ("no parse of classwork/" <> r <> ".yaml.table")
 	let top = topic cwk
 	let quiz = qz cwk
 	let groups = Prelude.map (\f -> f cwk ) [
@@ -136,6 +140,7 @@ champed (Cline l r) = do
 		twentyone, twentytwo,
 		thirtyone, thirtytwo,
 		fortyone, fortytwo
+		fiftyone, fiftytwo
 		]
 	let points = Prelude.map (\g -> let
 			is = q2is (qz cwk)
@@ -160,6 +165,7 @@ champed (Cline l r) = do
 		twentyone = grades!!2, twentytwo = grades!!3,
 		thirtyone = grades!!4, thirtytwo = grades!!5,
 		fortyone = grades!!6, fortytwo = grades!!7,
+		fiftyone = grades!!8, fiftytwo = grades!!9,
 		qz = quiz }
 	Data.ByteString.putStrLn (Data.Yaml.encode cwk')
 
