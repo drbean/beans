@@ -37,12 +37,12 @@ data Item = I { q :: Question, o :: [Option], a :: Answer } deriving (Show,Gener
 data Quiz = Qz [Item] deriving (Show,Generic)
 data Response = R Int deriving (Show,Generic,Eq)
 data Grade = Gr { tardy :: [Member], absent :: [Member], rs :: [Response], merits :: Float, p :: Int } deriving (Show,Generic,Eq)
-data Classwork = Cwk { topic :: Text ,
-	eleven :: Grade, twelve :: Grade,
-	twentyone :: Grade, twentytwo :: Grade,
-	thirtyone :: Grade, thirtytwo :: Grade,
-	fortyone :: Grade,
-	qz :: Quiz } deriving (Show,Generic)
+data Classwork = Cwk { topic :: Text
+	, eleven :: Grade, twelve :: Grade
+	, twentyone :: Grade, twentytwo :: Grade
+	, thirtyone :: Grade, thirtytwo :: Grade
+	, fortyone :: Grade, fortytwo :: Grade
+	, qz :: Quiz } deriving (Show,Generic)
 instance FromJSON Member
 instance FromJSON League
 instance FromJSON Group
@@ -65,6 +65,7 @@ instance FromJSON Classwork where
 		thirtyone <- o .: "3-1"
 		thirtytwo <- o .: "3-2"
 		fortyone <- o .: "4-1"
+		fortytwo <- o .: "4-2"
 		return Cwk {..}
 
 instance FromJSON Question
@@ -132,7 +133,7 @@ champed (Cline l r) = do
 		eleven, twelve
 		, twentyone, twentytwo
 		, thirtyone, thirtytwo
-		, fortyone
+		, fortyone, fortytwo
 		]
 	let points = Prelude.map (\g -> let
 			is = q2is (qz cwk)
@@ -156,7 +157,7 @@ champed (Cline l r) = do
 		eleven = grades!!0, twelve = grades!!1
 		, twentyone = grades!!2, twentytwo = grades!!3
 		, thirtyone = grades!!4, thirtytwo = grades!!5
-		, fortyone = grades!!6
+		, fortyone = grades!!6, fortytwo = grades!!7
 		, qz = quiz }
 	Data.ByteString.putStrLn (Data.Yaml.encode cwk')
 
