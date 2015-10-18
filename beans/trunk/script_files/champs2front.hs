@@ -139,7 +139,7 @@ champed (Cline l r) = do
 		eleven, twelve,
 		twentyone, twentytwo,
 		thirtyone, thirtytwo,
-		fortyone, fortytwo
+		fortyone, fortytwo,
 		fiftyone, fiftytwo
 		]
 	let points = Prelude.map (\g -> let
