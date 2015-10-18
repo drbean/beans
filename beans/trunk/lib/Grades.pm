@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2015 Sep 12, 13:38:33
+#Last Edit: 2015 Oct 17, 12:57:45
 #$Id$
 
 use MooseX::Declare;
@@ -77,7 +77,7 @@ Keywords: gold stars, token economies, bean counter
 =cut
 
 class League {
-	use YAML qw/LoadFile DumpFile/;
+	use YAML::XS qw/LoadFile DumpFile/;
 	use List::MoreUtils qw/any/;
 	use Grades::Types qw/PlayerName PlayerNames Members/;
 	use Try::Tiny;
