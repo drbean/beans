@@ -41,7 +41,7 @@ data Classwork = Cwk { topic :: Text
 	, eleven :: Grade, twelve :: Grade
 	, twentyone :: Grade, twentytwo :: Grade
 	, thirtyone :: Grade, thirtytwo :: Grade
-	, fortyone :: Grade, fortytwo :: Grade
+	, fortyone :: Grade
 	, qz :: Quiz } deriving (Show,Generic)
 instance FromJSON Member
 instance FromJSON League
@@ -65,7 +65,6 @@ instance FromJSON Classwork where
 		thirtyone <- o .: "3-1"
 		thirtytwo <- o .: "3-2"
 		fortyone <- o .: "4-1"
-		fortytwo <- o .: "4-2"
 		return Cwk {..}
 
 instance FromJSON Question
@@ -135,8 +134,7 @@ champed (Cline l r) = do
 		eleven, twelve
 		, twentyone, twentytwo
 		, thirtyone, thirtytwo
-		, fortyone, fortytwo
-		, fiftyone, fiftytwo
+		, fortyone
 		]
 	let points = Prelude.map (\g -> let
 			is = q2is (qz cwk)
@@ -160,7 +158,7 @@ champed (Cline l r) = do
 		eleven = grades!!0, twelve = grades!!1,
 		twentyone = grades!!2, twentytwo = grades!!3,
 		thirtyone = grades!!4, thirtytwo = grades!!5,
-		fortyone = grades!!6, fortytwo = grades!!7,
+		fortyone = grades!!6,
 		qz = quiz }
 	Data.ByteString.putStrLn (Data.Yaml.encode cwk')
 
