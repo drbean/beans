@@ -80,15 +80,24 @@ my $approach = $l->approach;
 my $h2p = Lingua::Han::PinYin->new( tone => 1 );
 
 my %b = map { $m{$_}->{name} => $cl->name2beancan($week, $m{$_}->{name}) } keys %m;
-my %i;
+my (%i, %by_name, %by_group);
 for my $member ( keys %m ) {
+	my $week = $sessions->{$last};
+	my $name = $m{$member}->{name};
+	my $group_n_letter = $cl->name2beancan($week, $name);
 	my $chinese = encode( 'UTF-8', $m{$member}->{Chinese} );
 	my $pinyin = $h2p->han2pinyin( $chinese );
 	$i{$member} = "$member $m{$member}->{Chinese} $pinyin\t" . 
 	"$m{$member}->{name}\t$b{$m{$member}->{name}}\n";
+	$by_name{$name} = $i{$member};
+	$by_group{$group_n_letter} = $i{$member};
 }
-my @i;
+my @i = "IDs\n";
 push @i, $i{$_} for sort keys %i;
+push @i, "\nNAMES\n";
+push @i, $by_name{$_} for sort keys %by_name;
+push @i, "\nGROUPS\n";
+push @i, $by_group{$_} for sort keys %by_group;
 io("id2names_groups.txt")->print(@i);
 
 
