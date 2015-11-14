@@ -1,4 +1,4 @@
-#Last Edit: 2014 Oct 22, 03:28:07 PM
+#Last Edit: 2015 Nov 14, 16:40:52
 #$Id$
 
 use MooseX::Declare;
@@ -285,6 +285,28 @@ Given the name of a player, the name of the beancan they were a member of in the
 =cut
 
 	method name2beancan (Num $week, Str $name) {
+		croak "Week $week?" unless defined $week;
+		my $session = $self->week2session($week);
+		my $beancans = $self->beancan_names($session);
+		my @names; push @names, @$_ for values %$beancans;
+		my @name2beancans;
+		while ( my ($beancan, $names) = each %$beancans ) {
+			push @name2beancans, $beancan for grep /^$name$/, @$names;
+		}
+		croak "$name not in exactly one beancan in $session session.\n"
+					unless @name2beancans == 1;
+		shift @name2beancans;
+	}
+
+=head3 name2letter
+
+	$Groupwork->name2letter( $week, $playername )
+
+Given the name of a player, their letter in the beancan they were a member of in the given week. Used in conjunction with name2beancan.
+
+=cut
+
+	method name2letter (Num $week, Str $name) {
 		croak "Week $week?" unless defined $week;
 		my $session = $self->week2session($week);
 		my $beancans = $self->beancan_names($session);
