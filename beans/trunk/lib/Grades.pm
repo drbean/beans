@@ -1,11 +1,12 @@
 package Grades;
 
-#Last Edit: 2015 Oct 17, 12:57:45
+#Last Edit: 2015 Nov 14, 10:30:21
 #$Id$
 
 use MooseX::Declare;
 
 package Grades::Script;
+
 use Moose;
 with 'MooseX::Getopt';
 
@@ -231,7 +232,7 @@ Loads a YAML file.
     method inspect (Str $file) {
 	my ($warning, $data);
 	try { $data = LoadFile $file }
-	    catch { carp "Couldn't open $file," };
+	    catch { warn "YAML error: $_, with $file," };
 	return $data;
 	}
 
@@ -1507,6 +1508,8 @@ The points of the players in the given conversation. 5 for a Bye, 1 for Late, 0 
 	my $correct = $self->correct( $round );
 	my $points;
 	my $late; $late = $config->{late} if exists $config->{late};
+	my $league = $self->league;
+	die "Comp tardies includes a non-member" unless all { $league->is_member($_) } @$late;
 	my $forfeit; $forfeit = $config->{forfeit} if exists $config->{forfeit};
 	my $assists = $self->assistantPoints( $round );
 	my $dispensed = $self->dispensation( $round );
