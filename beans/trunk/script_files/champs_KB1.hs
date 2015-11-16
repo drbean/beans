@@ -141,8 +141,15 @@ champed (Cline l r) = do
 			a0 = ((a (is!!0)) == (r2a (rs g!!0)))
 			a1 = ((a (is!!1)) == (r2a (rs g!!1)))
 			a2 = ((a (is!!2)) == (r2a (rs g!!2)))
+			a3 = ((a (is!!3)) == (r2a (rs g!!3)))
+			a4 = ((a (is!!4)) == (r2a (rs g!!4)))
+			a5 = ((a (is!!5)) == (r2a (rs g!!5)))
+			a6 = ((a (is!!6)) == (r2a (rs g!!6)))
+			a7 = ((a (is!!7)) == (r2a (rs g!!7)))
+			a8 = ((a (is!!8)) == (r2a (rs g!!8)))
+			a9 = ((a (is!!9)) == (r2a (rs g!!9)))
 			in
-			(g, Prelude.length (Prelude.filter ( (==) True) [a0,a1,a2] ) )
+			(g, Prelude.length (Prelude.filter ( (==) True) [a0,a1,a2,a3,a4,a5,a6,a7,a8,a9] ) )
 			) groups
 	let max = Prelude.maximum (Prelude.map snd points)
 	let min = Prelude.minimum (Prelude.map snd points)
