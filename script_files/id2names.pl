@@ -92,7 +92,8 @@ for my $member ( keys %m ) {
 	$by_name{$name} = $i{$member};
 	$by_group{$group_n_letter} = $i{$member};
 }
-my @i = "IDs\n";
+my @i = "Session: $last, Week: $week\n";
+push @i, "IDs\n";
 push @i, $i{$_} for sort keys %i;
 push @i, "\nNAMES\n";
 push @i, $by_name{$_} for sort keys %by_name;
