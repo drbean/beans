@@ -40,15 +40,16 @@ data Grade = Gr { tardy :: [Member], absent :: [Member], rs :: [Response], merit
 data Classwork = Cwk { topic :: Text
 	, eleven :: Grade, twelve :: Grade
 	, thirteen :: Grade, fourteen :: Grade
+	, fifteen :: Grade
 	, twentyone :: Grade, twentytwo :: Grade
 	, twentythree :: Grade, twentyfour :: Grade
-	, twentyfive :: Grade, twentysix :: Grade
+	, twentyfive :: Grade
 	, thirtyone :: Grade, thirtytwo :: Grade
 	, thirtythree :: Grade, thirtyfour :: Grade
 	, thirtyfive :: Grade
 	, fortyone :: Grade, fortytwo :: Grade
 	, fortythree :: Grade, fortyfour :: Grade
-	, fortyfive :: Grade, fortysix :: Grade
+	, fortyfive :: Grade
 	, qz :: Quiz } deriving (Show,Generic)
 instance FromJSON Member
 instance FromJSON League
@@ -69,12 +70,12 @@ instance FromJSON Classwork where
 		twelve <- o .: "1-2"
 		thirteen <- o .: "1-3"
 		fourteen <- o .: "1-4"
+		fifteen <- o .: "1-5"
 		twentyone <- o .: "2-1"
 		twentytwo <- o .: "2-2"
 		twentythree <- o .: "2-3"
 		twentyfour <- o .: "2-4"
 		twentyfive <- o .: "2-5"
-		twentysix <- o .: "2-6"
 		thirtyone <- o .: "3-1"
 		thirtytwo <- o .: "3-2"
 		thirtythree <- o .: "3-3"
@@ -85,7 +86,6 @@ instance FromJSON Classwork where
 		fortythree <- o .: "4-3"
 		fortyfour <- o .: "4-4"
 		fortyfive <- o .: "4-5"
-		fortysix <- o .: "4-6"
 		return Cwk {..}
 
 instance FromJSON Question
@@ -109,15 +109,16 @@ instance ToJSON Response
 rewriteClassworkField	s = case s of
 	"eleven"	-> "1-1" ; "twelve"	-> "1-2"
 	"thirteen"	-> "1-3" ; "fourteen"	-> "1-4"
+	"fifteen"	-> "1-5" ;
 	"twentyone"	-> "2-1" ; "twentytwo"	-> "2-2"
 	"twentythree"	-> "2-3" ; "twentyfour"	-> "2-4"
-	"twentyfive"	-> "2-5" ; "twentysix"	-> "2-6"
+	"twentyfive"	-> "2-5" ;
 	"thirtyone"	-> "3-1" ; "thirtytwo"	-> "3-2"
 	"thirtythree"	-> "3-3" ; "thirtyfour"	-> "3-4"
 	"thirtyfive"	-> "3-5"
 	"fortyone"	-> "4-1" ; "fortytwo"	-> "4-2"
 	"fortythree"	-> "4-3" ; "fortyfour"	-> "4-4"
-	"fortyfive"	-> "4-5" ; "fortysix"	-> "4-6"
+	"fortyfive"	-> "4-5" ;
 	"topic" -> "topic" ; "qz" -> "qz" ; "r" -> "r" ;
 	_	-> error ("No " ++ s ++ " field")
 
@@ -154,15 +155,16 @@ champed (Cline l r) = do
 	let groups = Prelude.map (\f -> f cwk ) [
 		eleven, twelve
 		, thirteen, fourteen
+		, fifteen
 		, twentyone, twentytwo
 		, twentythree, twentyfour
-		, twentyfive, twentysix
+		, twentyfive
 		, thirtyone, thirtytwo
 		, thirtythree, thirtyfour
 		, thirtyfive
 		, fortyone, fortytwo
 		, fortythree, fortyfour
-		, fortyfive, fortysix
+		, fortyfive
 		]
 	let points = Prelude.map (\g -> let
 			is = q2is (qz cwk)
@@ -185,15 +187,16 @@ champed (Cline l r) = do
 	let cwk' = Cwk { topic = top
 		, eleven = grades!!0, twelve = grades!!1
 		, thirteen = grades!!2, fourteen = grades!!3
-		, twentyone = grades!!4, twentytwo = grades!!5
-		, twentythree = grades!!6, twentyfour = grades!!7
-		, twentyfive = grades!!8, twentysix = grades!!9
+		, fifteen = grades!!4
+		, twentyone = grades!!5, twentytwo = grades!!6
+		, twentythree = grades!!7, twentyfour = grades!!8
+		, twentyfive = grades!!9
 		, thirtyone = grades!!10, thirtytwo = grades!!11
 		, thirtythree = grades!!12, thirtyfour = grades!!13
 		, thirtyfive = grades!!14
 		, fortyone = grades!!15, fortytwo = grades!!16
 		, fortythree = grades!!17, fortyfour = grades!!18
-		, fortyfive = grades!!19, fortysix = grades!!20
+		, fortyfive = grades!!19
 		, qz = quiz }
 	Data.ByteString.putStrLn (Data.Yaml.encode cwk')
 
