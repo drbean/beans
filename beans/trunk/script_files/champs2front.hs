@@ -159,7 +159,7 @@ champed (Cline l r) = do
 		merit p | p == min = 2
 		merit p = 2 + fromIntegral (raw - min) / fromIntegral (max - min)
 		in
-		(Gr {tardy = tardy g, absent = absent g, merits = merit raw, rs = rs g, p = raw})) groups
+		(Gr {tardy = tardy g, absent = absent g, merits = merit raw, rs = rs g, p = p g})) groups
 	let cwk' = Cwk { topic = top,
 		eleven = grades!!0, twelve = grades!!1,
 		twentyone = grades!!2, twentytwo = grades!!3,
