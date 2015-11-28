@@ -144,11 +144,10 @@ champed (Cline l r) = do
 		]
 	let points = Prelude.map (\g -> let
 			is = q2is (qz cwk)
-			a0 = ((a (is!!0)) == (r2a (rs g!!0)))
-			a1 = ((a (is!!1)) == (r2a (rs g!!1)))
-			a2 = ((a (is!!2)) == (r2a (rs g!!2)))
+			as = map (\n -> ((a (is!!n)) == (r2a (rs g!!n))))
+				[0, Prelude.length is -1]
 			in
-			(g, Prelude.length (Prelude.filter ( (==) True) [a0,a1,a2] ) )
+			(g, Prelude.length (Prelude.filter ( (==) True) as ) )
 			) groups
 	let max = Prelude.maximum (Prelude.map snd points)
 	let min = Prelude.minimum (Prelude.map snd points)
