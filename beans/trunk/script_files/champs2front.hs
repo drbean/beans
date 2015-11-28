@@ -145,7 +145,7 @@ champed (Cline l r) = do
 	let points = Prelude.map (\g -> let
 			is = q2is (qz cwk)
 			as = map (\n -> ((a (is!!n)) == (r2a (rs g!!n))))
-				[0, Prelude.length is -1]
+				[0, ((Prelude.length is) -1)]
 			in
 			(g, Prelude.length (Prelude.filter ( (==) True) as ) )
 			) groups
