@@ -36,7 +36,7 @@ data Answer = A Int deriving (Show,Generic,Eq)
 data Item = I { q :: Question, o :: [Option], a :: Answer } deriving (Show,Generic)
 data Quiz = Qz [Item] deriving (Show,Generic)
 data Response = R Int deriving (Show,Generic,Eq)
-data Grade = Gr { tardy :: [Member], absent :: [Member], rs :: [Response], merits :: Float, p :: Int } deriving (Show,Generic,Eq)
+data Grade = Gr { tardy :: [Member], absent :: [Member], rs :: [Response], merits :: Float, p :: [Int] } deriving (Show,Generic,Eq)
 data Classwork = Cwk { topic :: Text ,
 	eleven :: Grade, twelve :: Grade,
 	twentyone :: Grade, twentytwo :: Grade,
@@ -53,7 +53,7 @@ instance FromJSON Grade where
 		tardy <- o .:? "tardy" .!= []
 		absent <- o .:? "absent" .!= []
 		rs <- o .: "rs"
-		p <- o .:? "p" .!= 0
+		p <- o .:? "p" .!= []
 		merits <- o .:? "merits" .!= 0
 		return Gr {..}
 instance FromJSON Classwork where
