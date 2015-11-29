@@ -36,7 +36,7 @@ data Answer = A Int deriving (Show,Generic,Eq)
 data Item = I { q :: Question, o :: [Option], a :: Answer } deriving (Show,Generic)
 data Quiz = Qz [Item] deriving (Show,Generic)
 data Response = R Int deriving (Show,Generic,Eq)
-data Grade = Gr { tardy :: [Member], absent :: [Member], rs :: [Response], merits :: Float, p :: Int } deriving (Show,Generic,Eq)
+data Grade = Gr { tardy :: [Member], absent :: [Member], rs :: [Response], merits :: Float, p :: [Int] } deriving (Show,Generic,Eq)
 data Classwork = Cwk { topic :: Text 
 	, eleven :: Grade, twelve :: Grade
 	, twentyone :: Grade, twentytwo :: Grade
@@ -51,7 +51,7 @@ instance FromJSON Grade where
 		tardy <- o .:? "tardy" .!= []
 		absent <- o .:? "absent" .!= []
 		rs <- o .: "rs"
-		p <- o .:? "p" .!= 0
+		p <- o .:? "p" .!= []
 		merits <- o .:? "merits" .!= 0
 		return Gr {..}
 instance FromJSON Classwork where
@@ -137,19 +137,12 @@ champed (Cline l r) = do
 		, fortyone
 		]
 	let points = Prelude.map (\g -> let
+			p_sum = Prelude.sum (p g)
 			is = q2is (qz cwk)
-			a0 = ((a (is!!0)) == (r2a (rs g!!0)))
-			a1 = ((a (is!!1)) == (r2a (rs g!!1)))
-			a2 = ((a (is!!2)) == (r2a (rs g!!2)))
-			a3 = ((a (is!!3)) == (r2a (rs g!!3)))
-			a4 = ((a (is!!4)) == (r2a (rs g!!4)))
-			a5 = ((a (is!!5)) == (r2a (rs g!!5)))
-			a6 = ((a (is!!6)) == (r2a (rs g!!6)))
-			a7 = ((a (is!!7)) == (r2a (rs g!!7)))
-			a8 = ((a (is!!8)) == (r2a (rs g!!8)))
-			a9 = ((a (is!!9)) == (r2a (rs g!!9)))
+			as = Prelude.map (\n -> ((a (is!!n)) == (r2a (rs g!!n))))
+				[0, Prelude.length is -1]
 			in
-			(g, Prelude.length (Prelude.filter ( (==) True) [a0,a1,a2,a3,a4,a5,a6,a7,a8,a9] ) )
+			(g, p_sum + Prelude.length (Prelude.filter ( (==) True) as ) )
 			) groups
 	let max = Prelude.maximum (Prelude.map snd points)
 	let min = Prelude.minimum (Prelude.map snd points)
@@ -160,7 +153,7 @@ champed (Cline l r) = do
 		merit p | p == min = 2
 		merit p = 2 + fromIntegral (raw - min) / fromIntegral (max - min)
 		in
-		(Gr {tardy = tardy g, absent = absent g, merits = merit raw, rs = rs g, p = raw})) groups
+		(Gr {tardy = tardy g, absent = absent g, merits = merit raw, rs = rs g, p = p g})) groups
 	let cwk' = Cwk { topic = top,
 		eleven = grades!!0, twelve = grades!!1,
 		twentyone = grades!!2, twentytwo = grades!!3,
