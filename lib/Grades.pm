@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2015 Nov 29, 22:08:52
+#Last Edit: 2015 Nov 30, 08:08:57
 #$Id$
 
 use MooseX::Declare;
@@ -1479,19 +1479,11 @@ Assistants are examiners with other responsibilities who are not participating i
 	my $assistant_data = $config->{assistant};
 	my @cans = keys %$assistant_data;
 	my $payout;
-	ASSISTANT:
-	for my $can ( @cans ) {
-	    my $can_data = $assistant_data->{$can};
-	    for my $assistant (keys %$can_data) {
-	    if ( $assistant eq $assistantId ) {
-		$payout = $can_data->{$assistant};
-		last ASSISTANT;
-	    }
-	}
-	die "$assistantId not an assistant in Round $round" unless
-	    defined $payout;
+	try { $payout = $self->assistantPoints(
+		$round )->{$assistantId} }
+	    catch { warn
+	"assistantPoints error: $_, with $assistantId in Round $round," };
 	return $payout;
-	}
     }
 
 =head3 dispensation
