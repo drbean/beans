@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2015 Nov 14, 10:30:21
+#Last Edit: 2015 Nov 29, 22:08:52
 #$Id$
 
 use MooseX::Declare;
@@ -1447,6 +1447,50 @@ Assistants points are from config->{assistant} of form { Black => { U9933002 => 
 	     die "@{ [keys %$assistants] }: assistant member mistakes." if any
 		{ not $self->league->is_member($_) } keys %assistantPoints;
 	    return \%assistantPoints;
+	}
+    }
+
+=head3 assistants
+
+Assistants are a list ref, and come from config->{assistant}, which is of form { Black => { U9933002 => 3, U9933007 => 4}, Yellow => { U9931007 => 4, U9933022 => 4 } }, and are examiners with other responsibilities who are not participating in the round.
+
+=cut
+
+    method assistants ( Str $round ) {
+	my $config = $self->config( $round );
+	my $assistant_data = $config->{assistant};
+	my @cans = keys %$assistant_data;
+	my @assistants;
+	for my $can ( @cans ) {
+	    my $can_data = $assistant_data->{$can};
+	    push @assistants, keys %$can_data;
+	}
+	return \@assistants;
+    }
+
+=head3 assistant_payout
+
+Assistants are examiners with other responsibilities who are not participating in the round, and get a payout depending on whether they do a good job or not.
+
+=cut
+
+    method assistant_payout ( Str $round, Str $assistantId ) {
+	my $config = $self->config( $round );
+	my $assistant_data = $config->{assistant};
+	my @cans = keys %$assistant_data;
+	my $payout;
+	ASSISTANT:
+	for my $can ( @cans ) {
+	    my $can_data = $assistant_data->{$can};
+	    for my $assistant (keys %$can_data) {
+	    if ( $assistant eq $assistantId ) {
+		$payout = $can_data->{$assistant};
+		last ASSISTANT;
+	    }
+	}
+	die "$assistantId not an assistant in Round $round" unless
+	    defined $payout;
+	return $payout;
 	}
     }
 
