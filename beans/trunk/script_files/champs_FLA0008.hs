@@ -41,8 +41,7 @@ data Classwork = Cwk { topic :: Text
 	, eleven :: Grade, twelve :: Grade
 	, thirteen :: Grade, fourteen :: Grade
 	, twentyone :: Grade, twentytwo :: Grade
-	, twentythree :: Grade
-	, twentyfive :: Grade, twentysix :: Grade
+	, twentythree :: Grade, twentyfour :: Grade
 	, thirtyone :: Grade, thirtytwo :: Grade
 	, thirtythree :: Grade, thirtyfour :: Grade
 	, qz :: Quiz } deriving (Show,Generic)
@@ -68,10 +67,11 @@ instance FromJSON Classwork where
 		twentyone <- o .: "2-1"
 		twentytwo <- o .: "2-2"
 		twentythree <- o .: "2-3"
-		twentyfive <- o .: "2-5"
-		twentysix <- o .: "2-6"
+		twentyfour <- o .: "2-4"
 		thirtyone <- o .: "3-1"
 		thirtytwo <- o .: "3-2"
+		thirtythree <- o .: "3-3"
+		thirtyfour <- o .: "3-4"
 		return Cwk {..}
 
 instance FromJSON Question
@@ -97,13 +97,10 @@ rewriteClassworkField	s = case s of
 	"thirteen"	-> "1-3" ; "fourteen"	-> "1-4"
 	"twentyone"	-> "2-1" ; "twentytwo"	-> "2-2"
 	"twentythree"	-> "2-3" ; "twentyfour"	-> "2-4"
-	"twentyfive"	-> "2-5" ; "twentysix"	-> "2-6"
 	"thirtyone"	-> "3-1" ; "thirtytwo"	-> "3-2"
 	"thirtythree"	-> "3-3" ; "thirtyfour"	-> "3-4"
 	"fortyone"	-> "4-1" ; "fortytwo"	-> "4-2"
 	"fortythree"	-> "4-3" ; "fortyfour"	-> "4-4"
-	"fortyfive"	-> "4-5" ; "fortysix"	-> "4-6"
-	"fiftyone"	-> "5-1" ; "fiftytwo"	-> "5-2"
 	"topic" -> "topic" ; "qz" -> "qz" ; "r" -> "r" ;
 	_	-> error ("No " ++ s ++ " field")
 
@@ -139,9 +136,9 @@ champed (Cline l r) = do
 	let quiz = qz cwk
 	let groups = Prelude.map (\f -> f cwk ) [
 		eleven, twelve
+		, thirteen, fourteen
 		, twentyone, twentytwo
-		, twentythree
-		, twentyfive, twentysix
+		, twentythree, twentyfour
 		, thirtyone, thirtytwo
 		, thirtythree, thirtyfour
 		]
