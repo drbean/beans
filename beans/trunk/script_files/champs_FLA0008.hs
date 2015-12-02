@@ -167,10 +167,10 @@ champed (Cline l r) = do
 		, eleven = grades!!0, twelve = grades!!1
 		, thirteen = grades!!2, fourteen = grades!!3
 		, twentyone = grades!!4, twentytwo = grades!!5
-		, twentythree = grades!!6
-		, thirtyone = grades!!7, thirtytwo = grades!!8
-		, thirtythree = grades!!9, thirtyfour = grades!!10
-		qz = quiz }
+		, twentythree = grades!!6, twentyfour = grades!!7
+		, thirtyone = grades!!8, thirtytwo = grades!!9
+		, thirtythree = grades!!10, thirtyfour = grades!!11
+		, qz = quiz }
 	Data.ByteString.putStrLn (Data.Yaml.encode cwk')
 
 main :: IO ()
