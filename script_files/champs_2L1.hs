@@ -4,6 +4,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
+import Prelude as Pre
 import Data.Text
 import GHC.Generics
 import Data.ByteString
@@ -134,24 +135,24 @@ champed (Cline l r) = do
 		Nothing -> error ("no parse of classwork/" <> r <> ".yaml.table")
 	let top = topic cwk
 	let quiz = qz cwk
-	let groups = Prelude.map (\f -> f cwk ) [
+	let groups = Pre.map (\f -> f cwk ) [
 		eleven, twelve
 		, twentyone, twentytwo
 		, thirtyone, thirtytwo
 		, fortyone, fortytwo
 		, fiftyone, fiftytwo
 		]
-	let points = Prelude.map (\g -> let
-			p_sum = Prelude.sum (p g)
+	let points = Pre.map (\g -> let
+			p_sum = Pre.sum (p g)
 			is = q2is (qz cwk)
-			as = Prelude.zipWith (\i r -> ((a i) == (r2a r)))
+			as = Pre.zipWith (\i r -> ((a i) == (r2a r)))
 				is (rs g)
 			in
-			(g, p_sum + Prelude.length (Prelude.filter ( (==) True) as ) )
+			(g, p_sum + Pre.length (Pre.filter ( (==) True) as ) )
 			) groups
-	let max = Prelude.maximum (Prelude.map snd points)
-	let min = Prelude.minimum (Prelude.map snd points)
-	let grades = Prelude.map (\g -> let
+	let max = Pre.maximum (Pre.map snd points)
+	let min = Pre.minimum (Pre.map snd points)
+	let grades = Pre.map (\g -> let
 		raw = point g points
 		merit :: Int -> Float
 		merit p | p == max = 3
