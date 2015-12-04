@@ -138,8 +138,9 @@ champed (Cline l r) = do
 	let points = Prelude.map (\g -> let
 			p_sum = Prelude.sum (p g)
 			is = q2is (qz cwk)
-			as = Prelude.map (\n -> ((a (is!!n)) == (r2a (rs g!!n))))
-				[0, Prelude.length is -1]
+			irs = Prelude.zip is (rs g)
+			as = Prelude.map (\ir -> ((a (fst ir)) == (r2a (snd ir))))
+				irs
 			in
 			(g, p_sum + Prelude.length (Prelude.filter ( (==) True) as ) )
 			) groups
