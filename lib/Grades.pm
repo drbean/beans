@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2015 Nov 30, 08:08:57
+#Last Edit: 2015 Dec 06, 16:27:23
 #$Id$
 
 use MooseX::Declare;
@@ -80,7 +80,7 @@ Keywords: gold stars, token economies, bean counter
 class League {
 	use YAML::XS qw/LoadFile DumpFile/;
 	use List::MoreUtils qw/any/;
-	use Grades::Types qw/PlayerName PlayerNames Members/;
+	use Grades::Types qw/PlayerName PlayerNames Dropouts Members/;
 	use Try::Tiny;
 	use Carp;
 
@@ -177,7 +177,7 @@ Students who have stopped coming to class and so won't be included in classwork 
 
 =cut
 
-	has 'absentees', (is => 'ro', isa => PlayerNames,
+	has 'absentees', (is => 'ro', isa => Dropouts,
 	    lazy => 1, default => sub { shift->yaml->{out} } );
 
 
