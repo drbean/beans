@@ -75,6 +75,7 @@ my $g = Grades->new({ league => $l });
 my $co = Compcomp->new({ league => $l });
 my $cl = $g->classwork;
 my %m = map { $_->{id} => $_ } @{ $l->members };
+my %out = map { $_->{id} => $_ } @{ $l->absentees };
 my $approach = $l->approach;
 
 my $h2p = Lingua::Han::PinYin->new( tone => 1 );
@@ -91,6 +92,10 @@ for my $member ( keys %m ) {
 	"$m{$member}->{name}\t$b{$m{$member}->{name}}\n";
 	$by_name{$name} = $i{$member};
 	$by_group{$group_n_letter} = $i{$member};
+}
+for my $member ( keys %out ) {
+	$i{$member} = "$member $m{$member}->{Chinese} $pinyin\t" . 
+	"$m{$member}->{name}\tOut\n";
 }
 my @i = "Session: $last, Week: $week\n";
 push @i, "IDs\n";
