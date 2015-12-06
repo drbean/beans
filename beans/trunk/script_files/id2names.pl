@@ -94,8 +94,14 @@ for my $member ( keys %m ) {
 	$by_group{$group_n_letter} = $i{$member};
 }
 for my $member ( keys %out ) {
-	$i{$member} = "$member $m{$member}->{Chinese} $pinyin\t" . 
-	"$m{$member}->{name}\tOut\n";
+	my $name = $out{$member}->{name};
+	my $group_n_letter = "Out";
+	my $chinese = encode( 'UTF-8', $out{$member}->{Chinese} );
+	my $pinyin = $h2p->han2pinyin( $chinese );
+	$i{$member} = "$member $out{$member}->{Chinese} $pinyin\t" . 
+	"$out{$member}->{name}\t$group_n_letter\n";
+	$by_name{$name} = $i{$member};
+	$by_group{$group_n_letter} = $i{$member};
 }
 my @i = "Session: $last, Week: $week\n";
 push @i, "IDs\n";
