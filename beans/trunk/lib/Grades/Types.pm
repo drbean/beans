@@ -3,7 +3,7 @@ package Grades::Types;
 use List::MoreUtils qw/all/;
 
 use MooseX::Types -declare =>
-	[ qw/PlayerName PlayerNames AbsenteeNames PlayerId Member Members
+	[ qw/PlayerName PlayerNames AbsenteeNames PlayerId Member Members Dropouts
 		Results
 		HomeworkResult
 		HomeworkPoints Cutpoints HomeworkWork HomeworkWorks
@@ -72,7 +72,7 @@ A possibly undefined PlayerNames list type.
 =cut
 
 subtype AbsenteeNames, as Maybe[ PlayerNames ], message
-	{ 'AbsenteeNames is a possibly empty list of PlayerNames' };
+       { 'AbsenteeNames is a possibly empty list of PlayerNames' };
 
 =head2 PlayerId
 
@@ -102,6 +102,15 @@ A possibly undefined list of Member.
 subtype Members,
 	as ArrayRef [Member],
 	message { 'Probably undefined or illegal PlayerNames or PlayerIds,' };
+
+=head2 Dropouts
+
+A possibly undefined Members list type. But Members is already possibly empty.
+
+=cut
+
+subtype Dropouts, as Maybe[ Members ], message
+	{ 'Dropouts is a possibly empty list of Members' };
 
 =head2 Results
 
