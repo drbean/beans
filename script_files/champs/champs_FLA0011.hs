@@ -9,6 +9,7 @@ import Data.Text
 import GHC.Generics
 import Data.ByteString
 import Data.Yaml
+import Data.Yaml.Pretty
 import Data.Aeson
 import Data.Aeson.Types
 import Options.Applicative
@@ -167,7 +168,7 @@ champed (Cline l r) = do
 		twentythree = grades!!6, twentyfour = grades!!7,
 		thirtyone = grades!!8, thirtytwo = grades!!9,
 		qz = quiz }
-	Data.ByteString.putStrLn (Data.Yaml.encode cwk')
+	Data.ByteString.putStrLn (encodePretty (setConfCompare compare defConfig) cwk')
 
 main :: IO ()
 main = execParser opts >>= champed where
