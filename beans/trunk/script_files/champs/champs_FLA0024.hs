@@ -132,10 +132,11 @@ point g pts = maybe 0 id (lookup g pts)
 champed :: CommandLine -> IO ()
 champed (Cline l r) = do
 	let f = "/home/drbean/041/" <> l <> "/classwork/" <> r <> ".yaml.table"
-	z <- Data.Yaml.decodeFile f :: IO (Maybe Classwork)
+	y <- Data.ByteString.readFile f
+	let z = Data.Yaml.decodeEither y :: Either String Classwork
 	let cwk = case z of 
-		Just c -> c
-		Nothing -> error ("no parse of classwork/" <> r <> ".yaml.table")
+		Right c -> c
+		Left what -> error ("No parse of classwork/" <> r <> ".yaml.table: " <> what)
 	let top = topic cwk
 	let quiz = qz cwk
 	let groups = Pre.map (\f -> f cwk ) [
