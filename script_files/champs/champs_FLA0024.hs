@@ -12,6 +12,7 @@ import Data.Yaml
 import Data.Yaml.Pretty
 import Data.Aeson
 import Data.Aeson.Types
+import Data.Time.Calendar.MonthDay
 import Options.Applicative
 
 data CommandLine = Cline { league :: String, round :: String }
@@ -44,7 +45,7 @@ data Classwork = Cwk { topic :: Text ,
 	twentyone :: Grade, twentytwo :: Grade, twentythree :: Grade, twentyfour :: Grade,
 	thirtyone :: Grade, thirtytwo :: Grade, thirtythree :: Grade, thirtyfour :: Grade,
 	fortyone :: Grade, fortytwo :: Grade, fortythree :: Grade,
-	qz :: Quiz } deriving (Show,Generic)
+	qz :: Quiz, day :: String } deriving (Show,Generic)
 instance FromJSON Member
 instance FromJSON League
 instance FromJSON Group
@@ -59,6 +60,7 @@ instance FromJSON Grade where
 instance FromJSON Classwork where
 	parseJSON = withObject "classwork" $ \o -> do
 		topic <- o .: "topic"
+		day <- o .:? "day" .!= ""
 		qz <- o .: "qz"
 		eleven <- o .: "1-1"
 		twelve <- o .: "1-2"
@@ -107,7 +109,7 @@ rewriteClassworkField	s = case s of
 	"fortythree"	-> "4-3" ; "fortyfour"	-> "4-4"
 	"fortyfive"	-> "4-5" ; "fortysix"	-> "4-6"
 	"fiftyone"	-> "5-1" ; "fiftytwo"	-> "5-2"
-	"topic" -> "topic" ; "qz" -> "qz" ; "r" -> "r" ;
+	"topic" -> "topic" ; "qz" -> "qz" ; "r" -> "r" ; "day" -> "day"
 	_	-> error ("No " ++ s ++ " field")
 
 q2is :: Quiz -> [Item]
@@ -120,6 +122,15 @@ a2int (A int) = int
 r2int (R int) = int
 point :: Grade -> [( Grade, Int )] -> Int
 point g pts = maybe 0 id (lookup g pts)
+day_zero = 250
+addDayFor :: String -> Int
+addDayFor "2L1" = 0
+addDayFor "FLA0003" = 0
+addDayFor "FLA0011" = 2
+addDayFor "FLA0008" = 3
+addDayFor "FLA0024" = 3
+addDayFor "MB1" = 5
+addDayFor "KB1" = 5
 
 --test_cwk :: Value
 --test_cwk = object [ "topic" .= "lerman",
@@ -163,12 +174,16 @@ champed (Cline l r) = do
 		merit p = 2 + fromIntegral (raw - min) / fromIntegral (max - min)
 		in
 		(Gr {tardy = tardy g, absent = absent g, merits = merit raw, rs = rs g, p = p g})) groups
+	let monday = day_zero + 7 * (read r)
+	let date = monday + (addDayFor l)
+	let (month,day) = dayOfYearToMonthAndDay False
+	let iso8601_date = "(014) 2015-" ++ (show month) ++ "-" ++ (show day)
 	let cwk' = Cwk { topic = top,
 		eleven = grades!!0, twelve = grades!!1, thirteen = grades!!2, fourteen = grades!!3,
 		twentyone = grades!!4, twentytwo = grades!!5, twentythree = grades!!6, twentyfour = grades!!7,
 		thirtyone = grades!!8, thirtytwo = grades!!9, thirtythree = grades!!10, thirtyfour = grades!!11,
 		fortyone = grades!!12, fortytwo = grades!!13, fortythree = grades!!14,
-		qz = quiz }
+		qz = quiz, day = iso8601_date }
 	Data.ByteString.putStrLn (encodePretty (setConfCompare compare defConfig) cwk')
 
 main :: IO ()
