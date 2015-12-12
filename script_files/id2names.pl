@@ -75,7 +75,7 @@ my $g = Grades->new({ league => $l });
 my $co = Compcomp->new({ league => $l });
 my $cl = $g->classwork;
 my %m = map { $_->{id} => $_ } @{ $l->members };
-my %out = map { $_->{id} => $_ } @{ $l->absentees };
+my %out = map { $_->{id} => $_ } @{ $l->absentees } if $l->absentees;
 my $approach = $l->approach;
 
 my $h2p = Lingua::Han::PinYin->new( tone => 1 );
