@@ -12,6 +12,7 @@ import Data.Yaml
 import Data.Yaml.Pretty
 import Data.Aeson
 import Data.Aeson.Types
+import Data.Time.Calendar.MonthDay
 import Options.Applicative
 
 data CommandLine = Cline { league :: String, round :: String }
@@ -52,7 +53,7 @@ data Classwork = Cwk { topic :: Text
 	, fortyone :: Grade, fortytwo :: Grade
 	, fortythree :: Grade, fortyfour :: Grade
 	, fortyfive :: Grade
-	, qz :: Quiz } deriving (Show,Generic)
+	, qz :: Quiz, day :: String } deriving (Show,Generic)
 instance FromJSON Member
 instance FromJSON League
 instance FromJSON Group
@@ -67,6 +68,7 @@ instance FromJSON Grade where
 instance FromJSON Classwork where
 	parseJSON = withObject "classwork" $ \o -> do
 		topic <- o .: "topic"
+		day <- o .:? "day" .!= ""
 		qz <- o .: "qz"
 		eleven <- o .: "1-1"
 		twelve <- o .: "1-2"
@@ -121,7 +123,7 @@ rewriteClassworkField	s = case s of
 	"fortyone"	-> "4-1" ; "fortytwo"	-> "4-2"
 	"fortythree"	-> "4-3" ; "fortyfour"	-> "4-4"
 	"fortyfive"	-> "4-5" ;
-	"topic" -> "topic" ; "qz" -> "qz" ; "r" -> "r" ;
+	"topic" -> "topic" ; "qz" -> "qz" ; "r" -> "r" ; "day" -> "day"
 	_	-> error ("No " ++ s ++ " field")
 
 s = "/home/drbean/041/FLA0008/session/1/groups.yaml"
@@ -136,6 +138,15 @@ a2int (A int) = int
 r2int (R int) = int
 point :: Grade -> [( Grade, Int )] -> Int
 point g pts = maybe 0 id (lookup g pts)
+day_zero = 250
+addDayFor :: String -> Int
+addDayFor "2L1" = 0
+addDayFor "FLA0003" = 0
+addDayFor "FLA0011" = 2
+addDayFor "FLA0008" = 3
+addDayFor "FLA0024" = 3
+addDayFor "MB1" = 5
+addDayFor "KB1" = 5
 
 --test_cwk :: Value
 --test_cwk = object [ "topic" .= "lerman",
@@ -187,6 +198,7 @@ champed (Cline l r) = do
 		merit p = 2 + fromIntegral (raw - min) / fromIntegral (max - min)
 		in
 		(Gr {tardy = tardy g, absent = absent g, merits = merit raw, rs = rs g, p = p g})) groups
+<<<<<<< .working
 	let cwk' = Cwk { topic = top
 		, eleven = grades!!0, twelve = grades!!1
 		, thirteen = grades!!2, fourteen = grades!!3
@@ -201,6 +213,19 @@ champed (Cline l r) = do
 		, fortythree = grades!!17, fortyfour = grades!!18
 		, fortyfive = grades!!19
 		, qz = quiz }
+=======
+	let monday = day_zero + 7 * (read r)
+	let date = monday + (addDayFor l)
+	let (month,day) = dayOfYearToMonthAndDay False
+	let iso8601_date = "(014) 2015-" ++ (show month) ++ "-" ++ (show day)
+	let cwk' = Cwk { topic = top,
+		eleven = grades!!0, twelve = grades!!1,
+		twentyone = grades!!2, twentytwo = grades!!3,
+		thirtyone = grades!!4, thirtytwo = grades!!5,
+		fortyone = grades!!6, fortytwo = grades!!7,
+		fiftyone = grades!!8, fiftytwo = grades!!9,
+		qz = quiz, day = iso8601_date }
+>>>>>>> .merge-right.r2231
 	Data.ByteString.putStrLn (encodePretty (setConfCompare compare defConfig) cwk')
 
 main :: IO ()
