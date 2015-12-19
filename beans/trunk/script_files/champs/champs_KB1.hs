@@ -169,7 +169,7 @@ champed (Cline l r) = do
 		(Gr {tardy = tardy g, absent = absent g, merits = merit raw, rs = rs g, p = p g})) groups
 	let monday = day_zero + 7 * (read r)
 	let date = monday + (addDayFor l)
-	let (month,day) = dayOfYearToMonthAndDay False
+	let (month,day) = dayOfYearToMonthAndDay False date
 	let iso8601_date = "(014) 2015-" ++ (show month) ++ "-" ++ (show day)
 	let cwk' = Cwk { topic = top,
 		eleven = grades!!0, twelve = grades!!1,

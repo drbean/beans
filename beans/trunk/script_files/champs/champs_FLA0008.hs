@@ -14,6 +14,7 @@ import Data.Aeson
 import Data.Aeson.Types
 import Data.Time.Calendar.MonthDay
 import Options.Applicative
+import System.IO
 
 data CommandLine = Cline { league :: String, round :: String }
 
@@ -48,7 +49,6 @@ data Classwork = Cwk { topic :: Text
 	, thirtyone :: Grade, thirtytwo :: Grade
 	, thirtythree :: Grade, thirtyfour :: Grade
 	, qz :: Quiz, day :: String } deriving (Show,Generic)
->>>>>>> .merge-right.r2231
 instance FromJSON Member
 instance FromJSON League
 instance FromJSON Group
@@ -175,7 +175,10 @@ champed (Cline l r) = do
 		merit p = 2 + fromIntegral (raw - min) / fromIntegral (max - min)
 		in
 		(Gr {tardy = tardy g, absent = absent g, merits = merit raw, rs = rs g, p = p g})) groups
-<<<<<<< .working
+	let monday = day_zero + 7 * (read r)
+	let date = monday + (addDayFor l)
+	let (month,day) = dayOfYearToMonthAndDay False date
+	let iso8601_date = "(014) 2015-" ++ (show month) ++ "-" ++ (show day)
 	let cwk' = Cwk { topic = top
 		, eleven = grades!!0, twelve = grades!!1
 		, thirteen = grades!!2, fourteen = grades!!3
@@ -183,20 +186,7 @@ champed (Cline l r) = do
 		, twentythree = grades!!6, twentyfour = grades!!7
 		, thirtyone = grades!!8, thirtytwo = grades!!9
 		, thirtythree = grades!!10, thirtyfour = grades!!11
-		, qz = quiz }
-=======
-	let monday = day_zero + 7 * (read r)
-	let date = monday + (addDayFor l)
-	let (month,day) = dayOfYearToMonthAndDay False
-	let iso8601_date = "(014) 2015-" ++ (show month) ++ "-" ++ (show day)
-	let cwk' = Cwk { topic = top,
-		eleven = grades!!0, twelve = grades!!1,
-		twentyone = grades!!2, twentytwo = grades!!3,
-		thirtyone = grades!!4, thirtytwo = grades!!5,
-		fortyone = grades!!6, fortytwo = grades!!7,
-		fiftyone = grades!!8, fiftytwo = grades!!9,
-		qz = quiz, day = iso8601_date }
->>>>>>> .merge-right.r2231
+		, qz = quiz, day = iso8601_date }
 	Data.ByteString.putStrLn (encodePretty (setConfCompare compare defConfig) cwk')
 
 main :: IO ()
