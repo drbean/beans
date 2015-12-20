@@ -1,4 +1,4 @@
-#Last Edit: 2015 Nov 14, 16:40:52
+#Last Edit: 2015 Dec 20, 21:03:09
 #$Id$
 
 use MooseX::Declare;
@@ -306,18 +306,15 @@ Given the name of a player, their letter in the beancan they were a member of in
 
 =cut
 
-	method name2letter (Num $week, Str $name) {
+	method name2letter (Num $week, Str $myname) {
 		croak "Week $week?" unless defined $week;
 		my $session = $self->week2session($week);
 		my $beancans = $self->beancan_names($session);
-		my @names; push @names, @$_ for values %$beancans;
-		my @name2beancans;
-		while ( my ($beancan, $names) = each %$beancans ) {
-			push @name2beancans, $beancan for grep /^$name$/, @$names;
-		}
-		croak "$name not in exactly one beancan in $session session.\n"
-					unless @name2beancans == 1;
-		shift @name2beancans;
+		my $mycan = $self->name2beancan($week, $myname);
+		my $names = $beancans->{$mycan};
+		my @abc = qw/ A B C /;
+		my %letters = map { $names->[$_] => $abc[$_] } (0 .. $#$names);
+		my $letter = $letters{$myname};
 	}
 
 =head3 beancansNotInCard
