@@ -85,13 +85,14 @@ my (%i, %by_name, %by_group);
 for my $member ( keys %m ) {
 	my $week = $sessions->{$last};
 	my $name = $m{$member}->{name};
-	my $group_n_letter = $cl->name2beancan($week, $name);
+	my $group_n_letter = $cl->name2beancan($week, $name) . " " .
+		$cl->name2letter($week, $name);
 	my $chinese = encode( 'UTF-8', $m{$member}->{Chinese} );
 	my $pinyin = $h2p->han2pinyin( $chinese );
 	$i{$member} = "$member $m{$member}->{Chinese} $pinyin\t" . 
-	"$m{$member}->{name}\t$b{$m{$member}->{name}}\n";
+		"$name\t$group_n_letter\n";
 	$by_name{$name} = $i{$member};
-	$by_group{$group_n_letter} = $i{$member};
+	$by_group{"$group_n_letter"} = $i{$member};
 }
 for my $member ( keys %out ) {
 	my $name = $out{$member}->{name};
@@ -99,7 +100,7 @@ for my $member ( keys %out ) {
 	my $chinese = encode( 'UTF-8', $out{$member}->{Chinese} );
 	my $pinyin = $h2p->han2pinyin( $chinese );
 	$i{$member} = "$member $out{$member}->{Chinese} $pinyin\t" . 
-	"$out{$member}->{name}\t$group_n_letter\n";
+	"$name\t$group_n_letter\n";
 	$by_name{$name} = $i{$member};
 	$by_group{$group_n_letter} = $i{$member};
 }
