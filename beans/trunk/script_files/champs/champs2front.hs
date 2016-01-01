@@ -43,11 +43,16 @@ data Grade = Gr { tardy :: [Member], absent :: [Member], rs :: [Response], merit
 data Classwork = Cwk { topic :: Text
 	, eleven :: Maybe Grade, twelve :: Maybe Grade
 	, thirteen :: Maybe Grade, fourteen :: Maybe Grade
+	, fifteen :: Maybe Grade
 	, twentyone :: Maybe Grade, twentytwo :: Maybe Grade
 	, twentythree :: Maybe Grade, twentyfour :: Maybe Grade
+	, twentyfive :: Maybe Grade
 	, thirtyone :: Maybe Grade, thirtytwo :: Maybe Grade
 	, thirtythree :: Maybe Grade, thirtyfour :: Maybe Grade
+	, thirtyfive :: Maybe Grade
 	, fortyone :: Maybe Grade, fortytwo :: Maybe Grade
+	, fortythree :: Maybe Grade, fortyfour :: Maybe Grade
+	, fortyfive :: Maybe Grade
 	, fiftyone :: Maybe Grade, fiftytwo :: Maybe Grade
 	, qz :: Quiz, day :: String } deriving (Show,Generic)
 instance FromJSON Member
@@ -70,16 +75,22 @@ instance FromJSON Classwork where
 		twelve <- o .:? "1-2" .!= Nothing
 		thirteen <- o .:? "1-3" .!= Nothing
 		fourteen <- o .:? "1-4" .!= Nothing
+		fifteen <- o .:? "1-5" .!= Nothing
 		twentyone <- o .:? "2-1" .!= Nothing
 		twentytwo <- o .:? "2-2" .!= Nothing
 		twentythree <- o .:? "2-3" .!= Nothing
 		twentyfour <- o .:? "2-4" .!= Nothing
+		twentyfive <- o .:? "2-5" .!= Nothing
 		thirtyone <- o .:? "3-1" .!= Nothing
 		thirtytwo <- o .:? "3-2" .!= Nothing
 		thirtythree <- o .:? "3-3" .!= Nothing
 		thirtyfour <- o .:? "3-4" .!= Nothing
+		thirtyfive <- o .:? "3-5" .!= Nothing
 		fortyone <- o .:? "4-1" .!= Nothing
 		fortytwo <- o .:? "4-2" .!= Nothing
+		fortythree <- o .:? "4-3" .!= Nothing
+		fortyfour <- o .:? "4-4" .!= Nothing
+		fortyfive <- o .:? "4-5" .!= Nothing
 		fiftyone <- o .:? "5-1" .!= Nothing
 		fiftytwo <- o .:? "5-2" .!= Nothing
 		return Cwk {..}
@@ -105,14 +116,16 @@ instance ToJSON Response
 rewriteClassworkField	s = case s of
 	"eleven"	-> "1-1" ; "twelve"	-> "1-2"
 	"thirteen"	-> "1-3" ; "fourteen"	-> "1-4"
+	"fifteen"	-> "1-5"
 	"twentyone"	-> "2-1" ; "twentytwo"	-> "2-2"
 	"twentythree"	-> "2-3" ; "twentyfour"	-> "2-4"
-	"twentyfive"	-> "2-5" ; "twentysix"	-> "2-6"
+	"twentyfive"	-> "2-5"
 	"thirtyone"	-> "3-1" ; "thirtytwo"	-> "3-2"
 	"thirtythree"	-> "3-3" ; "thirtyfour"	-> "3-4"
+	"thirtyfive"	-> "3-5"
 	"fortyone"	-> "4-1" ; "fortytwo"	-> "4-2"
 	"fortythree"	-> "4-3" ; "fortyfour"	-> "4-4"
-	"fortyfive"	-> "4-5" ; "fortysix"	-> "4-6"
+	"fortyfive"	-> "4-5"
 	"fiftyone"	-> "5-1" ; "fiftytwo"	-> "5-2"
 	"topic" -> "topic" ; "qz" -> "qz" ; "r" -> "r" ; "day" -> "day"
 	_	-> error ("No " ++ s ++ " field")
@@ -160,11 +173,16 @@ champed (Cline l r) = do
 	let groups = Pre.map (\f -> f cwk ) [
 		eleven, twelve
 		, thirteen, fourteen
+		, fifteen
 		, twentyone, twentytwo
 		, twentythree, twentyfour
+		, twentyfive
 		, thirtyone, thirtytwo
 		, thirtythree, thirtyfour
+		, thirtyfive
 		, fortyone, fortytwo
+		, fortythree, fortyfour
+		, fortyfive
 		, fiftyone, fiftytwo
 		]
 	let points = Pre.map (\group-> let
@@ -194,11 +212,16 @@ champed (Cline l r) = do
 	let cwk' = Cwk { topic = top
 		, eleven = grade (eleven cwk), twelve = grade (twelve cwk)
 		, thirteen = grade (thirteen cwk), fourteen = grade (fourteen cwk)
+		, fifteen = grade (fifteen cwk)
 		, twentyone = grade (twentyone cwk), twentytwo = grade (twentytwo cwk)
 		, twentythree = grade (twentythree cwk), twentyfour = grade (twentyfour cwk)
+		, twentyfive = grade (twentyfive cwk)
 		, thirtyone = grade (thirtyone cwk), thirtytwo = grade (thirtytwo cwk)
 		, thirtythree = grade (thirtythree cwk), thirtyfour = grade (thirtyfour cwk)
+		, thirtyfive = grade (thirtyfive cwk)
 		, fortyone = grade (fortyone cwk), fortytwo = grade (fortyone cwk)
+		, fortythree = grade (fortythree cwk), fortyfour = grade (fortyfour cwk)
+		, fortyfive = grade (fortyfive cwk)
 		, fiftyone = grade (fiftyone cwk), fiftytwo = grade (fiftyone cwk)
 		, qz = quiz, day = iso8601_date }
 	Data.ByteString.putStrLn (encodePretty (setConfCompare compare defConfig) cwk')
