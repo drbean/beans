@@ -46,7 +46,6 @@ data Classwork = Cwk { topic :: Text
 	, twentyone :: Grade, twentytwo :: Grade
 	, twentythree :: Grade, twentyfour :: Grade
 	, thirtyone :: Grade, thirtytwo :: Grade
-	, qz :: Quiz } deriving (Show,Generic)
 	, qz :: Quiz, day :: String } deriving (Show,Generic)
 instance FromJSON Member
 instance FromJSON League
