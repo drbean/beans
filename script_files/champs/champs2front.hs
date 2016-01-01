@@ -40,14 +40,16 @@ data Item = I { q :: Question, o :: [Option], a :: Answer } deriving (Show,Gener
 data Quiz = Qz [Item] deriving (Show,Generic)
 data Response = R Int deriving (Show,Generic,Eq)
 data Grade = Gr { tardy :: [Member], absent :: [Member], rs :: [Response], merits :: Float, p :: [Int] } deriving (Show,Generic,Eq)
-data Classwork = Cwk { topic :: Text ,
-	eleven :: Grade, twelve :: Grade,
-	twentyone :: Grade, twentytwo :: Grade,
-	-- twentythree :: Grade, twentyfour :: Grade,
-	thirtyone :: Grade, thirtytwo :: Grade,
-	fortyone :: Grade, fortytwo :: Grade,
-	fiftyone :: Grade, fiftytwo :: Grade,
-	qz :: Quiz, day :: String } deriving (Show,Generic)
+data Classwork = Cwk { topic :: Text
+	, eleven :: Maybe Grade, twelve :: Maybe Grade
+	, thirteen :: Maybe Grade, fourteen :: Maybe Grade
+	, twentyone :: Maybe Grade, twentytwo :: Maybe Grade
+	, twentythree :: Maybe Grade, twentyfour :: Maybe Grade
+	, thirtyone :: Maybe Grade, thirtytwo :: Maybe Grade
+	, thirtythree :: Maybe Grade, thirtyfour :: Maybe Grade
+	, fortyone :: Maybe Grade, fortytwo :: Maybe Grade
+	, fiftyone :: Maybe Grade, fiftytwo :: Maybe Grade
+	, qz :: Quiz, day :: String } deriving (Show,Generic)
 instance FromJSON Member
 instance FromJSON League
 instance FromJSON Group
@@ -64,16 +66,22 @@ instance FromJSON Classwork where
 		topic <- o .: "topic"
 		day <- o .:? "day" .!= ""
 		qz <- o .: "qz"
-		eleven <- o .: "1-1"
-		twelve <- o .: "1-2"
-		twentyone <- o .: "2-1"
-		twentytwo <- o .: "2-2"
-		thirtyone <- o .: "3-1"
-		thirtytwo <- o .: "3-2"
-		fortyone <- o .: "4-1"
-		fortytwo <- o .: "4-2"
-		fiftyone <- o .: "5-1"
-		fiftytwo <- o .: "5-2"
+		eleven <- o .: "1-1" .!= Nothing
+		twelve <- o .: "1-2" .!= Nothing
+		thirteen <- o .: "1-3" .!= Nothing
+		fourteen <- o .: "1-4" .!= Nothing
+		twentyone <- o .: "2-1" .!= Nothing
+		twentytwo <- o .: "2-2" .!= Nothing
+		twentythree <- o .: "2-3" .!= Nothing
+		twentyfour <- o .: "2-4" .!= Nothing
+		thirtyone <- o .: "3-1" .!= Nothing
+		thirtytwo <- o .: "3-2" .!= Nothing
+		thirtythree <- o .: "3-3" .!= Nothing
+		thirtyfour <- o .: "3-4" .!= Nothing
+		fortyone <- o .:? "4-1" .!= Nothing
+		fortytwo <- o .:? "4-2" .!= Nothing
+		fiftyone <- o .:? "5-1" .!= Nothing
+		fiftytwo <- o .:? "5-2" .!= Nothing
 		return Cwk {..}
 
 instance FromJSON Question
@@ -150,15 +158,20 @@ champed (Cline l r) = do
 	let top = topic cwk
 	let quiz = qz cwk
 	let groups = Pre.map (\f -> f cwk ) [
-		eleven, twelve,
-		twentyone, twentytwo,
-		thirtyone, thirtytwo,
-		fortyone, fortytwo,
-		fiftyone, fiftytwo
+		eleven, twelve
+		, thirteen, fourteen
+		, twentyone, twentytwo
+		, twentythree, twentyfour
+		, thirtyone, thirtytwo
+		, thirtythree, thirtyfour
+		, fortyone, fortytwo
+		, fiftyone, fiftytwo
 		]
-	let points = Pre.map (\g -> let
-			p_sum = Pre.sum (p g)
+	let points = Pre.map (\group-> let
 			is = q2is (qz cwk)
+			g = Pre.maybe (Gr {tardy = [], absent = [], p = [], rs = []})
+				id group
+			p_sum = Pre.sum (p g)
 			as = Pre.zipWith (\i r -> ((a i) == (r2a r)))
 				is (rs g)
 			in
@@ -166,25 +179,28 @@ champed (Cline l r) = do
 			) groups
 	let max = Pre.maximum (Pre.map snd points)
 	let min = Pre.minimum (Pre.map snd points)
-	let grades = Pre.map (\g -> let
+	let grade :: Maybe Grade -> Maybe Grade ; grade Nothing = Nothing; grade (Just g)  = let
 		raw = point g points
 		merit :: Int -> Float
 		merit p | p == max = 3
 		merit p | p == min = 2
 		merit p = 2 + fromIntegral (raw - min) / fromIntegral (max - min)
 		in
-		(Gr {tardy = tardy g, absent = absent g, merits = merit raw, rs = rs g, p = p g})) groups
+		Just (Gr {tardy = tardy g, absent = absent g, merits = merit raw, rs = rs g, p = p g})
 	let monday = day_zero + 7 * (read r)
 	let date = monday + (addDayFor l)
 	let (month,day) = dayOfYearToMonthAndDay False date
 	let iso8601_date = "(014) 2015-" ++ (show month) ++ "-" ++ (show day)
-	let cwk' = Cwk { topic = top,
-		eleven = grades!!0, twelve = grades!!1,
-		twentyone = grades!!2, twentytwo = grades!!3,
-		thirtyone = grades!!4, thirtytwo = grades!!5,
-		fortyone = grades!!6, fortytwo = grades!!7,
-		fiftyone = grades!!8, fiftytwo = grades!!9,
-		qz = quiz, day = iso8601_date }
+	let cwk' = Cwk { topic = top
+		, eleven = grade (eleven cwk), twelve = grade (twelve cwk)
+		, thirteen = grade (thirteen cwk), fourteen = grade (fourteen cwk)
+		, twentyone = grade (twentyone cwk), twentytwo = grade (twentytwo cwk)
+		, twentythree = grade (twentythree cwk), twentyfour = grade (twentyfour cwk)
+		, thirtyone = grade (thirtyone cwk), thirtytwo = grade (thirtytwo cwk)
+		, thirtythree = grade (thirtythree cwk), thirtyfour = grade (thirtyfour cwk)
+		, fortyone = grade (fortyone cwk), fortytwo = grade (fortyone cwk)
+		, fiftyone = grade (fiftyone cwk), fiftytwo = grade (fiftyone cwk)
+		, qz = quiz, day = iso8601_date }
 	Data.ByteString.putStrLn (encodePretty (setConfCompare compare defConfig) cwk')
 
 main :: IO ()
