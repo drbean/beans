@@ -46,7 +46,6 @@ data Classwork = Cwk { topic :: Text
 	, thirtyone :: Grade, thirtytwo :: Grade
 	, fortyone :: Grade, fortytwo :: Grade
 	, qz :: Quiz, day :: String } deriving (Show,Generic)
->>>>>>> .merge-right.r2231
 instance FromJSON Member
 instance FromJSON League
 instance FromJSON Group
@@ -177,7 +176,6 @@ champed (Cline l r) = do
 		, twentyone = grades!!2, twentytwo = grades!!3
 		, thirtyone = grades!!4, thirtytwo = grades!!5
 		, fortyone = grades!!6, fortytwo = grades!!7
-		, qz = quiz }
 		, qz = quiz, day = iso8601_date }
 	Data.ByteString.putStrLn (encodePretty (setConfCompare compare defConfig) cwk')
 

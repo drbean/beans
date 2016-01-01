@@ -198,7 +198,10 @@ champed (Cline l r) = do
 		merit p = 2 + fromIntegral (raw - min) / fromIntegral (max - min)
 		in
 		(Gr {tardy = tardy g, absent = absent g, merits = merit raw, rs = rs g, p = p g})) groups
-<<<<<<< .working
+	let monday = day_zero + 7 * (read r)
+	let date = monday + (addDayFor l)
+	let (month,day) = dayOfYearToMonthAndDay False date
+	let iso8601_date = "(014) 2015-" ++ (show month) ++ "-" ++ (show day)
 	let cwk' = Cwk { topic = top
 		, eleven = grades!!0, twelve = grades!!1
 		, thirteen = grades!!2, fourteen = grades!!3
@@ -212,20 +215,7 @@ champed (Cline l r) = do
 		, fortyone = grades!!15, fortytwo = grades!!16
 		, fortythree = grades!!17, fortyfour = grades!!18
 		, fortyfive = grades!!19
-		, qz = quiz }
-=======
-	let monday = day_zero + 7 * (read r)
-	let date = monday + (addDayFor l)
-	let (month,day) = dayOfYearToMonthAndDay False date
-	let iso8601_date = "(014) 2015-" ++ (show month) ++ "-" ++ (show day)
-	let cwk' = Cwk { topic = top,
-		eleven = grades!!0, twelve = grades!!1,
-		twentyone = grades!!2, twentytwo = grades!!3,
-		thirtyone = grades!!4, thirtytwo = grades!!5,
-		fortyone = grades!!6, fortytwo = grades!!7,
-		fiftyone = grades!!8, fiftytwo = grades!!9,
-		qz = quiz, day = iso8601_date }
->>>>>>> .merge-right.r2231
+		, qz = quiz, day = iso8601_date }
 	Data.ByteString.putStrLn (encodePretty (setConfCompare compare defConfig) cwk')
 
 main :: IO ()
