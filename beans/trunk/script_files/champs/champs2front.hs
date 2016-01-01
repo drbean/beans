@@ -66,18 +66,18 @@ instance FromJSON Classwork where
 		topic <- o .: "topic"
 		day <- o .:? "day" .!= ""
 		qz <- o .: "qz"
-		eleven <- o .: "1-1" .!= Nothing
-		twelve <- o .: "1-2" .!= Nothing
-		thirteen <- o .: "1-3" .!= Nothing
-		fourteen <- o .: "1-4" .!= Nothing
-		twentyone <- o .: "2-1" .!= Nothing
-		twentytwo <- o .: "2-2" .!= Nothing
-		twentythree <- o .: "2-3" .!= Nothing
-		twentyfour <- o .: "2-4" .!= Nothing
-		thirtyone <- o .: "3-1" .!= Nothing
-		thirtytwo <- o .: "3-2" .!= Nothing
-		thirtythree <- o .: "3-3" .!= Nothing
-		thirtyfour <- o .: "3-4" .!= Nothing
+		eleven <- o .:? "1-1" .!= Nothing
+		twelve <- o .:? "1-2" .!= Nothing
+		thirteen <- o .:? "1-3" .!= Nothing
+		fourteen <- o .:? "1-4" .!= Nothing
+		twentyone <- o .:? "2-1" .!= Nothing
+		twentytwo <- o .:? "2-2" .!= Nothing
+		twentythree <- o .:? "2-3" .!= Nothing
+		twentyfour <- o .:? "2-4" .!= Nothing
+		thirtyone <- o .:? "3-1" .!= Nothing
+		thirtytwo <- o .:? "3-2" .!= Nothing
+		thirtythree <- o .:? "3-3" .!= Nothing
+		thirtyfour <- o .:? "3-4" .!= Nothing
 		fortyone <- o .:? "4-1" .!= Nothing
 		fortytwo <- o .:? "4-2" .!= Nothing
 		fiftyone <- o .:? "5-1" .!= Nothing
