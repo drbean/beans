@@ -140,8 +140,6 @@ r2a :: Response -> Answer
 r2a (R int) = (A int)
 a2int (A int) = int
 r2int (R int) = int
-point :: Grade -> [( Grade, Int )] -> Int
-point g pts = maybe 0 id (lookup g pts)
 day_zero = 250
 addDayFor :: String -> Int
 addDayFor "2L1" = 0
@@ -170,6 +168,7 @@ champed (Cline l r) = do
 		Left what -> error ("No parse of classwork/" <> r <> ".yaml.table: " <> what)
 	let top = topic cwk
 	let quiz = qz cwk
+	let items = q2is quiz
 	let groups = Pre.map (\f -> f cwk ) [
 		eleven, twelve
 		, thirteen, fourteen
@@ -185,20 +184,16 @@ champed (Cline l r) = do
 		, fortyfive
 		, fiftyone, fiftytwo
 		]
-	let points = Pre.map (\group-> let
-			is = q2is (qz cwk)
-			g = Pre.maybe (Gr {tardy = [], absent = [], p = [], rs = []})
-				id group
-			p_sum = Pre.sum (p g)
-			as = Pre.zipWith (\i r -> ((a i) == (r2a r)))
-				is (rs g)
-			in
-			(g, p_sum + Pre.length (Pre.filter ( (==) True) as ) )
-			) groups
-	let max = Pre.maximum (Pre.map snd points)
-	let min = Pre.minimum (Pre.map snd points)
+	let score :: Maybe Grade -> Maybe Int; score Nothing = Nothing; score (Just g) = let
+		p_sum = Pre.sum (p g)
+		as = Pre.zipWith (\i r -> ((a i) == (r2a r)))
+			items (rs g)
+		in Just (p_sum + Pre.length (Pre.filter ( (==) True) as ))
+	let scores = Pre.filter (/= Nothing) (Pre.map score groups)
+	let max = Pre.maximum (Pre.map (maybe 0 id) scores)
+	let min = Pre.minimum (Pre.map (maybe 0 id) scores)
 	let grade :: Maybe Grade -> Maybe Grade ; grade Nothing = Nothing; grade (Just g)  = let
-		raw = point g points
+		raw = maybe min id (score (Just g))
 		merit :: Int -> Float
 		merit p | p == max = 3
 		merit p | p == min = 2
