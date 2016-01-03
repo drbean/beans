@@ -94,9 +94,11 @@ for my $member ( keys %m ) {
 	$by_name{$name} = $i{$member};
 	$by_group{"$group_n_letter"} = $i{$member};
 }
+my $n = 0;
 for my $member ( keys %out ) {
 	my $name = $out{$member}->{name};
-	my $group_n_letter = "Out";
+	my $group_n_letter = "Out $n" ;
+	$n++;
 	my $chinese = encode( 'UTF-8', $out{$member}->{Chinese} );
 	my $pinyin = $h2p->han2pinyin( $chinese );
 	$i{$member} = "$member $out{$member}->{Chinese} $pinyin\t" . 
