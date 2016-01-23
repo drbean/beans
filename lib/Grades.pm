@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2015 Dec 06, 16:27:23
+#Last Edit: 2016 Jan 23, 17:08:28
 #$Id$
 
 use MooseX::Declare;
@@ -1952,7 +1952,7 @@ A hashref of student ids and final grades, curved from $low to $high, with the m
 		my $grade = $self->grades;
 		my @grades = values %$grade;
 		my $real_low = min @grades;
-		my $real_median = (sort {$a<=>$b} @grades)[ @ids/2 ];
+		my $real_median = $self->median( \@grades );
 		my $real_high = max @grades;
 		my %curved;
 		for my $member ( keys %$grade ) {
@@ -1971,6 +1971,17 @@ A hashref of student ids and final grades, curved from $low to $high, with the m
 		    }
 		}
 		\%curved;
+	}
+
+=head3 median
+
+The median score from a list of scores, ie the score at or below which 50 percent of the scores lie. On the other hand, if there are an odd number of scores, the least score in the list below which 50 percent of the scores lie.
+
+=cut
+
+	method median (ArrayRef[Num] $scores) {
+		my $median = (sort {$a<=>$b} @$scores)[ @$scores/2 ];
+		$median;
 	}
 
 }
