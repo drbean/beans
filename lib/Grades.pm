@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2016 Jan 23, 17:08:28
+#Last Edit: 2016 Jan 23, 17:19:44
 #$Id$
 
 use MooseX::Declare;
@@ -1980,7 +1980,8 @@ The median score from a list of scores, ie the score at or below which 50 percen
 =cut
 
 	method median (ArrayRef[Num] $scores) {
-		my $median = (sort {$a<=>$b} @$scores)[ @$scores/2 ];
+		my $n = @$scores;
+		my $median = (sort {$a<=>$b} @$scores)[ $n/2 - 1 ];
 		$median;
 	}
 
