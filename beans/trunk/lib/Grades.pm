@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2016 Jan 23, 17:19:44
+#Last Edit: 2016 Jan 23, 17:40:15
 #$Id$
 
 use MooseX::Declare;
@@ -1849,7 +1849,7 @@ class Grades with Homework with Exams with Jigsaw
     require Grades::Groupwork;
     use Carp;
     use Grades::Types qw/Weights/;
-    use List::Util qw/max min/;
+    use List::Util qw/max min sum/;
 
 =head3 BUILDARGS
 
@@ -1975,7 +1975,7 @@ A hashref of student ids and final grades, curved from $low to $high, with the m
 
 =head3 median
 
-The median score from a list of scores, ie the score at or below which 50 percent of the scores lie. On the other hand, if there are an odd number of scores, the least score in the list below which 50 percent of the scores lie.
+The median score from a list of scores, ie the score at or below which 50 percent of the scores lie. On the other hand, if there are an odd number of scores, the least score in the list below which 50 percent of the scores lie. The score below the ordinary definition for both odd, even number of scores.
 
 =cut
 
