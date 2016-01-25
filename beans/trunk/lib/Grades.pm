@@ -1,6 +1,6 @@
 package Grades;
 
-#Last Edit: 2016 Jan 23, 17:40:15
+#Last Edit: 2016 Jan 23, 17:44:46
 #$Id$
 
 use MooseX::Declare;
@@ -1983,6 +1983,19 @@ The median score from a list of scores, ie the score at or below which 50 percen
 		my $n = @$scores;
 		my $median = (sort {$a<=>$b} @$scores)[ $n/2 - 1 ];
 		$median;
+	}
+
+=head3 mean
+
+The average of a list of scores.
+
+=cut
+
+	method mean (ArrayRef[Num] $scores) {
+		my $n = @$scores;
+		my $sum = sum @$scores;
+		my $mean = $sum / $n;
+		$mean;
 	}
 
 }
