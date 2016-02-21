@@ -35,7 +35,7 @@ Returns name of player (without \n) from letter designation
 
 =cut
 
-my $leagues = "/home/drbean/041";
+my $leagues = "/home/drbean/042";
 my ($session, $group, $letter, $help, $man);
 my $league => basename(getcwd);
 GetOptions ("league=s" => \$league,
