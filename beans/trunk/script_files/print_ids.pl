@@ -35,7 +35,7 @@ print_ids.pl -l GL00019 > members.txt
 # my @ids = sort map { $_->{id} } @$members;
 
 my $leagueId = basename( getcwd );
-my $y = LoadFile "/home/drbean/041/$leagueId/league.yaml";
+my $y = LoadFile "/home/drbean/042/$leagueId/league.yaml";
 my $members = $y->{member};
 my @ids = sort map { $_->{id} } @$members;
 $, = "\n";

@@ -24,7 +24,7 @@ print_grades.pl -x curve -o 60 -w 80 -t 100 > grades.txt
 
 
 my $session = 1;
-my $dirs = '/home/drbean/041';
+my $dirs = '/home/drbean/042';
 
 (my $dir = getcwd) =~ s/^.*\/([^\/]*)$/$1/;
 
