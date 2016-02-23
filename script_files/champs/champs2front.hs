@@ -130,8 +130,8 @@ rewriteClassworkField	s = case s of
 	"topic" -> "topic" ; "qz" -> "qz" ; "r" -> "r" ; "day" -> "day"
 	_	-> error ("No " ++ s ++ " field")
 
-s = "/home/drbean/041/FLA0008/session/1/groups.yaml"
-f = "/home/drbean/041/FLA0008/classwork/1.yaml"
+s = "/home/drbean/042/FLA0008/session/1/groups.yaml"
+f = "/home/drbean/042/FLA0008/classwork/1.yaml"
 q2is :: Quiz -> [Item]
 q2is (Qz (i:[])) = [i]
 q2is (Qz (i:is)) = i : (q2is (Qz is) )
@@ -140,15 +140,15 @@ r2a :: Response -> Answer
 r2a (R int) = (A int)
 a2int (A int) = int
 r2int (R int) = int
-day_zero = 250
+day_zero = 46
 addDayFor :: String -> Int
-addDayFor "2L1" = 0
-addDayFor "FLA0003" = 0
-addDayFor "FLA0011" = 2
-addDayFor "FLA0008" = 3
-addDayFor "FLA0024" = 3
-addDayFor "MB1" = 5
-addDayFor "KB1" = 5
+addDayFor "2L2" = 0
+addDayFor "BMA0009" = 2
+addDayFor "FLA0013" = 2
+addDayFor "FLA0019" = 4
+addDayFor "FLA0021" = 0
+addDayFor "MB2" = 5
+addDayFor "KA2" = 5
 
 --test_cwk :: Value
 --test_cwk = object [ "topic" .= "lerman",
@@ -160,7 +160,7 @@ addDayFor "KB1" = 5
 
 champed :: CommandLine -> IO ()
 champed (Cline l r) = do
-	let f = "/home/drbean/041/" <> l <> "/classwork/" <> r <> ".yaml.table"
+	let f = "/home/drbean/042/" <> l <> "/classwork/" <> r <> ".yaml.table"
 	y <- Data.ByteString.readFile f
 	let z = Data.Yaml.decodeEither y :: Either String Classwork
 	let cwk = case z of 
@@ -202,8 +202,8 @@ champed (Cline l r) = do
 		Just (Gr {tardy = tardy g, absent = absent g, merits = merit raw, rs = rs g, p = p g})
 	let monday = day_zero + 7 * (read r)
 	let date = monday + (addDayFor l)
-	let (month,day) = dayOfYearToMonthAndDay False date
-	let iso8601_date = "(014) 2015-" ++ (show month) ++ "-" ++ (show day)
+	let (month,day) = dayOfYearToMonthAndDay True date
+	let iso8601_date = "(042) 2016-" ++ (show month) ++ "-" ++ (show day)
 	let cwk' = Cwk { topic = top
 		, eleven = grade (eleven cwk), twelve = grade (twelve cwk)
 		, thirteen = grade (thirteen cwk), fourteen = grade (fourteen cwk)
