@@ -145,6 +145,7 @@ addDayFor :: String -> Int
 addDayFor "2L2" = 0
 addDayFor "BMA0009" = 2
 addDayFor "FLA0013" = 2
+addDayFor "FLA0003" = 3
 addDayFor "FLA0019" = 4
 addDayFor "FLA0021" = 0
 addDayFor "MB2" = 5
