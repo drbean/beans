@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 03/21/2013 10:08:14 PM
-# Last Edit: 2015 Sep 12, 13:39:04
+# Last Edit: 2016 May 03, 11:41:53 AM
 # $Id$
 
 =head1 NAME
@@ -82,6 +82,12 @@ for my $id ( @ids ) {
 	push @grades,
 "$m{$id}->{Chinese}\t$id\t\t$classwork{$id}\t$hw{$id}\t$ex{$id}\t$grade->{$id}\n";
 }
+push @grades, "\n";
+my $out =  $l->yaml->{out};
+my @outids = map $_->{ id }, @$out;
+for my $id ( @outids ) {
+    push @grades,
+"Dropout\t$id\t\t0\t0\t0\t0\n"}
 
 
 print(@grades);
