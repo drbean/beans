@@ -215,7 +215,7 @@ champed (Cline l r) = do
 		, thirtyone = grade (thirtyone cwk), thirtytwo = grade (thirtytwo cwk)
 		, thirtythree = grade (thirtythree cwk), thirtyfour = grade (thirtyfour cwk)
 		, thirtyfive = grade (thirtyfive cwk)
-		, fortyone = grade (fortyone cwk), fortytwo = grade (fortyone cwk)
+		, fortyone = grade (fortyone cwk), fortytwo = grade (fortytwo cwk)
 		, fortythree = grade (fortythree cwk), fortyfour = grade (fortyfour cwk)
 		, fortyfive = grade (fortyfive cwk)
 		, fiftyone = grade (fiftyone cwk), fiftytwo = grade (fiftyone cwk)
