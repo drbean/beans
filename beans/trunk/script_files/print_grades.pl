@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 03/21/2013 10:08:14 PM
-# Last Edit: 2016 May 03, 11:41:53 AM
+# Last Edit: 2016 Jul 02, 03:59:43 PM
 # $Id$
 
 =head1 NAME
@@ -14,6 +14,7 @@ use strict;
 use warnings;
 use IO::All;
 use YAML qw/LoadFile DumpFile/;
+use List::Util qw/min max/;
 use Cwd;
 
 =head1 SYNOPSIS
@@ -56,12 +57,15 @@ my %classwork = map { $_ => $g->sprintround( $classwork->{$_} ) } keys %$classwo
 my $ex = $g->examPercent;
 my %ex = map { $_ => $g->sprintround( $ex->{$_} ) } keys %$ex;
 
-my $grade;
+my $grade = $g->grades;;
+my @grade = values %$grade;
+my $top = max @grade;
+my $bottom = min @grade;
+my $middle = $g->median( \@grade );
+my $mean = $g->mean( \@grade );
+
 if ( defined $curving and $curving and $curving eq "curve" ) {
     $grade = $g->curve( $low, $median, $high );
-}
-else {
-    $grade = $g->grades;
 }
 
 my $weights = $g->weights;
@@ -69,6 +73,13 @@ my @grades = $l->id . " " . $l->name . " " . $l->field . " Grades\n" .
 "Classwork: " . $weights->{classwork} . "\n" .
 "Homework: " . $weights->{homework} . "\n" .
 "Exams: " . $weights->{exams} . "\n";
+
+push @grades, 
+"Raw\n" .
+"  Low: " . $bottom . "\n" .
+"  Median: " . $middle . "\n" .
+"  Mean " . $mean . "\n" .
+"  High: " . $top . "\n";
 
 push @grades, 
 "Curving:\n" .
