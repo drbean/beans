@@ -1,4 +1,4 @@
-#Last Edit: 2016 Jun 30, 03:30:00 PM
+#Last Edit: 2016 Jul 02, 03:56:48 PM
 #$Id$
 
 use MooseX::Declare;
@@ -792,8 +792,8 @@ Totals for individual ids, over the whole series.
 	    for my $member ( @$members ) {
 		my $name = $member->{name};
 		my $id = $member->{id};
-		warn "Giving $name, $id a grade, but they already have a grade for the session of "
-		    . "$grade->{id}. Are they a member twice?"
+		warn "Giving $name, $id a grade, but they already have a grade for Session $session of "
+		    . "$grade->{id}. Are they a member twice?" if defined $grade->{$id};
 		my $beancan = $can->{$member->{name}};
 		if ( defined $beancan ) {
 		    my $grade = $grade->{$name};
