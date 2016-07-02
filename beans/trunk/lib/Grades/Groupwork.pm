@@ -1,4 +1,4 @@
-#Last Edit: 2016 Feb 29, 08:53:19 PM
+#Last Edit: 2016 Jun 30, 03:30:00 PM
 #$Id$
 
 use MooseX::Declare;
@@ -792,6 +792,8 @@ Totals for individual ids, over the whole series.
 	    for my $member ( @$members ) {
 		my $name = $member->{name};
 		my $id = $member->{id};
+		warn "Giving $name, $id a grade, but they already have a grade for the session of "
+		    . "$grade->{id}. Are they a member twice?"
 		my $beancan = $can->{$member->{name}};
 		if ( defined $beancan ) {
 		    my $grade = $grade->{$name};
@@ -808,7 +810,10 @@ Totals for individual ids, over the whole series.
 	for my $member ( @$members ) {
 	    my $id = $member->{id};
 	    if ( exists $grades{$id} ) {
-		$grades{$id} = min( 100, $grades{$id} );
+	        my $perfect_score = $self->classMax * @{ $self->all_events };
+	        $grades{$id} = min( 100, $grades{$id} );
+	        warn "$member->{name}: ${id}'s classwork score of $grades{$id} where perfect score == $perfect_score\n"
+	            if $grades{$id} > $perfect_score;
 	    }
 	    else {
 		my $name = $member->{name};
