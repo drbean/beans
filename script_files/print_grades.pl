@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 03/21/2013 10:08:14 PM
-# Last Edit: 2016 Jul 02, 03:59:43 PM
+# Last Edit: 2016 Jul 03, 02:46:56 PM
 # $Id$
 
 =head1 NAME
@@ -68,6 +68,7 @@ if ( defined $curving and $curving and $curving eq "curve" ) {
     $grade = $g->curve( $low, $median, $high );
 }
 
+my $adjusted_mean = $g->mean( [values %$grade] );
 my $weights = $g->weights;
 my @grades = $l->id . " " . $l->name . " " . $l->field . " Grades\n" .
 "Classwork: " . $weights->{classwork} . "\n" .
@@ -85,6 +86,7 @@ push @grades,
 "Curving:\n" .
 "  Low: " . $low . "\n" .
 "  Median: " . $median . "\n" .
+"  Mean: " . $adjusted_mean . "\n" .
 "  High: " . $high . "\n" .
 "Name\tId\t   Classwork    Homework\tExams\tGrade\n" if $curving eq "curve";
 
