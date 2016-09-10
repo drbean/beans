@@ -161,7 +161,7 @@ addDayFor "KA2" = 5
 
 champed :: CommandLine -> IO ()
 champed (Cline l r) = do
-	let f = "/home/drbean/042/" <> l <> "/classwork/" <> r <> ".yaml.table"
+	let f = "/home/drbean/051/" <> l <> "/classwork/" <> r <> ".yaml.table"
 	y <- Data.ByteString.readFile f
 	let z = Data.Yaml.decodeEither y :: Either String Classwork
 	let cwk = case z of 
@@ -204,7 +204,7 @@ champed (Cline l r) = do
 	let monday = day_zero + 7 * (read r)
 	let date = monday + (addDayFor l)
 	let (month,day) = dayOfYearToMonthAndDay True date
-	let iso8601_date = "(042) 2016-" ++ (show month) ++ "-" ++ (show day)
+	let iso8601_date = "(051) 2016-" ++ (show month) ++ "-" ++ (show day)
 	let cwk' = Cwk { topic = top
 		, eleven = grade (eleven cwk), twelve = grade (twelve cwk)
 		, thirteen = grade (thirteen cwk), fourteen = grade (fourteen cwk)
