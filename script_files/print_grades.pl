@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 # Created: 03/21/2013 10:08:14 PM
-# Last Edit: 2016 Jul 03, 02:46:56 PM
+# Last Edit: 2016 Sep 10, 07:47:37 PM
 # $Id$
 
 =head1 NAME
@@ -25,7 +25,7 @@ print_grades.pl -x curve -o 60 -w 80 -t 100 > grades.txt
 
 
 my $session = 1;
-my $dirs = '/home/drbean/042';
+my $dirs = "/home/drbean/$ENV{SEMESTER}";
 
 (my $dir = getcwd) =~ s/^.*\/([^\/]*)$/$1/;
 

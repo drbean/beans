@@ -67,7 +67,7 @@ Creates class list from league.yaml, session/LASTSESSION/groups.yaml with id, Ch
 (my $dir = getcwd) =~ s/^.*\/([^\/]*)$/$1/;
 use Grades;
 use Grades::Groupwork;
-my $l = League->new( leagues => '/home/drbean/042', id => $dir );
+my $l = League->new( leagues => "/home/drbean/$ENV{SEMESTER}", id => $dir );
 my $sessions = $l->yaml->{session};
 my $last = max keys %$sessions;
 my $week = $sessions->{$last};
